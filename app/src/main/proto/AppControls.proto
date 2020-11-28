@@ -1,0 +1,53 @@
+
+//Using the version of protobuf
+syntax = "proto3";
+//Can save
+        package com.example.lawnmower;
+//Generate the package name of the class after compilation
+        option java_package = "com.example.lawnmower";
+//Generate the class name of the class after compilation
+        option java_outer_classname = "commands";
+//message can be seen as a key word class in Java environment
+        message AppControls {
+                    enum Command {
+                        NO_CMD = 0; // rename manual input / joystick input?
+                        START = 1;
+                        STOP = 2;
+                        PAUSE = 3;
+                        HOME = 4;
+                    }
+                    message JoyStick {
+                         double x = 1; // -1 to 1
+                         double y = 2; // -1 to 1
+        }
+        Command cmd = 1;
+        JoyStick joy = 2;
+        }
+        message LawnmowerStatus {
+            enum Status {
+                        Ready = 0;
+                        Mowing= 1;
+                        Paused= 2;
+                        Manual= 3;
+                        Low_Light=4;
+            }
+            enum Error {
+                NO_ERROR = 0;
+                ROBOT_STUCK = 1;
+                BLADE_STUCK = 2;
+                PICKUP = 3;
+                LOST = 4;
+            }
+                double battery_state = 1; // in percent
+                double mowing_progress = 2; // in percent
+                Status status = 3;
+                Error error = 13;
+                string error_msg = 14;
+                bool finished_mowing = 15;
+        }
+        message Image {
+                bytes data = 1;
+                uint32 width = 2;
+                uint32 height = 3;
+                }
+                // Todo Map

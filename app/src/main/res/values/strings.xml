@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">Lawnmower</string>
+    <string name="versionNumber">Version 0.42</string>
+    <string name="whs_adresse">https://www.w-hs.de/</string>
+</resources>

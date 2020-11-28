@@ -1,0 +1,31 @@
+<?xml version = "1.0" encoding = "utf-8"?>
+<RelativeLayout xmlns:android = "http://schemas.android.com/apk/res/android"
+    xmlns:tools = "http://schemas.android.com/tools"
+    android:layout_width = "match_parent"
+    android:layout_height = "match_parent"
+    android:layout_margin = "16dp"
+    tools:context = ".Einstellungen">
+    <EditText
+        android:id = "@+id/Button_Ip"
+        android:layout_width = "match_parent"
+        android:layout_height = "wrap_content"
+        android:hint = "Default IP-Address 192.168.0.8"
+        android:inputType = "text" />
+    <EditText
+        android:id = "@+id/Button_Port"
+        android:layout_width = "match_parent"
+        android:layout_height = "wrap_content"
+        android:layout_below = "@+id/Button_Ip"
+        android:hint = "Default Port Setting : 6750 "
+        android:inputType = "number" />
+    <Button
+        android:id = "@+id/Button_Connect"
+        android:layout_width = "match_parent"
+        android:layout_height = "wrap_content"
+        android:layout_below = "@+id/Button_Port"
+        android:layout_gravity = "center"
+        android:layout_marginTop = "16dp"
+        android:text = "Connect To Server" />
+
+
+</RelativeLayout>
