@@ -22,14 +22,18 @@ import java.nio.ByteOrder;
 import com.example.lawnmower.Einstellungen.*;
 
 public class meinMaeher extends AppCompatActivity {
+    // Variablen für Mäher Funktionen
     private ImageButton buttonStartMow;
     private ImageButton buttonPauseMow;
     private ImageButton buttonStopMow;
     private ImageButton buttonGoHome;
+    // Variablen für Mäher Strings
     private final CharSequence start = "Starte Mähvorgang";
     private final CharSequence pausiere = "Pausiere Mähvorgang";
     private final CharSequence stoppe = "Stoppe Mähvorgang";
     private final CharSequence GoHome = "Fahre zur Ladestadion";
+    private SocketHandler sk;
+
 
 
 
@@ -40,7 +44,7 @@ public class meinMaeher extends AppCompatActivity {
 
 
 
-
+   sk.getSocket();
         // Toast starte Mähvorgang
         buttonStartMow = (ImageButton) findViewById(R.id.buttonStartMow);
         buttonStartMow.setOnClickListener(new View.OnClickListener() {
