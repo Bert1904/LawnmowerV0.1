@@ -63,7 +63,7 @@ public class Einstellungen extends AppCompatActivity {
             Toast.makeText(getApplicationContext(), CONNECTION_SERVER, Toast.LENGTH_LONG).show();
         }
     });
-
+//bert
 }
     private PrintWriter output;
     private BufferedReader input;
