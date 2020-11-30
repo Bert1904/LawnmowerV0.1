@@ -18,8 +18,10 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -34,7 +36,7 @@ public class Einstellungen extends AppCompatActivity {
     private final String CONNECTION_SERVER = "Versuche Verbindung zum Roboter aufzubauen";
     private final String CONNECTION_LOST = "Verbindung Fehlgeschlagen";
     private final String NO_INPUT="Bitte IP-Adresse und Port eingeben";
-    private  Socket socket;
+
 
 
 
@@ -63,7 +65,6 @@ public class Einstellungen extends AppCompatActivity {
             Toast.makeText(getApplicationContext(), CONNECTION_SERVER, Toast.LENGTH_LONG).show();
         }
     });
-//bert
 }
     private PrintWriter output;
     private BufferedReader input;
@@ -73,7 +74,9 @@ public class Einstellungen extends AppCompatActivity {
         @Override
         public void run() {
             try {
-                socket = new Socket (SERVER_IP, SERVER_PORT);
+
+                SocketHandler.setSocket(SERVER_IP,SERVER_PORT);
+                Socket socket = SocketHandler.getSocket();
                 output= new PrintWriter(socket.getOutputStream());
                 output = new PrintWriter(socket.getOutputStream());
                 input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
@@ -84,28 +87,32 @@ public class Einstellungen extends AppCompatActivity {
                     }
                 });
             } catch (IOException e) {
+
+                SocketHandler.getSocket();
+
                 e.printStackTrace();
+
 
             }
         }
 
     }
-    public Socket getSocket(){
-        return socket;
-    }
-    public void setSocket (Socket socket) throws IOException {
-        socket = new Socket (SERVER_IP, SERVER_PORT);
-    }
     public static class SocketHandler {
-       private  static Socket socket;
+       private  static Socket socket= new Socket();
         public static synchronized Socket getSocket(){
-            System.out.println(socket+" _____________________________________________________________");
+            System.out.println(socket+" Get Socket ______");
             return socket;
         }
 
-        public static synchronized void setSocket(Socket socket){
-            SocketHandler.socket = socket;
-        }
 
+        public static synchronized void setSocket(String ip,int port) throws IOException {
+
+               SocketHandler.socket.connect(new InetSocketAddress(ip, port), 5000);
+               SocketHandler.socket = new Socket(ip, port);
+
+               SocketHandler.socket.setSoTimeout(5000);
+
+        }
     }
+
 }
