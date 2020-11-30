@@ -32,8 +32,9 @@ public class meinMaeher extends AppCompatActivity {
     private final CharSequence pausiere = "Pausiere Mähvorgang";
     private final CharSequence stoppe = "Stoppe Mähvorgang";
     private final CharSequence GoHome = "Fahre zur Ladestadion";
-    private SocketHandler sk;
-
+    private Socket socket ;
+    private String SERVER_IP = "192.168.0.8";
+    private int SERVER_PORT=6750;
 
 
 
@@ -44,7 +45,9 @@ public class meinMaeher extends AppCompatActivity {
 
 
 
-   sk.getSocket();
+        socket = SocketService.getSocket();
+        System.out.println("''''''''''''''''''''''"+""+socket);
+
         // Toast starte Mähvorgang
         buttonStartMow = (ImageButton) findViewById(R.id.buttonStartMow);
         buttonStartMow.setOnClickListener(new View.OnClickListener() {
