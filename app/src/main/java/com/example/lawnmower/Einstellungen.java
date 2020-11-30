@@ -64,14 +64,14 @@ public class Einstellungen extends AppCompatActivity {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        Toast.makeText(getApplicationContext(), String.format(CONNECT_SUCCESS, SERVER_IP), Toast.LENGTH_LONG).show();
+                        Toast.makeText(getApplicationContext(), CONNECT_SUCCESS, Toast.LENGTH_LONG).show();
                     }
                 });
             } catch (IOException e) {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        Toast.makeText(getApplicationContext(), String.format(CONNECT_FAILED, SERVER_IP), Toast.LENGTH_LONG).show();
+                        Toast.makeText(getApplicationContext(), CONNECT_FAILED, Toast.LENGTH_LONG).show();
                     }
                 });
                 e.printStackTrace();

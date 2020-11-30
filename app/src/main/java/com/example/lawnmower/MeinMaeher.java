@@ -1,41 +1,31 @@
 package com.example.lawnmower;
+
+import android.content.Intent;
 import android.os.Bundle;
-import android.provider.ContactsContract;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.Toast;
+
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.net.wifi.WifiInfo;
-import android.net.wifi.WifiManager;
-import java.io.BufferedReader;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
-import java.net.InetAddress;
-import java.net.ServerSocket;
 import java.net.Socket;
-import java.net.UnknownHostException;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import com.example.lawnmower.Einstellungen.*;
 
-public class meinMaeher extends AppCompatActivity {
+public class MeinMaeher extends AppCompatActivity {
+    // output NACHRICHTEN
+    private static final String start = "Starte Mähvorgang";
+    private static final String pausiere = "Pausiere Mähvorgang";
+    private static final String stoppe = "Stoppe Mähvorgang";
+    private static final String GoHome = "Fahre zur Ladestadion";
+    private static final String NO_CONNECTION = "Verbindung nicht möglich. \nBitte überprüfe deine Einstellung";
+
     // Variablen für Mäher Funktionen
     private ImageButton buttonStartMow;
     private ImageButton buttonPauseMow;
     private ImageButton buttonStopMow;
     private ImageButton buttonGoHome;
-    // Variablen für Mäher Strings
-    private final CharSequence start = "Starte Mähvorgang";
-    private final CharSequence pausiere = "Pausiere Mähvorgang";
-    private final CharSequence stoppe = "Stoppe Mähvorgang";
-    private final CharSequence GoHome = "Fahre zur Ladestadion";
-    private Socket socket ;
+    private Socket socket;
     private String SERVER_IP = "192.168.0.8";
-    private int SERVER_PORT=6750;
-
+    private int SERVER_PORT = 6750;
 
 
     @Override
@@ -44,14 +34,22 @@ public class meinMaeher extends AppCompatActivity {
         setContentView(R.layout.activity_meinmaeher);
 
 
-
         socket = SocketService.getSocket();
-        System.out.println("''''''''''''''''''''''"+""+socket);
+
+        if (!socket.isConnected()) {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast.makeText(getApplicationContext(), NO_CONNECTION, Toast.LENGTH_LONG).show();
+                    }
+                });
+         setConnection();
+              return;
+        }
 
         // Toast starte Mähvorgang
         buttonStartMow = (ImageButton) findViewById(R.id.buttonStartMow);
         buttonStartMow.setOnClickListener(new View.OnClickListener() {
-            @Override
             public void onClick(View v) {
                 Toast.makeText(getApplicationContext(), start, Toast.LENGTH_LONG).show();
             }
@@ -82,5 +80,12 @@ public class meinMaeher extends AppCompatActivity {
                 Toast.makeText(getApplicationContext(), GoHome, Toast.LENGTH_LONG).show();
             }
         });
+    }
+    // setzt die Sichtbarkeit der Buttons wenn keine Connection möglich ist
+    void setConnection(){
+        ((ImageButton) findViewById(R.id.buttonStartMow)).setAlpha(0.3f);
+        ((ImageButton) findViewById(R.id.buttonPauseMow)).setAlpha(0.3f);
+        ((ImageButton) findViewById(R.id.buttonStopMow)).setAlpha(0.3f);
+        ((ImageButton) findViewById(R.id.buttonGoHome)).setAlpha(0.3f);
     }
 }

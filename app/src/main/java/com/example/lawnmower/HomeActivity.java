@@ -3,7 +3,6 @@ package com.example.lawnmower;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
-import android.media.Image;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageButton;
@@ -76,7 +75,7 @@ public class HomeActivity extends AppCompatActivity {
         startActivity(intent);
     }
     public void openMeinmaeher(){
-        Intent intent = new Intent(this, meinMaeher.class);
+        Intent intent = new Intent(this, MeinMaeher.class);
         startActivity(intent);
     }
     public void openControl(){
