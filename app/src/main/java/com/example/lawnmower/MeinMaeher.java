@@ -43,8 +43,11 @@ public class MeinMaeher extends AppCompatActivity {
                         Toast.makeText(getApplicationContext(), NO_CONNECTION, Toast.LENGTH_LONG).show();
                     }
                 });
-         setConnection();
+         setNoConnection();
               return;
+        }
+        else {
+            setConnection();
         }
 
         // Toast starte Mähvorgang
@@ -82,10 +85,17 @@ public class MeinMaeher extends AppCompatActivity {
         });
     }
     // setzt die Sichtbarkeit der Buttons wenn keine Connection möglich ist
-    void setConnection(){
+    void setNoConnection(){
         ((ImageButton) findViewById(R.id.buttonStartMow)).setAlpha(0.3f);
         ((ImageButton) findViewById(R.id.buttonPauseMow)).setAlpha(0.3f);
         ((ImageButton) findViewById(R.id.buttonStopMow)).setAlpha(0.3f);
         ((ImageButton) findViewById(R.id.buttonGoHome)).setAlpha(0.3f);
+    }
+    // setzt die Sichtbarkeit der Buttons wenn Connection möglich ist
+    void setConnection(){
+        ((ImageButton) findViewById(R.id.buttonStartMow)).setAlpha(1.0F);
+        ((ImageButton) findViewById(R.id.buttonPauseMow)).setAlpha(1.0F);
+        ((ImageButton) findViewById(R.id.buttonStopMow)).setAlpha(1.0F);
+        ((ImageButton) findViewById(R.id.buttonGoHome)).setAlpha(1.0F);
     }
 }
