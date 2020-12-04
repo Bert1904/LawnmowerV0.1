@@ -3,6 +3,7 @@ package com.example.lawnmower;
 
 import android.os.Bundle;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.Toast;
 
@@ -22,6 +23,10 @@ public class MeinMaeher extends AppCompatActivity {
     private static final String stoppe = "Stoppe Mähvorgang";
     private static final String GoHome = "Fahre zur Ladestadion";
     private static final String NO_CONNECTION = "Verbindung nicht möglich. \nBitte überprüfe deine Einstellung";
+    private final int START = 1;
+    private final int STOP = 2;
+    private final int PAUSE = 3;
+    private final int HOME = 4;
 
     // Protobuffer Nachrichten senden
     AppControlsProtos.AppControls.Command no_CMD = AppControlsProtos.AppControls.Command.NO_CMD;
@@ -69,9 +74,8 @@ public class MeinMaeher extends AppCompatActivity {
         buttonStartMow = (ImageButton) findViewById(R.id.buttonStartMow);
         buttonStartMow.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
+                sendMessage(ButtonMessageGenerator.buildMessage(START));
                 Toast.makeText(getApplicationContext(), start, Toast.LENGTH_LONG).show();
-
-                sendMessage(proto_start);
             }
         });
         // Toast pausiere Mähvorgang
@@ -79,6 +83,7 @@ public class MeinMaeher extends AppCompatActivity {
         buttonPauseMow.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                sendMessage(ButtonMessageGenerator.buildMessage(PAUSE));
                 Toast.makeText(getApplicationContext(), pausiere, Toast.LENGTH_LONG).show();
                 //commands.AppControls.Command.PAUSE;
             }
@@ -89,6 +94,7 @@ public class MeinMaeher extends AppCompatActivity {
         buttonStopMow.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                sendMessage(ButtonMessageGenerator.buildMessage(STOP));
                 Toast.makeText(getApplicationContext(), stoppe, Toast.LENGTH_LONG).show();
             }
         });
@@ -97,6 +103,7 @@ public class MeinMaeher extends AppCompatActivity {
         buttonGoHome.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                sendMessage(ButtonMessageGenerator.buildMessage(HOME));
                 Toast.makeText(getApplicationContext(), GoHome, Toast.LENGTH_LONG).show();
             }
         });
@@ -109,13 +116,13 @@ public class MeinMaeher extends AppCompatActivity {
                 }
             });
             setNoConnection();
-            return;
+
         }
         else {
             setConnection();
         }
     }
-    // setzt die Sichtbarkeit der Buttons wenn keine Connection möglich ist
+    // setzt die Sichtbarkeit der Buttons wenn keine Connection möglich
     void setNoConnection(){
         ((ImageButton) findViewById(R.id.buttonStartMow)).setAlpha(0.3f);
         ((ImageButton) findViewById(R.id.buttonPauseMow)).setAlpha(0.3f);
@@ -131,7 +138,7 @@ public class MeinMaeher extends AppCompatActivity {
     }
 
     // Sende Funktion
-        public void sendMessage(final AppControlsProtos.AppControls.Command proto_buff){
+        public void sendMessage(final AppControlsProtos.AppControls proto_buff){
         Runnable runnable = new Runnable() {
             @Override
             public void run() {
@@ -150,6 +157,5 @@ public class MeinMaeher extends AppCompatActivity {
         Thread thread = new Thread(runnable);
         thread.start();
         }
-
 
 }

@@ -45,9 +45,4 @@ syntax = "proto3";
                 string error_msg = 14;
                 bool finished_mowing = 15;
         }
-        message Image {
-                bytes data = 1;
-                uint32 width = 2;
-                uint32 height = 3;
-                }
                 // Todo Map
