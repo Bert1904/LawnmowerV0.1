@@ -28,25 +28,10 @@ public class MeinMaeher extends AppCompatActivity {
     private final int PAUSE = 3;
     private final int HOME = 4;
 
-    // Protobuffer Nachrichten senden
-    AppControlsProtos.AppControls.Command no_CMD = AppControlsProtos.AppControls.Command.NO_CMD;
-    AppControlsProtos.AppControls.Command proto_start = AppControlsProtos.AppControls.Command.START;
-    AppControlsProtos.AppControls.Command proto_stop = AppControlsProtos.AppControls.Command.STOP;
-    AppControlsProtos.AppControls.Command proto_pause = AppControlsProtos.AppControls.Command.PAUSE;
-    AppControlsProtos.AppControls.Command proto_home = AppControlsProtos.AppControls.Command.HOME;
+    private ButtonMessageGenerator btnMessageGenerator = new ButtonMessageGenerator();
+    private ErrorMessageGenerator errorMessageGenerator = new ErrorMessageGenerator();
 
-    // Protobuffer Nachrichten empfangen
-    AppControlsProtos.LawnmowerStatus.Status status_ready = AppControlsProtos.LawnmowerStatus.Status.Ready;
-    AppControlsProtos.LawnmowerStatus.Status status_mowing = AppControlsProtos.LawnmowerStatus.Status.Mowing;
-    AppControlsProtos.LawnmowerStatus.Status status_paused = AppControlsProtos.LawnmowerStatus.Status.Paused;
-    AppControlsProtos.LawnmowerStatus.Status status_Manual = AppControlsProtos.LawnmowerStatus.Status.Low_Light;
 
-    // Protobuffer Error
-    AppControlsProtos.LawnmowerStatus.Error no_error =  AppControlsProtos.LawnmowerStatus.Error.NO_ERROR;
-    AppControlsProtos.LawnmowerStatus.Error robot_stuck =  AppControlsProtos.LawnmowerStatus.Error.ROBOT_STUCK;
-    AppControlsProtos.LawnmowerStatus.Error  blade_stuck =  AppControlsProtos.LawnmowerStatus.Error. BLADE_STUCK;
-    AppControlsProtos.LawnmowerStatus.Error pickup =  AppControlsProtos.LawnmowerStatus.Error.PICKUP;
-    AppControlsProtos.LawnmowerStatus.Error lost =  AppControlsProtos.LawnmowerStatus.Error.LOST;
 
     // Variablen für Mäher Funktionen
     private ImageButton buttonStartMow;
@@ -75,6 +60,8 @@ public class MeinMaeher extends AppCompatActivity {
         buttonStartMow.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 sendMessage(ButtonMessageGenerator.buildMessage(START));
+                byte[] msg = btnMessageGenerator.buildMessage(4).toByteArray();
+
                 Toast.makeText(getApplicationContext(), start, Toast.LENGTH_LONG).show();
             }
         });
@@ -116,20 +103,28 @@ public class MeinMaeher extends AppCompatActivity {
                 }
             });
             setNoConnection();
-
+            return;
         }
         else {
             setConnection();
         }
     }
-    // setzt die Sichtbarkeit der Buttons wenn keine Connection möglich
+
+    /* Schaltet die Funktionsweise der Buttons (Start,Pause,Stop, GoHome)aus indem
+       die  Buttons grau dargestellt werden und oben genannte Buttons haben keine Funkionsweise mehr,
+       wenn keine Connection aufgebaut werden kann;
+    */
     void setNoConnection(){
+        buttonStartMow.setEnabled(false);
+        buttonPauseMow.setEnabled(false);
+        buttonStopMow.setEnabled(false);
+        buttonGoHome.setEnabled(false);
         ((ImageButton) findViewById(R.id.buttonStartMow)).setAlpha(0.3f);
         ((ImageButton) findViewById(R.id.buttonPauseMow)).setAlpha(0.3f);
         ((ImageButton) findViewById(R.id.buttonStopMow)).setAlpha(0.3f);
         ((ImageButton) findViewById(R.id.buttonGoHome)).setAlpha(0.3f);
     }
-    // setzt die Sichtbarkeit der Buttons wenn Connection möglich ist
+    // Setzt die Sichtbarkeit auf den normalen Wert wenn eine Connection aufgebaut werden kann.
     void setConnection(){
         ((ImageButton) findViewById(R.id.buttonStartMow)).setAlpha(1.0F);
         ((ImageButton) findViewById(R.id.buttonPauseMow)).setAlpha(1.0F);
