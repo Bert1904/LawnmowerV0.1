@@ -17,14 +17,21 @@ import io.github.controlwear.virtual.joystick.android.JoystickView;
 
 public class Steuerung extends AppCompatActivity {
 
-    private TextureView videoStream;
+    private TextureView robotVideo;
     private JoystickView mJoystick;
-    //private TextView mTextView;
+    private TextView mTextView;
     private JoystickMessageGenerator mJoystickMessageGenerator;
     private final double DEADZONE = 0.15;
-    private Socket socket;
+    private final int WIDTH = 1280;
+    private final int HEIGHT = 720;
 
-    private PrintWriter message_BufferOut;
+    //add udp port
+    //private final int UDPPORT = 4567;
+    private Socket socket;
+    private ImageAdapter imgAdapter;
+    private Thread UDP;
+
+    //private PrintWriter message_BufferOut;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,14 +42,17 @@ public class Steuerung extends AppCompatActivity {
 
     private void init() {
         socket = SocketService.getSocket();
-        videoStream = findViewById(R.id.robotVideo);
+        robotVideo = findViewById(R.id.robotVideo);
         mJoystick = findViewById(R.id.JoystickView);
         mJoystickMessageGenerator = new JoystickMessageGenerator();
-        //mTextView = findViewById(R.id.textView);
+        imgAdapter = new ImageAdapter(WIDTH, HEIGHT);
+        mTextView = findViewById(R.id.textView);
 
-        //check connection status
-
-        //start receiving Image messages and convert them to Images and display them on @videoStream
+        //Check connection status before
+        if(socket.isConnected()) {
+            UDP = new Thread(new UDPReciever());
+            UDP.start();
+        }
 
         //publish AppControls messages for the Joystick
         mJoystick.setOnMoveListener(new JoystickView.OnMoveListener() {
@@ -60,13 +70,14 @@ public class Steuerung extends AppCompatActivity {
                     y = 0.0;
                 }
 
-                sendMessage(mJoystickMessageGenerator.buildMessage(x,y));
-                //mTextView.setText(msg.toString());
+                AppControlsProtos.AppControls msg = mJoystickMessageGenerator.buildMessage(x, y);
+                //sendMessage(mJoystickMessageGenerator.buildMessage(x,y));
+                mTextView.setText(msg.toString());
             }
         });
     }
 
-    public void sendMessage(final AppControlsProtos.AppControls proto_buff){
+    /*public void sendMessage(final AppControlsProtos.AppControls proto_buff){
         Runnable runnable = new Runnable() {
             @Override
             public void run() {
@@ -84,5 +95,5 @@ public class Steuerung extends AppCompatActivity {
         };
         Thread thread = new Thread(runnable);
         thread.start();
-    }
+    }*/
 }

@@ -2,6 +2,9 @@ package com.example.lawnmower;
 
 public class JoystickMessageGenerator {
 
+    public JoystickMessageGenerator() {
+
+    }
 
     public AppControlsProtos.AppControls buildMessage(double X, double Y) {
         AppControlsProtos.AppControls.JoyStick joystick = AppControlsProtos.AppControls.JoyStick.newBuilder().setX(X).setY(Y).build();

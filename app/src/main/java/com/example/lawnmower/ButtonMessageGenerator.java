@@ -2,7 +2,6 @@ package com.example.lawnmower;
 
 public class ButtonMessageGenerator {
 
-
     public static AppControlsProtos.AppControls buildMessage(int i) {
         AppControlsProtos.AppControls btn;
         switch(i) {

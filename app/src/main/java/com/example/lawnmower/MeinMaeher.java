@@ -70,43 +70,6 @@ public class MeinMaeher extends AppCompatActivity {
 
 
 
-        // Toast starte Mähvorgang
-        buttonStartMow = (ImageButton) findViewById(R.id.buttonStartMow);
-        buttonStartMow.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                sendMessage(ButtonMessageGenerator.buildMessage(START));
-                Toast.makeText(getApplicationContext(), start, Toast.LENGTH_LONG).show();
-            }
-        });
-        // Toast pausiere Mähvorgang
-        buttonPauseMow = (ImageButton) findViewById(R.id.buttonPauseMow);
-        buttonPauseMow.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                sendMessage(ButtonMessageGenerator.buildMessage(PAUSE));
-                Toast.makeText(getApplicationContext(), pausiere, Toast.LENGTH_LONG).show();
-                //commands.AppControls.Command.PAUSE;
-            }
-        });
-
-        // Toast stoppe Mähvorgang
-        buttonStopMow = (ImageButton) findViewById(R.id.buttonStopMow);
-        buttonStopMow.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                sendMessage(ButtonMessageGenerator.buildMessage(STOP));
-                Toast.makeText(getApplicationContext(), stoppe, Toast.LENGTH_LONG).show();
-            }
-        });
-        // Toast  Mäher kehrt zurück
-        buttonGoHome = (ImageButton) findViewById(R.id.buttonGoHome);
-        buttonGoHome.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                sendMessage(ButtonMessageGenerator.buildMessage(HOME));
-                Toast.makeText(getApplicationContext(), GoHome, Toast.LENGTH_LONG).show();
-            }
-        });
         if (!socket.isConnected()) {
             runOnUiThread(new Runnable() {
                 @Override
@@ -119,8 +82,46 @@ public class MeinMaeher extends AppCompatActivity {
 
         }
         else {
+            // Toast starte Mähvorgang
+            buttonStartMow = (ImageButton) findViewById(R.id.buttonStartMow);
+            buttonStartMow.setOnClickListener(new View.OnClickListener() {
+                public void onClick(View v) {
+                    sendMessage(ButtonMessageGenerator.buildMessage(START));
+                    Toast.makeText(getApplicationContext(), start, Toast.LENGTH_LONG).show();
+                }
+            });
+            // Toast pausiere Mähvorgang
+            buttonPauseMow = (ImageButton) findViewById(R.id.buttonPauseMow);
+            buttonPauseMow.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    sendMessage(ButtonMessageGenerator.buildMessage(PAUSE));
+                    Toast.makeText(getApplicationContext(), pausiere, Toast.LENGTH_LONG).show();
+                    //commands.AppControls.Command.PAUSE;
+                }
+            });
+
+            // Toast stoppe Mähvorgang
+            buttonStopMow = (ImageButton) findViewById(R.id.buttonStopMow);
+            buttonStopMow.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    sendMessage(ButtonMessageGenerator.buildMessage(STOP));
+                    Toast.makeText(getApplicationContext(), stoppe, Toast.LENGTH_LONG).show();
+                }
+            });
+            // Toast  Mäher kehrt zurück
+            buttonGoHome = (ImageButton) findViewById(R.id.buttonGoHome);
+            buttonGoHome.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    sendMessage(ButtonMessageGenerator.buildMessage(HOME));
+                    Toast.makeText(getApplicationContext(), GoHome, Toast.LENGTH_LONG).show();
+                }
+            });
             setConnection();
         }
+
     }
     // setzt die Sichtbarkeit der Buttons wenn keine Connection möglich
     void setNoConnection(){
