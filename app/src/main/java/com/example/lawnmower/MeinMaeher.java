@@ -29,9 +29,7 @@ public class MeinMaeher extends AppCompatActivity {
     private final int HOME = 4;
 
     private ButtonMessageGenerator btnMessageGenerator = new ButtonMessageGenerator();
-    private ErrorMessageGenerator errorMessageGenerator = new ErrorMessageGenerator();
-
-
+    //private ErrorMessageGenerator errorMessageGenerator = new ErrorMessageGenerator();
 
     // Variablen für Mäher Funktionen
     private ImageButton buttonStartMow;
