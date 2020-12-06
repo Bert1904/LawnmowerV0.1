@@ -9,10 +9,17 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.ObjectOutputStream;
+import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.net.ServerSocket;
 import java.net.Socket;
 
 
@@ -42,6 +49,11 @@ public class MeinMaeher extends AppCompatActivity {
 
     // Variable um Nachrichten zu Senden
     private PrintWriter message_BufferOut;
+    private OutputStream toServer ;
+    private InputStream fromServer;
+    private PrintWriter printout;
+    private BufferedReader in ;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,9 +69,14 @@ public class MeinMaeher extends AppCompatActivity {
         buttonStartMow = (ImageButton) findViewById(R.id.buttonStartMow);
         buttonStartMow.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                sendMessage(ButtonMessageGenerator.buildMessage(START));
-                byte[] msg = btnMessageGenerator.buildMessage(4).toByteArray();
 
+                byte[] msg = btnMessageGenerator.buildMessage(1).toByteArray();
+                try {
+                   serialize(msg);
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
                 Toast.makeText(getApplicationContext(), start, Toast.LENGTH_LONG).show();
             }
         });
@@ -68,7 +85,13 @@ public class MeinMaeher extends AppCompatActivity {
         buttonPauseMow.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                sendMessage(ButtonMessageGenerator.buildMessage(PAUSE));
+
+                byte[] msg = btnMessageGenerator.buildMessage(2).toByteArray();
+                try {
+                    serialize(msg);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
                 Toast.makeText(getApplicationContext(), pausiere, Toast.LENGTH_LONG).show();
                 //commands.AppControls.Command.PAUSE;
             }
@@ -79,7 +102,13 @@ public class MeinMaeher extends AppCompatActivity {
         buttonStopMow.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                sendMessage(ButtonMessageGenerator.buildMessage(STOP));
+
+                byte[] msg = btnMessageGenerator.buildMessage(3).toByteArray();
+                try {
+                    serialize(msg);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
                 Toast.makeText(getApplicationContext(), stoppe, Toast.LENGTH_LONG).show();
             }
         });
@@ -88,24 +117,31 @@ public class MeinMaeher extends AppCompatActivity {
         buttonGoHome.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                sendMessage(ButtonMessageGenerator.buildMessage(HOME));
+
+                byte[] msg = btnMessageGenerator.buildMessage(4).toByteArray();
+                try {
+                    serialize(msg);
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
                 Toast.makeText(getApplicationContext(), GoHome, Toast.LENGTH_LONG).show();
             }
         });
-        if (!socket.isConnected()) {
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    Toast.makeText(getApplicationContext(), NO_CONNECTION, Toast.LENGTH_LONG).show();
-
-                }
-            });
-            setNoConnection();
-            return;
-        }
-        else {
-            setConnection();
-        }
+//        if (!socket.isConnected()) {
+//            runOnUiThread(new Runnable() {
+//                @Override
+//                public void run() {
+//                    Toast.makeText(getApplicationContext(), NO_CONNECTION, Toast.LENGTH_LONG).show();
+//
+//                }
+//            });
+//            setNoConnection();
+//            return;
+//        }
+//        else {
+//            setConnection();
+//        }
     }
 
     /* Schaltet die Funktionsweise der Buttons (Start,Pause,Stop, GoHome)aus indem
@@ -130,7 +166,49 @@ public class MeinMaeher extends AppCompatActivity {
         ((ImageButton) findViewById(R.id.buttonGoHome)).setAlpha(1.0F);
     }
 
-    // Sende Funktion
+    // Serialize und versendet die Nachricht
+    public void serialize(byte[]message) throws IOException {
+         //  1. Möglichkeit
+         //byteArrayOutStr = new ByteArrayOutputStream();
+         // outputStr = new ByteArrayOutputStream();
+         // byteArrayOutStr.write(message);
+         // byteArrayOutStr.writeTo(outputStr);
+
+        //  2. Möglichkeit
+       try{
+           toServer= new ObjectOutputStream(new BufferedOutputStream(socket.getOutputStream()));
+           toServer.write(message);
+           toServer.flush();
+       }
+       catch (Exception e){
+            e.printStackTrace();
+       }
+
+        //  3. Möglichkeit
+//        try{
+//            toServer = socket.getOutputStream();
+//            toServer.write(message);
+//            toServer.flush();
+//        }catch (Exception e){
+//            e.printStackTrace();
+//        }
+
+   }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
         public void sendMessage(final AppControlsProtos.AppControls proto_buff){
         Runnable runnable = new Runnable() {
             @Override
