@@ -24,8 +24,6 @@ public class ImageAdapter {
     /**
      * Adds an byte[] part of the Image to the already transmitted parts or creates a new one
      * @param imgPart The part of the Image being added
-     * @param lastPiece true, if this is the last piece requiered to complete the image,
-     *                  false otherwise.
      */
     public void addByteArrayToImage(Byte[] imgPart, int offset) {
         if(imgPart.length > 0) {
