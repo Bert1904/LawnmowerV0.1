@@ -20,7 +20,7 @@ public class Steuerung extends AppCompatActivity {
     private TextureView robotVideo;
     private JoystickView mJoystick;
     private TextView mTextView;
-    private JoystickMessageGenerator mJoystickMessageGenerator;
+    //private JoystickMessageGenerator mJoystickMessageGenerator;
     private final double DEADZONE = 0.15;
     private final int WIDTH = 1280;
     private final int HEIGHT = 720;
@@ -44,7 +44,7 @@ public class Steuerung extends AppCompatActivity {
         socket = SocketService.getSocket();
         robotVideo = findViewById(R.id.robotVideo);
         mJoystick = findViewById(R.id.JoystickView);
-        mJoystickMessageGenerator = new JoystickMessageGenerator();
+        //mJoystickMessageGenerator = new JoystickMessageGenerator();
         imgAdapter = new ImageAdapter(WIDTH, HEIGHT);
         mTextView = findViewById(R.id.textView);
 
@@ -70,7 +70,7 @@ public class Steuerung extends AppCompatActivity {
                     y = 0.0;
                 }
 
-                AppControlsProtos.AppControls msg = mJoystickMessageGenerator.buildMessage(x, y);
+                AppControlsProtos.AppControls msg = JoystickMessageGenerator.buildMessage(x, y);
                 //sendMessage(mJoystickMessageGenerator.buildMessage(x,y));
                 mTextView.setText(msg.toString());
             }

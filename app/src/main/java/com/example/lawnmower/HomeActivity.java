@@ -7,6 +7,10 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageButton;
 
+import org.w3c.dom.Text;
+import android.widget.TextView;
+
+import java.net.Socket;
 
 
 public class HomeActivity extends AppCompatActivity {
@@ -15,20 +19,29 @@ public class HomeActivity extends AppCompatActivity {
     private ImageButton buttonControl;
     private ImageButton buttonSettings;
     private ImageButton buttonMap;
+    private Socket socket;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
-        buttonSettings=   (ImageButton) findViewById(R.id.buttonSettings);
+        TextView statusView = findViewById(R.id.statusView);
+        socket = SocketService.getSocket();
+        buttonSettings=   findViewById(R.id.buttonSettings);
         buttonSettings.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 openSetting();
             }
         });
+        statusView.setAlpha(0.0f);
+        /*String status = "Not Connected";
+        if(socket.isConnected()) {
+            status = "Connected";
+        }
+        statusView.setText(status);*/
 
-        buttonControl=   (ImageButton) findViewById(R.id.buttonControl);
+        buttonControl=   findViewById(R.id.buttonControl);
         buttonControl.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -36,7 +49,7 @@ public class HomeActivity extends AppCompatActivity {
             }
         });
 
-        buttonInfo=   (ImageButton) findViewById(R.id.buttonInfo);
+        buttonInfo =  findViewById(R.id.buttonInfo);
         buttonInfo.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -44,7 +57,7 @@ public class HomeActivity extends AppCompatActivity {
             }
         });
 
-        mowButton =(ImageButton) findViewById(R.id.buttonMow);
+        mowButton = findViewById(R.id.buttonMow);
         mowButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -68,7 +81,7 @@ public class HomeActivity extends AppCompatActivity {
     }*/
 
     public void openSetting(){
-        Intent intent = new Intent(this, Einstellungen.class);
+        Intent intent = new Intent(this, Steuerung.class);
         startActivity(intent);
     }
     public void openInfo(){

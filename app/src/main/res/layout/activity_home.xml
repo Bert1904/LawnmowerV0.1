@@ -14,6 +14,15 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
+        <TextView
+            android:id="@+id/statusView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintBottom_toTopOf="@+id/gridLayout2"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
         <androidx.gridlayout.widget.GridLayout
             android:id="@+id/gridLayout2"
             android:layout_width="wrap_content"
@@ -31,10 +40,10 @@
                 android:background="#00FFFFFF"
                 android:backgroundTint="#00FFFFFF"
 
-                android:contentDescription="TODO"
                 android:src="@drawable/meinm"
                 app:layout_column="0"
                 app:layout_row="0" />
+
             <ImageButton
                 android:id="@+id/buttonMap"
                 android:layout_width="wrap_content"
@@ -79,5 +88,6 @@
                 android:backgroundTint="#00FFFFFF"
                 app:srcCompat="@drawable/buttonleer" />
         </androidx.gridlayout.widget.GridLayout>
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 </LinearLayout>

@@ -48,6 +48,7 @@
         <activity android:name=".HomeActivity" />
         <activity android:name=".Einstellungen"/>
         <activity android:name=".Steuerung"/>
+
         <activity
         android:name=".Ladebildschirm"
         android:configChanges="orientation|screenSize">
