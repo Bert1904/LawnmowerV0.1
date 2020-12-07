@@ -23,7 +23,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 
 
-public class MeinMaeher extends AppCompatActivity {
+public class MeinMaeher extends AppCompatActivity implements View.OnClickListener{
     // output NACHRICHTEN
     private static final String start = "Starte Mähvorgang";
     private static final String pausiere = "Pausiere Mähvorgang";
@@ -67,67 +67,17 @@ public class MeinMaeher extends AppCompatActivity {
 
         // Toast starte Mähvorgang
         buttonStartMow = (ImageButton) findViewById(R.id.buttonStartMow);
-        buttonStartMow.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-
-                byte[] msg = btnMessageGenerator.buildMessage(1).toByteArray();
-                try {
-                   serialize(msg);
-
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                Toast.makeText(getApplicationContext(), start, Toast.LENGTH_LONG).show();
-            }
-        });
+        buttonStartMow.setOnClickListener(this);
         // Toast pausiere Mähvorgang
         buttonPauseMow = (ImageButton) findViewById(R.id.buttonPauseMow);
-        buttonPauseMow.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-                byte[] msg = btnMessageGenerator.buildMessage(2).toByteArray();
-                try {
-                    serialize(msg);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                Toast.makeText(getApplicationContext(), pausiere, Toast.LENGTH_LONG).show();
-                //commands.AppControls.Command.PAUSE;
-            }
-        });
-
+        buttonPauseMow.setOnClickListener(this);
         // Toast stoppe Mähvorgang
         buttonStopMow = (ImageButton) findViewById(R.id.buttonStopMow);
-        buttonStopMow.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-                byte[] msg = btnMessageGenerator.buildMessage(3).toByteArray();
-                try {
-                    serialize(msg);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                Toast.makeText(getApplicationContext(), stoppe, Toast.LENGTH_LONG).show();
-            }
-        });
+        buttonStopMow.setOnClickListener(this);
         // Toast  Mäher kehrt zurück
         buttonGoHome = (ImageButton) findViewById(R.id.buttonGoHome);
-        buttonGoHome.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+        buttonGoHome.setOnClickListener(this);
 
-                byte[] msg = btnMessageGenerator.buildMessage(4).toByteArray();
-                try {
-                    serialize(msg);
-
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                Toast.makeText(getApplicationContext(), GoHome, Toast.LENGTH_LONG).show();
-            }
-        });
 //        if (!socket.isConnected()) {
 //            runOnUiThread(new Runnable() {
 //                @Override
@@ -143,6 +93,58 @@ public class MeinMaeher extends AppCompatActivity {
 //            setConnection();
 //        }
     }
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()){
+            case R.id.buttonStartMow:{
+                byte[] msg = btnMessageGenerator.buildMessage(1).toByteArray();
+                try {
+                    serialize(msg);
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                Toast.makeText(getApplicationContext(), start, Toast.LENGTH_LONG).show();
+                break;
+
+            }
+            case R.id.buttonPauseMow:{
+                byte[] msg = btnMessageGenerator.buildMessage(2).toByteArray();
+                try {
+                    serialize(msg);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                Toast.makeText(getApplicationContext(), pausiere, Toast.LENGTH_LONG).show();
+                break;
+            }
+            case R.id.buttonStopMow:{
+                byte[] msg = btnMessageGenerator.buildMessage(3).toByteArray();
+                try {
+                    serialize(msg);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                Toast.makeText(getApplicationContext(), stoppe, Toast.LENGTH_LONG).show();
+                break;
+            }
+            case R.id.buttonGoHome: {
+                byte[] msg = btnMessageGenerator.buildMessage(4).toByteArray();
+                try {
+                    serialize(msg);
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                Toast.makeText(getApplicationContext(), GoHome, Toast.LENGTH_LONG).show();
+                break;
+            }
+        }
+    }
+
+
+
+
 
     /* Schaltet die Funktionsweise der Buttons (Start,Pause,Stop, GoHome)aus indem
        die  Buttons grau dargestellt werden und oben genannte Buttons haben keine Funkionsweise mehr,
@@ -228,5 +230,6 @@ public class MeinMaeher extends AppCompatActivity {
         Thread thread = new Thread(runnable);
         thread.start();
         }
+
 
 }
