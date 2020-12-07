@@ -50,9 +50,7 @@ public class MeinMaeher extends AppCompatActivity implements View.OnClickListene
     // Variable um Nachrichten zu Senden
     private PrintWriter message_BufferOut;
     private OutputStream toServer ;
-    private InputStream fromServer;
-    private PrintWriter printout;
-    private BufferedReader in ;
+
 
 
     @Override
@@ -62,9 +60,6 @@ public class MeinMaeher extends AppCompatActivity implements View.OnClickListene
 
 
         socket = SocketService.getSocket();
-
-
-
         // Toast starte Mähvorgang
         buttonStartMow = (ImageButton) findViewById(R.id.buttonStartMow);
         buttonStartMow.setOnClickListener(this);
@@ -78,6 +73,7 @@ public class MeinMaeher extends AppCompatActivity implements View.OnClickListene
         buttonGoHome = (ImageButton) findViewById(R.id.buttonGoHome);
         buttonGoHome.setOnClickListener(this);
 
+        // Testet ob eine Verbindung möglich ist
 //        if (!socket.isConnected()) {
 //            runOnUiThread(new Runnable() {
 //                @Override
@@ -93,11 +89,12 @@ public class MeinMaeher extends AppCompatActivity implements View.OnClickListene
 //            setConnection();
 //        }
     }
+
     @Override
     public void onClick(View v) {
         switch (v.getId()){
             case R.id.buttonStartMow:{
-                byte[] msg = btnMessageGenerator.buildMessage(1).toByteArray();
+                byte[] msg = btnMessageGenerator.buildMessage(START).toByteArray();
                 try {
                     serialize(msg);
 
@@ -109,7 +106,7 @@ public class MeinMaeher extends AppCompatActivity implements View.OnClickListene
 
             }
             case R.id.buttonPauseMow:{
-                byte[] msg = btnMessageGenerator.buildMessage(2).toByteArray();
+                byte[] msg = btnMessageGenerator.buildMessage(PAUSE).toByteArray();
                 try {
                     serialize(msg);
                 } catch (IOException e) {
@@ -119,7 +116,7 @@ public class MeinMaeher extends AppCompatActivity implements View.OnClickListene
                 break;
             }
             case R.id.buttonStopMow:{
-                byte[] msg = btnMessageGenerator.buildMessage(3).toByteArray();
+                byte[] msg = btnMessageGenerator.buildMessage(STOP).toByteArray();
                 try {
                     serialize(msg);
                 } catch (IOException e) {
@@ -129,7 +126,7 @@ public class MeinMaeher extends AppCompatActivity implements View.OnClickListene
                 break;
             }
             case R.id.buttonGoHome: {
-                byte[] msg = btnMessageGenerator.buildMessage(4).toByteArray();
+                byte[] msg = btnMessageGenerator.buildMessage(HOME).toByteArray();
                 try {
                     serialize(msg);
 
@@ -179,7 +176,9 @@ public class MeinMaeher extends AppCompatActivity implements View.OnClickListene
         //  2. Möglichkeit
        try{
            toServer= new ObjectOutputStream(new BufferedOutputStream(socket.getOutputStream()));
+
            toServer.write(message);
+           System.out.println(toServer+" __________________");
            toServer.flush();
        }
        catch (Exception e){
