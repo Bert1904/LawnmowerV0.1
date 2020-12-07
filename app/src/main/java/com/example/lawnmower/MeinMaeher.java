@@ -2,6 +2,7 @@ package com.example.lawnmower;
 
 
 import android.os.Bundle;
+import android.view.Gravity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
@@ -15,6 +16,7 @@ import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
@@ -50,7 +52,7 @@ public class MeinMaeher extends AppCompatActivity implements View.OnClickListene
     // Variable um Nachrichten zu Senden
     private PrintWriter message_BufferOut;
     private OutputStream toServer ;
-
+    private BufferedReader fromServer;
 
 
     @Override
@@ -176,13 +178,19 @@ public class MeinMaeher extends AppCompatActivity implements View.OnClickListene
         //  2. Möglichkeit
        try{
            toServer= new ObjectOutputStream(new BufferedOutputStream(socket.getOutputStream()));
-
            toServer.write(message);
-           System.out.println(toServer+" __________________");
            toServer.flush();
+
+           // liest Nachricht vom Server
+           fromServer = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+           System.out.println(fromServer +" from server ");
        }
-       catch (Exception e){
-            e.printStackTrace();
+       catch (java.net.SocketException e){
+          Toast toast = Toast.makeText(MeinMaeher.this,NO_CONNECTION,Toast.LENGTH_LONG);
+          toast.setGravity(Gravity.CENTER,0,50);
+          toast.show();
+          e.printStackTrace();
+
        }
 
         //  3. Möglichkeit
