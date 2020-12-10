@@ -2,6 +2,7 @@ package com.example.lawnmower;
 
 
 import android.os.Bundle;
+import android.view.Gravity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
@@ -9,14 +10,22 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.ObjectOutputStream;
+import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.net.ServerSocket;
 import java.net.Socket;
 
 
-public class MeinMaeher extends AppCompatActivity {
+public class MeinMaeher extends AppCompatActivity implements View.OnClickListener{
     // output NACHRICHTEN
     private static final String start = "Starte Mähvorgang";
     private static final String pausiere = "Pausiere Mähvorgang";
@@ -42,6 +51,9 @@ public class MeinMaeher extends AppCompatActivity {
 
     // Variable um Nachrichten zu Senden
     private PrintWriter message_BufferOut;
+    private OutputStream toServer ;
+    private BufferedReader fromServer;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,63 +62,88 @@ public class MeinMaeher extends AppCompatActivity {
 
 
         socket = SocketService.getSocket();
-
-
-
         // Toast starte Mähvorgang
         buttonStartMow = (ImageButton) findViewById(R.id.buttonStartMow);
-        buttonStartMow.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                sendMessage(ButtonMessageGenerator.buildMessage(START));
-                byte[] msg = btnMessageGenerator.buildMessage(4).toByteArray();
-
-                Toast.makeText(getApplicationContext(), start, Toast.LENGTH_LONG).show();
-            }
-        });
+        buttonStartMow.setOnClickListener(this);
         // Toast pausiere Mähvorgang
         buttonPauseMow = (ImageButton) findViewById(R.id.buttonPauseMow);
-        buttonPauseMow.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                sendMessage(ButtonMessageGenerator.buildMessage(PAUSE));
-                Toast.makeText(getApplicationContext(), pausiere, Toast.LENGTH_LONG).show();
-                //commands.AppControls.Command.PAUSE;
-            }
-        });
-
+        buttonPauseMow.setOnClickListener(this);
         // Toast stoppe Mähvorgang
         buttonStopMow = (ImageButton) findViewById(R.id.buttonStopMow);
-        buttonStopMow.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                sendMessage(ButtonMessageGenerator.buildMessage(STOP));
-                Toast.makeText(getApplicationContext(), stoppe, Toast.LENGTH_LONG).show();
-            }
-        });
+        buttonStopMow.setOnClickListener(this);
         // Toast  Mäher kehrt zurück
         buttonGoHome = (ImageButton) findViewById(R.id.buttonGoHome);
-        buttonGoHome.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                sendMessage(ButtonMessageGenerator.buildMessage(HOME));
-                Toast.makeText(getApplicationContext(), GoHome, Toast.LENGTH_LONG).show();
-            }
-        });
-        if (!socket.isConnected()) {
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    Toast.makeText(getApplicationContext(), NO_CONNECTION, Toast.LENGTH_LONG).show();
+        buttonGoHome.setOnClickListener(this);
 
+        // Testet ob eine Verbindung möglich ist
+//        if (!socket.isConnected()) {
+//            runOnUiThread(new Runnable() {
+//                @Override
+//                public void run() {
+//                    Toast.makeText(getApplicationContext(), NO_CONNECTION, Toast.LENGTH_LONG).show();
+//
+//                }
+//            });
+//            setNoConnection();
+//            return;
+//        }
+//        else {
+//            setConnection();
+//        }
+    }
+
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()){
+            case R.id.buttonStartMow:{
+                byte[] msg = btnMessageGenerator.buildMessage(START).toByteArray();
+                try {
+                    serialize(msg);
+
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
-            });
-            setNoConnection();
-            return;
-        }
-        else {
-            setConnection();
+                Toast.makeText(getApplicationContext(), start, Toast.LENGTH_LONG).show();
+                break;
+
+            }
+            case R.id.buttonPauseMow:{
+                byte[] msg = btnMessageGenerator.buildMessage(PAUSE).toByteArray();
+                try {
+                    serialize(msg);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                Toast.makeText(getApplicationContext(), pausiere, Toast.LENGTH_LONG).show();
+                break;
+            }
+            case R.id.buttonStopMow:{
+                byte[] msg = btnMessageGenerator.buildMessage(STOP).toByteArray();
+                try {
+                    serialize(msg);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                Toast.makeText(getApplicationContext(), stoppe, Toast.LENGTH_LONG).show();
+                break;
+            }
+            case R.id.buttonGoHome: {
+                byte[] msg = btnMessageGenerator.buildMessage(HOME).toByteArray();
+                try {
+                    serialize(msg);
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                Toast.makeText(getApplicationContext(), GoHome, Toast.LENGTH_LONG).show();
+                break;
+            }
         }
     }
+
+
+
+
 
     /* Schaltet die Funktionsweise der Buttons (Start,Pause,Stop, GoHome)aus indem
        die  Buttons grau dargestellt werden und oben genannte Buttons haben keine Funkionsweise mehr,
@@ -130,7 +167,57 @@ public class MeinMaeher extends AppCompatActivity {
         ((ImageButton) findViewById(R.id.buttonGoHome)).setAlpha(1.0F);
     }
 
-    // Sende Funktion
+    // Serialize und versendet die Nachricht
+    public void serialize(byte[]message) throws IOException {
+         //  1. Möglichkeit
+         //byteArrayOutStr = new ByteArrayOutputStream();
+         // outputStr = new ByteArrayOutputStream();
+         // byteArrayOutStr.write(message);
+         // byteArrayOutStr.writeTo(outputStr);
+
+        //  2. Möglichkeit
+       try{
+           toServer= new ObjectOutputStream(new BufferedOutputStream(socket.getOutputStream()));
+           toServer.write(message);
+           toServer.flush();
+
+           // liest Nachricht vom Server
+           fromServer = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+           System.out.println(fromServer +" from server ");
+       }
+       catch (java.net.SocketException e){
+          Toast toast = Toast.makeText(MeinMaeher.this,NO_CONNECTION,Toast.LENGTH_LONG);
+          toast.setGravity(Gravity.CENTER,0,50);
+          toast.show();
+          e.printStackTrace();
+
+       }
+
+        //  3. Möglichkeit
+//        try{
+//            toServer = socket.getOutputStream();
+//            toServer.write(message);
+//            toServer.flush();
+//        }catch (Exception e){
+//            e.printStackTrace();
+//        }
+
+   }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
         public void sendMessage(final AppControlsProtos.AppControls proto_buff){
         Runnable runnable = new Runnable() {
             @Override
@@ -150,5 +237,6 @@ public class MeinMaeher extends AppCompatActivity {
         Thread thread = new Thread(runnable);
         thread.start();
         }
+
 
 }
