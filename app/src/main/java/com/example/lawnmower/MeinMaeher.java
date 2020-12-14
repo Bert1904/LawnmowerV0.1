@@ -208,16 +208,26 @@ public class MeinMaeher extends AppCompatActivity implements View.OnClickListene
 
         //  4. Möglichkeit
         try {
-            socket.getOutputStream().write(msg.getSerializedSize());
-            msg.writeTo(socket.getOutputStream());
-            socket.getOutputStream().flush();
+            toServer = new DataOutputStream(new BufferedOutputStream(this.socket.getOutputStream()));
+            //DataOutputStream.writeInt does not work, so we use a private Method with the same code
+            //to get around it
+            this.writeInt(toServer, msg.getSerializedSize());
+            toServer.write(msg.toByteArray(),0, msg.toByteArray().length);
+            toServer.flush();
         } catch (IOException e) {
             e.printStackTrace();
         }
 
-   }
+    }
 
-        public void sendMessage(final AppControlsProtos.AppControls proto_buff){
+    private void writeInt(OutputStream output, int v) throws IOException {
+            output.write((v >>> 24) & 0xFF);
+            output.write((v >>> 16) & 0xFF);
+            output.write((v >>>  8) & 0xFF);
+            output.write((v >>>  0) & 0xFF);
+    }
+
+        /*public void sendMessage(final AppControlsProtos.AppControls proto_buff){
         Runnable runnable = new Runnable() {
             @Override
             public void run() {
@@ -235,7 +245,5 @@ public class MeinMaeher extends AppCompatActivity implements View.OnClickListene
         };
         Thread thread = new Thread(runnable);
         thread.start();
-        }
-
-
+        }*/
 }
