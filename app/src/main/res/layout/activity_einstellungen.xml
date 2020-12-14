@@ -14,7 +14,7 @@
         android:layout_marginTop="0dp"
         android:autofillHints="IP"
         android:hint="@string/defaultIPHint"
-        android:inputType="text"
+        android:inputType="number"
         android:text="@string/default_server_ip" />
 
     <EditText

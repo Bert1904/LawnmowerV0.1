@@ -81,7 +81,7 @@ public class HomeActivity extends AppCompatActivity {
     }*/
 
     public void openSetting(){
-        Intent intent = new Intent(this, Steuerung.class);
+        Intent intent = new Intent(this, Einstellungen.class);
         startActivity(intent);
     }
     public void openInfo(){

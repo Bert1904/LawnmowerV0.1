@@ -10,10 +10,14 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.google.protobuf.CodedInputStream;
+import com.google.protobuf.CodedOutputStream;
+
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -53,6 +57,7 @@ public class MeinMaeher extends AppCompatActivity implements View.OnClickListene
     private PrintWriter message_BufferOut;
     private OutputStream toServer ;
     private BufferedReader fromServer;
+    private CodedOutputStream output;
 
 
     @Override
@@ -96,7 +101,7 @@ public class MeinMaeher extends AppCompatActivity implements View.OnClickListene
     public void onClick(View v) {
         switch (v.getId()){
             case R.id.buttonStartMow:{
-                byte[] msg = btnMessageGenerator.buildMessage(START).toByteArray();
+                AppControlsProtos.AppControls msg = btnMessageGenerator.buildMessage(START);
                 try {
                     serialize(msg);
 
@@ -108,7 +113,7 @@ public class MeinMaeher extends AppCompatActivity implements View.OnClickListene
 
             }
             case R.id.buttonPauseMow:{
-                byte[] msg = btnMessageGenerator.buildMessage(PAUSE).toByteArray();
+                AppControlsProtos.AppControls msg = btnMessageGenerator.buildMessage(PAUSE);
                 try {
                     serialize(msg);
                 } catch (IOException e) {
@@ -118,7 +123,7 @@ public class MeinMaeher extends AppCompatActivity implements View.OnClickListene
                 break;
             }
             case R.id.buttonStopMow:{
-                byte[] msg = btnMessageGenerator.buildMessage(STOP).toByteArray();
+                AppControlsProtos.AppControls msg = btnMessageGenerator.buildMessage(STOP);
                 try {
                     serialize(msg);
                 } catch (IOException e) {
@@ -128,7 +133,7 @@ public class MeinMaeher extends AppCompatActivity implements View.OnClickListene
                 break;
             }
             case R.id.buttonGoHome: {
-                byte[] msg = btnMessageGenerator.buildMessage(HOME).toByteArray();
+                AppControlsProtos.AppControls msg = btnMessageGenerator.buildMessage(HOME);
                 try {
                     serialize(msg);
 
@@ -168,15 +173,15 @@ public class MeinMaeher extends AppCompatActivity implements View.OnClickListene
     }
 
     // Serialize und versendet die Nachricht
-    public void serialize(byte[]message) throws IOException {
+    public void serialize(AppControlsProtos.AppControls msg) throws IOException {
          //  1. Möglichkeit
-         //byteArrayOutStr = new ByteArrayOutputStream();
-         // outputStr = new ByteArrayOutputStream();
-         // byteArrayOutStr.write(message);
-         // byteArrayOutStr.writeTo(outputStr);
+        //byteArrayOutStr = new ByteArrayOutputStream();
+        // outputStr = new ByteArrayOutputStream();
+        // byteArrayOutStr.write(message);
+        // byteArrayOutStr.writeTo(outputStr);
 
         //  2. Möglichkeit
-       try{
+       /*try{
            toServer= new ObjectOutputStream(new BufferedOutputStream(socket.getOutputStream()));
            toServer.write(message);
            toServer.flush();
@@ -190,33 +195,27 @@ public class MeinMaeher extends AppCompatActivity implements View.OnClickListene
           toast.setGravity(Gravity.CENTER,0,50);
           toast.show();
           e.printStackTrace();
-
-       }
+       }*/
 
         //  3. Möglichkeit
-//        try{
-//            toServer = socket.getOutputStream();
-//            toServer.write(message);
-//            toServer.flush();
-//        }catch (Exception e){
-//            e.printStackTrace();
-//        }
+        //try{
+        //    toServer = socket.getOutputStream();
+        //    toServer.write(message);
+        //    toServer.flush();
+        //}catch (Exception e){
+        //   e.printStackTrace();
+        //}
+
+        //  4. Möglichkeit
+        try {
+            socket.getOutputStream().write(msg.getSerializedSize());
+            msg.writeTo(socket.getOutputStream());
+            socket.getOutputStream().flush();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
    }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
         public void sendMessage(final AppControlsProtos.AppControls proto_buff){
         Runnable runnable = new Runnable() {

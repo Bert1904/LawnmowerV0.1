@@ -2,6 +2,9 @@ package com.example.lawnmower;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.media.MediaCodec;
+import android.media.MediaCodecList;
+import android.provider.MediaStore;
 
 public class ImageAdapter {
 

@@ -1,13 +1,20 @@
+
 package com.example.lawnmower;
 
 import android.os.Bundle;
+import android.view.Gravity;
 import android.view.TextureView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
@@ -24,11 +31,13 @@ public class Steuerung extends AppCompatActivity {
     private final double DEADZONE = 0.15;
     private final int WIDTH = 1280;
     private final int HEIGHT = 720;
+    private static final String NO_CONNECTION = "Verbindung nicht möglich. \nBitte überprüfe deine Einstellung";
 
     //add udp port
     //private final int UDPPORT = 4567;
     private Socket socket;
     private ImageAdapter imgAdapter;
+    private OutputStream toServer ;
     private Thread UDP;
 
     //private PrintWriter message_BufferOut;
@@ -72,9 +81,54 @@ public class Steuerung extends AppCompatActivity {
 
                 AppControlsProtos.AppControls msg = JoystickMessageGenerator.buildMessage(x, y);
                 //sendMessage(mJoystickMessageGenerator.buildMessage(x,y));
-                mTextView.setText(msg.toString());
+                send(msg);
+                //mTextView.setText(msg.toString());
             }
         });
+    }
+
+    public void send(AppControlsProtos.AppControls msg) {
+        //  1. Möglichkeit
+
+        //byteArrayOutStr = new ByteArrayOutputStream();
+        // outputStr = new ByteArrayOutputStream();
+        // byteArrayOutStr.write(message);
+        // byteArrayOutStr.writeTo(outputStr);
+
+        //  2. Möglichkeit
+        /*try{
+            toServer= new ObjectOutputStream(new BufferedOutputStream(socket.getOutputStream()));
+            toServer.write(message);
+            toServer.flush();
+
+            // liest Nachricht vom Server
+            fromServer = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            System.out.println(fromServer +" from server ");
+        }
+        catch (java.net.SocketException e){
+            Toast toast = Toast.makeText(Steuerung.this,NO_CONNECTION,Toast.LENGTH_LONG);
+            toast.setGravity(Gravity.CENTER,0,50);
+            toast.show();
+            e.printStackTrace();
+        }*/
+
+        //  3. Möglichkeit
+//        try{
+//            toServer = socket.getOutputStream();
+//            toServer.write(message);
+//            toServer.flush();
+//        }catch (Exception e){
+//            e.printStackTrace();
+//        }
+
+        //  4. Möglichkeit
+        try {
+            msg.writeTo(socket.getOutputStream());
+            socket.getOutputStream().flush();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
     }
 
     /*public void sendMessage(final AppControlsProtos.AppControls proto_buff){
