@@ -13,6 +13,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -21,8 +22,10 @@ import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.nio.charset.StandardCharsets;
 
 
 public class MeinMaeher extends AppCompatActivity implements View.OnClickListener{
@@ -49,10 +52,17 @@ public class MeinMaeher extends AppCompatActivity implements View.OnClickListene
     private String SERVER_IP = "192.168.0.8";
     private int SERVER_PORT = 6750;
 
+
     // Variable um Nachrichten zu Senden
     private PrintWriter message_BufferOut;
     private OutputStream toServer ;
-    private BufferedReader fromServer;
+    private BufferedReader BufffromServer;
+    private BufferedReader MessageFromServer;
+    private boolean waitForServer= false;
+
+    private static boolean connected = true;
+    private OutputStream outToServer = null;
+    private InputStream inFromServer = null;
 
 
     @Override
@@ -62,6 +72,7 @@ public class MeinMaeher extends AppCompatActivity implements View.OnClickListene
 
 
         socket = SocketService.getSocket();
+
         // Toast starte Mähvorgang
         buttonStartMow = (ImageButton) findViewById(R.id.buttonStartMow);
         buttonStartMow.setOnClickListener(this);
@@ -75,23 +86,31 @@ public class MeinMaeher extends AppCompatActivity implements View.OnClickListene
         buttonGoHome = (ImageButton) findViewById(R.id.buttonGoHome);
         buttonGoHome.setOnClickListener(this);
 
-        // Testet ob eine Verbindung möglich ist
-//        if (!socket.isConnected()) {
-//            runOnUiThread(new Runnable() {
-//                @Override
-//                public void run() {
-//                    Toast.makeText(getApplicationContext(), NO_CONNECTION, Toast.LENGTH_LONG).show();
-//
-//                }
-//            });
-//            setNoConnection();
-//            return;
-//        }
-//        else {
-//            setConnection();
-//        }
+
+
+
+
+
+         // Testet ob eine Verbindung möglich ist
+        if (!socket.isConnected()) {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    Toast.makeText(getApplicationContext(), NO_CONNECTION, Toast.LENGTH_LONG).show();
+
+                }
+            });
+            setNoConnection();
+            return;
+        }
+        else {
+            setConnection();
+        }
+
+
     }
 
+    
     @Override
     public void onClick(View v) {
         switch (v.getId()){
@@ -99,7 +118,6 @@ public class MeinMaeher extends AppCompatActivity implements View.OnClickListene
                 byte[] msg = btnMessageGenerator.buildMessage(START).toByteArray();
                 try {
                     serialize(msg);
-
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -109,6 +127,7 @@ public class MeinMaeher extends AppCompatActivity implements View.OnClickListene
             }
             case R.id.buttonPauseMow:{
                 byte[] msg = btnMessageGenerator.buildMessage(PAUSE).toByteArray();
+
                 try {
                     serialize(msg);
                 } catch (IOException e) {
@@ -119,6 +138,7 @@ public class MeinMaeher extends AppCompatActivity implements View.OnClickListene
             }
             case R.id.buttonStopMow:{
                 byte[] msg = btnMessageGenerator.buildMessage(STOP).toByteArray();
+
                 try {
                     serialize(msg);
                 } catch (IOException e) {
@@ -134,12 +154,15 @@ public class MeinMaeher extends AppCompatActivity implements View.OnClickListene
 
                 } catch (IOException e) {
                     e.printStackTrace();
+                    break;
                 }
+
                 Toast.makeText(getApplicationContext(), GoHome, Toast.LENGTH_LONG).show();
                 break;
             }
         }
     }
+
 
 
 
@@ -179,14 +202,16 @@ public class MeinMaeher extends AppCompatActivity implements View.OnClickListene
        try{
            toServer= new ObjectOutputStream(new BufferedOutputStream(socket.getOutputStream()));
            toServer.write(message);
+           toServer.write(message,0,message.length);
+
            toServer.flush();
 
            // liest Nachricht vom Server
-           fromServer = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-           System.out.println(fromServer +" from server ");
+           BufffromServer = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+
        }
        catch (java.net.SocketException e){
-          Toast toast = Toast.makeText(MeinMaeher.this,NO_CONNECTION,Toast.LENGTH_LONG);
+           Toast toast = Toast.makeText(MeinMaeher.this,NO_CONNECTION,Toast.LENGTH_LONG);
           toast.setGravity(Gravity.CENTER,0,50);
           toast.show();
           e.printStackTrace();
@@ -201,10 +226,22 @@ public class MeinMaeher extends AppCompatActivity implements View.OnClickListene
 //        }catch (Exception e){
 //            e.printStackTrace();
 //        }
+//        ----------------------------
+//        try{
+//            while(connected){
+//                outToServer= socket.getOutputStream();
+//                inFromServer = socket.getInputStream();
+//
+//            }
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+
+
+
+
 
    }
-
-
 
 
 
@@ -237,6 +274,4 @@ public class MeinMaeher extends AppCompatActivity implements View.OnClickListene
         Thread thread = new Thread(runnable);
         thread.start();
         }
-
-
 }
