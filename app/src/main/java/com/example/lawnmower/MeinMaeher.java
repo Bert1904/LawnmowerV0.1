@@ -4,37 +4,51 @@ package com.example.lawnmower;
 import android.os.Bundle;
 import android.view.Gravity;
 import android.view.View;
-import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.google.protobuf.InvalidProtocolBufferException;
+import com.google.protobuf.Parser;
+
 import java.io.BufferedOutputStream;
-import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.InetAddress;
-import java.net.ServerSocket;
+import java.net.InetSocketAddress;
 import java.net.Socket;
-import java.nio.charset.StandardCharsets;
+import java.net.UnknownHostException;
+import java.nio.channels.SocketChannel;
 
 
 public class MeinMaeher extends AppCompatActivity implements View.OnClickListener{
-    // output NACHRICHTEN
+    // Output Messages
     private static final String start = "Starte Mähvorgang";
     private static final String pausiere = "Pausiere Mähvorgang";
     private static final String stoppe = "Stoppe Mähvorgang";
     private static final String GoHome = "Fahre zur Ladestadion";
     private static final String NO_CONNECTION = "Verbindung nicht möglich. \nBitte überprüfe deine Einstellung";
+    // Status Messages
+    private static final String ready = "Starte Mähvorgang";
+    private static final String mowing = "Starte Mähvorgang";
+    private static final String paused = "Starte Mähvorgang";
+    private static final String manual = "Starte Mähvorgang";
+    private static final String low_Light = "Starte Mähvorgang";
+    // Status Error Messages
+    private static final String UNRECOGNIZED = "Starte Mähvorgang";
+    private static final String NO_ERROR = "Starte Mähvorgang";
+    private static final String ROBOT_STUCK = "Starte Mähvorgang";
+    private static final String BLADE_STUCK = "Starte Mähvorgang";
+    private static final String PICKUP = "Starte Mähvorgang";
+    private static final String LOST = "Starte Mähvorgang";
+
+    //
     private final int START = 1;
     private final int STOP = 2;
     private final int PAUSE = 3;
@@ -56,13 +70,12 @@ public class MeinMaeher extends AppCompatActivity implements View.OnClickListene
     // Variable um Nachrichten zu Senden
     private PrintWriter message_BufferOut;
     private OutputStream toServer ;
-    private BufferedReader BufffromServer;
-    private BufferedReader MessageFromServer;
-    private boolean waitForServer= false;
 
-    private static boolean connected = true;
-    private OutputStream outToServer = null;
-    private InputStream inFromServer = null;
+    private DataInputStream data_Server;
+
+    private boolean isConnected= false;
+
+   
 
 
     @Override
@@ -72,6 +85,28 @@ public class MeinMaeher extends AppCompatActivity implements View.OnClickListene
 
 
         socket = SocketService.getSocket();
+
+
+         // Testet ob eine Verbindung möglich ist
+//        if (!socket.isConnected()) {
+//            runOnUiThread(new Runnable() {
+//                @Override
+//                public void run() {
+//                    Toast.makeText(getApplicationContext(), NO_CONNECTION, Toast.LENGTH_LONG).show();
+//                      isConnected= false;
+//                }
+//            });
+//            setNoConnection();
+//            return;
+//        }
+//        else {
+//            setConnection();
+//            isConnected= true;
+//            Thread listenFromServerThread = new Thread(new ServerThread());
+//            listenFromServerThread.start();
+//
+//        }
+
 
         // Toast starte Mähvorgang
         buttonStartMow = (ImageButton) findViewById(R.id.buttonStartMow);
@@ -88,26 +123,98 @@ public class MeinMaeher extends AppCompatActivity implements View.OnClickListene
 
 
 
+    }
 
+    // Liest Nachrichten vom Server
+    class ListenerThread implements  Runnable{
 
+        @Override
+        public void run() {
+           while(isConnected){
+            try{
+                    data_Server = new DataInputStream(socket.getInputStream());
+                    int length = data_Server.readChar();
+                    byte[]data = new byte[length];
+                    data_Server.readFully(data);
+                    healthCheck(data);
 
-         // Testet ob eine Verbindung möglich ist
-        if (!socket.isConnected()) {
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    Toast.makeText(getApplicationContext(), NO_CONNECTION, Toast.LENGTH_LONG).show();
-
-                }
-            });
-            setNoConnection();
-            return;
+            } catch (IOException e) {
+                e.printStackTrace();
+                break;
+            }
+           }
         }
-        else {
-            setConnection();
+    }
+    // Deals with LawnmowerStatus
+    protected void healthCheck(byte[] data) {
+        AppControlsProtos.LawnmowerStatus status = null;
+        try {
+            AppControlsProtos.LawnmowerStatus lawnmowerStatus = AppControlsProtos.LawnmowerStatus.parseFrom(data);
+            handleStatus(lawnmowerStatus.getStatus());
+            handleMowingErrors(lawnmowerStatus.getError());
+
+        } catch (InvalidProtocolBufferException e) {
+            e.printStackTrace();
+        }
+    }
+    // Handle Status
+    private void handleStatus(AppControlsProtos.LawnmowerStatus.Status status){
+
+        switch (status.getNumber()){
+            case 0:{
+                Toast.makeText(getApplicationContext(),ready, Toast.LENGTH_LONG).show();
+                break;
+            }
+            case 1:{
+                Toast.makeText(getApplicationContext(),mowing, Toast.LENGTH_LONG).show();
+                break;
+            }
+            case 2:{
+                Toast.makeText(getApplicationContext(),paused, Toast.LENGTH_LONG).show();
+                break;
+            }
+            case 3:{
+                Toast.makeText(getApplicationContext(),manual, Toast.LENGTH_LONG).show();
+                break;
+            }
+            case 4:{
+                Toast.makeText(getApplicationContext(),low_Light, Toast.LENGTH_LONG).show();
+                break;
+            }
         }
 
 
+    }
+    // Handle MowingErrors
+    private void handleMowingErrors(AppControlsProtos.LawnmowerStatus.Error error) {
+
+
+        switch (error.getNumber()){
+            case 0:{
+                Toast.makeText(getApplicationContext(),NO_ERROR, Toast.LENGTH_LONG).show();
+                return;
+            }
+            case 1:{
+                Toast.makeText(getApplicationContext(),ROBOT_STUCK, Toast.LENGTH_LONG).show();
+                break;
+            }
+            case 2:{
+                Toast.makeText(getApplicationContext(),BLADE_STUCK, Toast.LENGTH_LONG).show();
+                break;
+            }
+            case 3:{
+                Toast.makeText(getApplicationContext(),PICKUP, Toast.LENGTH_LONG).show();
+                break;
+            }
+            case 4:{
+                Toast.makeText(getApplicationContext(),LOST, Toast.LENGTH_LONG).show();
+                break;
+            }
+            case -1:{
+                Toast.makeText(getApplicationContext(),UNRECOGNIZED, Toast.LENGTH_LONG).show();
+                break;
+            }
+    }
     }
 
     
@@ -137,6 +244,15 @@ public class MeinMaeher extends AppCompatActivity implements View.OnClickListene
                 break;
             }
             case R.id.buttonStopMow:{
+                AppControlsProtos.LawnmowerStatus bla = AppControlsProtos.LawnmowerStatus.newBuilder().setError(AppControlsProtos.LawnmowerStatus.Error.ROBOT_STUCK).setErrorMsg("THOMAS SUCKT").build();
+                try {
+                    AppControlsProtos.LawnmowerStatus blaAfter = AppControlsProtos.LawnmowerStatus.parseFrom(bla.toByteString());
+                    System.out.println("################## " + blaAfter);
+                } catch (InvalidProtocolBufferException e) {
+                    e.printStackTrace();
+                }
+
+                /*
                 byte[] msg = btnMessageGenerator.buildMessage(STOP).toByteArray();
 
                 try {
@@ -144,6 +260,7 @@ public class MeinMaeher extends AppCompatActivity implements View.OnClickListene
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
+                 */
                 Toast.makeText(getApplicationContext(), stoppe, Toast.LENGTH_LONG).show();
                 break;
             }
@@ -162,6 +279,7 @@ public class MeinMaeher extends AppCompatActivity implements View.OnClickListene
             }
         }
     }
+
 
 
 
@@ -201,13 +319,13 @@ public class MeinMaeher extends AppCompatActivity implements View.OnClickListene
         //  2. Möglichkeit
        try{
            toServer= new ObjectOutputStream(new BufferedOutputStream(socket.getOutputStream()));
-           toServer.write(message);
+
            toServer.write(message,0,message.length);
 
            toServer.flush();
 
            // liest Nachricht vom Server
-           BufffromServer = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+           //BufffromServer = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
        }
        catch (java.net.SocketException e){
@@ -243,19 +361,8 @@ public class MeinMaeher extends AppCompatActivity implements View.OnClickListene
 
    }
 
-
-
-
-
-
-
-
-
-
-
-
-
-        public void sendMessage(final AppControlsProtos.AppControls proto_buff){
+        public void sendMessage(final AppControlsProtos.AppControls proto_buff) throws IOException {
+            SocketChannel channel = SocketChannel.open(new InetSocketAddress(InetAddress.getByName(socket.getInetAddress().toString()),socket.getPort()));
         Runnable runnable = new Runnable() {
             @Override
             public void run() {
