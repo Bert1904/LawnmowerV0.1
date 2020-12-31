@@ -35,18 +35,18 @@ public class MeinMaeher extends AppCompatActivity implements View.OnClickListene
     private static final String GoHome = "Fahre zur Ladestadion";
     private static final String NO_CONNECTION = "Verbindung nicht möglich. \nBitte überprüfe deine Einstellung";
     // Status Messages
-    private static final String ready = "Starte Mähvorgang";
-    private static final String mowing = "Starte Mähvorgang";
-    private static final String paused = "Starte Mähvorgang";
-    private static final String manual = "Starte Mähvorgang";
-    private static final String low_Light = "Starte Mähvorgang";
+    private static final String ready = "Lawnmower bereit ";
+    private static final String mowing = "Mähvorgang";
+    private static final String paused = "Mähvorgang pausiert";
+    private static final String manual = "Starte manuelle Bedienung";
+    private static final String low_Light = "Geringer Batteriestatus";
     // Status Error Messages
-    private static final String UNRECOGNIZED = "Starte Mähvorgang";
-    private static final String NO_ERROR = "Starte Mähvorgang";
-    private static final String ROBOT_STUCK = "Starte Mähvorgang";
-    private static final String BLADE_STUCK = "Starte Mähvorgang";
-    private static final String PICKUP = "Starte Mähvorgang";
-    private static final String LOST = "Starte Mähvorgang";
+    private static final String UNRECOGNIZED = "Unbekannter Fehler";
+    private static final String NO_ERROR = "Kein Fehler";
+    private static final String ROBOT_STUCK = " Mäher hängt fest";
+    private static final String BLADE_STUCK = "Klinge hängt fest";
+    private static final String PICKUP = "Roboter aufnehmen";
+    private static final String LOST = "Roboter lost";
 
     //
     private final int START = 1;
@@ -157,7 +157,7 @@ public class MeinMaeher extends AppCompatActivity implements View.OnClickListene
             e.printStackTrace();
         }
     }
-    // Handle Status
+    // Handle Status coming from Lawnmower
     private void handleStatus(AppControlsProtos.LawnmowerStatus.Status status){
 
         switch (status.getNumber()){
@@ -185,7 +185,7 @@ public class MeinMaeher extends AppCompatActivity implements View.OnClickListene
 
 
     }
-    // Handle MowingErrors
+    // Handle MowingErrors coming from Lawnmower
     private void handleMowingErrors(AppControlsProtos.LawnmowerStatus.Error error) {
 
 
@@ -217,7 +217,9 @@ public class MeinMaeher extends AppCompatActivity implements View.OnClickListene
     }
     }
 
-    
+
+
+    // Send Messages to TCP Server
     @Override
     public void onClick(View v) {
         switch (v.getId()){
@@ -225,10 +227,10 @@ public class MeinMaeher extends AppCompatActivity implements View.OnClickListene
                 byte[] msg = btnMessageGenerator.buildMessage(START).toByteArray();
                 try {
                     serialize(msg);
+                    Toast.makeText(getApplicationContext(), start, Toast.LENGTH_LONG).show();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-                Toast.makeText(getApplicationContext(), start, Toast.LENGTH_LONG).show();
                 break;
 
             }
@@ -237,44 +239,40 @@ public class MeinMaeher extends AppCompatActivity implements View.OnClickListene
 
                 try {
                     serialize(msg);
+                    Toast.makeText(getApplicationContext(), pausiere, Toast.LENGTH_LONG).show();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-                Toast.makeText(getApplicationContext(), pausiere, Toast.LENGTH_LONG).show();
+
                 break;
             }
             case R.id.buttonStopMow:{
-                AppControlsProtos.LawnmowerStatus bla = AppControlsProtos.LawnmowerStatus.newBuilder().setError(AppControlsProtos.LawnmowerStatus.Error.ROBOT_STUCK).setErrorMsg("THOMAS SUCKT").build();
-                try {
-                    AppControlsProtos.LawnmowerStatus blaAfter = AppControlsProtos.LawnmowerStatus.parseFrom(bla.toByteString());
-                    System.out.println("################## " + blaAfter);
-                } catch (InvalidProtocolBufferException e) {
-                    e.printStackTrace();
-                }
 
-                /*
+
+
                 byte[] msg = btnMessageGenerator.buildMessage(STOP).toByteArray();
 
                 try {
                     serialize(msg);
+                    Toast.makeText(getApplicationContext(), stoppe, Toast.LENGTH_LONG).show();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-                 */
-                Toast.makeText(getApplicationContext(), stoppe, Toast.LENGTH_LONG).show();
+
+
                 break;
             }
             case R.id.buttonGoHome: {
                 byte[] msg = btnMessageGenerator.buildMessage(HOME).toByteArray();
                 try {
                     serialize(msg);
-
+                    Toast.makeText(getApplicationContext(), GoHome, Toast.LENGTH_LONG).show();
                 } catch (IOException e) {
                     e.printStackTrace();
                     break;
                 }
 
-                Toast.makeText(getApplicationContext(), GoHome, Toast.LENGTH_LONG).show();
+
                 break;
             }
         }
@@ -333,7 +331,7 @@ public class MeinMaeher extends AppCompatActivity implements View.OnClickListene
           toast.setGravity(Gravity.CENTER,0,50);
           toast.show();
           e.printStackTrace();
-
+          throw e;
        }
 
         //  3. Möglichkeit
@@ -360,7 +358,7 @@ public class MeinMaeher extends AppCompatActivity implements View.OnClickListene
 
 
    }
-
+        /* wahrscheinlich unnötig
         public void sendMessage(final AppControlsProtos.AppControls proto_buff) throws IOException {
             SocketChannel channel = SocketChannel.open(new InetSocketAddress(InetAddress.getByName(socket.getInetAddress().toString()),socket.getPort()));
         Runnable runnable = new Runnable() {
@@ -381,4 +379,5 @@ public class MeinMaeher extends AppCompatActivity implements View.OnClickListene
         Thread thread = new Thread(runnable);
         thread.start();
         }
+         */
 }
