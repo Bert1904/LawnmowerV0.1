@@ -84,4 +84,10 @@
             android:backgroundTint="#00FFFFFF"
             android:src="@drawable/backtostation"/>
     </LinearLayout>
+
+    <ImageView
+        android:id="@+id/MowingStatusView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:srcCompat="@android:color/background_dark" />
 </LinearLayout>

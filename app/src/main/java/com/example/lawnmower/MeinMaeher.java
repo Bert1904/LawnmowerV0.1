@@ -1,10 +1,12 @@
 package com.example.lawnmower;
 
 
+import android.media.Image;
 import android.os.Bundle;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -74,7 +76,7 @@ public class MeinMaeher extends AppCompatActivity implements View.OnClickListene
     private DataInputStream data_Server;
 
     private boolean isConnected= false;
-
+    private ImageView MowingStatusView;
    
 
 
@@ -82,6 +84,7 @@ public class MeinMaeher extends AppCompatActivity implements View.OnClickListene
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_meinmaeher);
+         this.MowingStatusView= (ImageView)findViewById(R.id.MowingStatusView);
 
 
         socket = SocketService.getSocket();
@@ -226,8 +229,14 @@ public class MeinMaeher extends AppCompatActivity implements View.OnClickListene
             case R.id.buttonStartMow:{
                 byte[] msg = btnMessageGenerator.buildMessage(START).toByteArray();
                 try {
+                    int imgageResource = getResources().getIdentifier("@drawable/mahvorgang",null,this.getPackageName());
+                    this.MowingStatusView.setImageResource(imgageResource);
+                    this.MowingStatusView.setVisibility(MowingStatusView.VISIBLE);
                     serialize(msg);
                     Toast.makeText(getApplicationContext(), start, Toast.LENGTH_LONG).show();
+
+
+
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -238,6 +247,11 @@ public class MeinMaeher extends AppCompatActivity implements View.OnClickListene
                 byte[] msg = btnMessageGenerator.buildMessage(PAUSE).toByteArray();
 
                 try {
+                    MowingStatusView.setVisibility(MowingStatusView.GONE);
+                    int imgageResource = getResources().getIdentifier("@drawable/mahvorgangpausiert",null,this.getPackageName());
+                    this.MowingStatusView.setImageResource(imgageResource);
+                    this.MowingStatusView.setVisibility(MowingStatusView.VISIBLE);
+
                     serialize(msg);
                     Toast.makeText(getApplicationContext(), pausiere, Toast.LENGTH_LONG).show();
                 } catch (IOException e) {
@@ -253,6 +267,11 @@ public class MeinMaeher extends AppCompatActivity implements View.OnClickListene
                 byte[] msg = btnMessageGenerator.buildMessage(STOP).toByteArray();
 
                 try {
+                    MowingStatusView.setVisibility(MowingStatusView.GONE);
+                    int imgageResource = getResources().getIdentifier("@drawable/mahvorgangstop",null,this.getPackageName());
+                    this.MowingStatusView.setImageResource(imgageResource);
+                    this.MowingStatusView.setVisibility(MowingStatusView.VISIBLE);
+
                     serialize(msg);
                     Toast.makeText(getApplicationContext(), stoppe, Toast.LENGTH_LONG).show();
                 } catch (IOException e) {
@@ -265,6 +284,12 @@ public class MeinMaeher extends AppCompatActivity implements View.OnClickListene
             case R.id.buttonGoHome: {
                 byte[] msg = btnMessageGenerator.buildMessage(HOME).toByteArray();
                 try {
+                    MowingStatusView.setVisibility(MowingStatusView.GONE);
+                    int imgageResource = getResources().getIdentifier("@drawable/backhome",null,this.getPackageName());
+                    this.MowingStatusView.setImageResource(imgageResource);
+                    this.MowingStatusView.setVisibility(MowingStatusView.VISIBLE);
+
+
                     serialize(msg);
                     Toast.makeText(getApplicationContext(), GoHome, Toast.LENGTH_LONG).show();
                 } catch (IOException e) {
