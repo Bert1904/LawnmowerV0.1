@@ -21,7 +21,6 @@ import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
-import java.io.PrintWriter;
 import java.net.Socket;
 
 
@@ -54,7 +53,6 @@ public class MeinMaeher extends AppCompatActivity implements View.OnClickListene
 
     private ButtonMessageGenerator btnMessageGenerator = new ButtonMessageGenerator();
     //private ErrorMessageGenerator errorMessageGenerator = new ErrorMessageGenerator();
-
     // Variablen für Mäher Funktionen
     private ImageButton buttonStartMow;
     private ImageButton buttonPauseMow;
@@ -65,12 +63,9 @@ public class MeinMaeher extends AppCompatActivity implements View.OnClickListene
     private int SERVER_PORT = 6750;
 
 
-    // Variable um Nachrichten zu Senden
-    private PrintWriter message_BufferOut;
+    // messages to send and receive from tcp server
     private OutputStream toServer ;
-
     private DataInputStream data_Server;
-
     private boolean isConnected= false;
     private ImageView MowingStatusView;
    
@@ -80,41 +75,12 @@ public class MeinMaeher extends AppCompatActivity implements View.OnClickListene
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_meinmaeher);
-        createNotificationChannel();
+        createErrorNotificationChannel();
         createStatusNotificationChannel();
         this.MowingStatusView= (ImageView)findViewById(R.id.MowingStatusView);
 
-
-
-
-
-
-
-
-
-
         socket = SocketService.getSocket();
 
-
-         // Testet ob eine Verbindung möglich ist
-//        if (!socket.isConnected()) {
-//            runOnUiThread(new Runnable() {
-//                @Override
-//                public void run() {
-//                    Toast.makeText(getApplicationContext(), NO_CONNECTION, Toast.LENGTH_LONG).show();
-//                      isConnected= false;
-//                }
-//            });
-//            setNoConnection();
-//            return;
-//        }
-//        else {
-//            setConnection();
-//            isConnected= true;
-//            Thread listenFromServerThread = new Thread(new ServerThread());
-//            listenFromServerThread.start();
-//
-//        }
 
 
         // Toast starte Mähvorgang
@@ -129,12 +95,39 @@ public class MeinMaeher extends AppCompatActivity implements View.OnClickListene
         // Toast  Mäher kehrt zurück
         buttonGoHome = (ImageButton) findViewById(R.id.buttonGoHome);
         buttonGoHome.setOnClickListener(this);
-
+        connectionHandler();
 
 
     }
 
-    // Liest Nachrichten vom Server
+    /*
+     Check if connection to tcp server is possbible, start thread if connected
+     display toast if client is not connected
+     */
+    public  void connectionHandler(){
+
+    if (!socket.isConnected()) {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    Toast.makeText(getApplicationContext(), NO_CONNECTION, Toast.LENGTH_LONG).show();
+                      isConnected= false;
+                }
+            });
+            setNoConnection();
+            return;
+        }
+        else {
+            setConnection();
+            isConnected= true;
+            Thread listenFromServerThread = new Thread(new ListenerThread());
+             listenFromServerThread.start();
+
+        }
+}
+    /*
+     ListenerThread to read incoming messages from tcp server
+     */
     class ListenerThread implements  Runnable{
 
         @Override
@@ -154,7 +147,9 @@ public class MeinMaeher extends AppCompatActivity implements View.OnClickListene
            }
         }
     }
-    // Deals with LawnmowerStatus
+    /*
+     Deals with LawnmowerStatus
+     */
     protected void healthCheck(byte[] data) {
         AppControlsProtos.LawnmowerStatus status = null;
         try {
@@ -166,7 +161,9 @@ public class MeinMaeher extends AppCompatActivity implements View.OnClickListene
             e.printStackTrace();
         }
     }
-    // Handle Status coming from Lawnmower
+    /*
+     Handle status updates coming from Lawnmower
+     */
     private void handleStatus(AppControlsProtos.LawnmowerStatus.Status status){
 
         switch (status.getNumber()){
@@ -197,7 +194,9 @@ public class MeinMaeher extends AppCompatActivity implements View.OnClickListene
 
 
     }
-    // Handle MowingErrors coming from Lawnmower
+    /*
+     Handle mowing-errors coming from Lawnmower
+     */
     private void handleMowingErrors(AppControlsProtos.LawnmowerStatus.Error error) {
 
 
@@ -207,27 +206,27 @@ public class MeinMaeher extends AppCompatActivity implements View.OnClickListene
                 return;
             }
             case 1:{
-                sendNotification(ROBOT_STUCK);
+                sendErrorNotification(ROBOT_STUCK);
                 Toast.makeText(getApplicationContext(),ROBOT_STUCK, Toast.LENGTH_LONG).show();
                 break;
             }
             case 2:{
-                sendNotification(BLADE_STUCK);
+                sendErrorNotification(BLADE_STUCK);
                 Toast.makeText(getApplicationContext(),BLADE_STUCK, Toast.LENGTH_LONG).show();
                 break;
             }
             case 3:{
-                sendNotification(PICKUP);
+                sendErrorNotification(PICKUP);
                 Toast.makeText(getApplicationContext(),PICKUP, Toast.LENGTH_LONG).show();
                 break;
             }
             case 4:{
-                sendNotification(LOST);
+                sendErrorNotification(LOST);
                 Toast.makeText(getApplicationContext(),LOST, Toast.LENGTH_LONG).show();
                 break;
             }
             case -1:{
-                sendNotification(UNRECOGNIZED);
+                sendErrorNotification(UNRECOGNIZED);
                 Toast.makeText(getApplicationContext(),UNRECOGNIZED, Toast.LENGTH_LONG).show();
                 break;
             }
@@ -236,7 +235,9 @@ public class MeinMaeher extends AppCompatActivity implements View.OnClickListene
 
 
 
-    // Send Messages to TCP Server
+    /*
+    Send Messages to TCP Server
+     */
     @Override
     public void onClick(View v) {
         switch (v.getId()){
@@ -281,7 +282,7 @@ public class MeinMaeher extends AppCompatActivity implements View.OnClickListene
                 byte[] msg = btnMessageGenerator.buildMessage(STOP).toByteArray();
 
                 try {
-                    sendNotification("Pause");
+                    sendErrorNotification("STOP");
                     MowingStatusView.setVisibility(MowingStatusView.GONE);
                     int imgageResource = getResources().getIdentifier("@drawable/mahvorgangstop",null,this.getPackageName());
                     this.MowingStatusView.setImageResource(imgageResource);
@@ -299,7 +300,7 @@ public class MeinMaeher extends AppCompatActivity implements View.OnClickListene
             case R.id.buttonGoHome: {
                 byte[] msg = btnMessageGenerator.buildMessage(HOME).toByteArray();
                 try {
-                    sendNotification("Pause");
+                    sendErrorNotification("HOME");
                     MowingStatusView.setVisibility(MowingStatusView.GONE);
                     int imgageResource = getResources().getIdentifier("@drawable/backhome",null,this.getPackageName());
                     this.MowingStatusView.setImageResource(imgageResource);
@@ -319,8 +320,10 @@ public class MeinMaeher extends AppCompatActivity implements View.OnClickListene
         }
     }
 
-
-    public void createNotificationChannel(){
+    /*
+     Creates Channel for sending error notifications
+     */
+    public void createErrorNotificationChannel(){
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
             NotificationChannel notificationChannel = new NotificationChannel("001","Error",NotificationManager.IMPORTANCE_DEFAULT);
             notificationChannel.setDescription("This is a error notification channel");
@@ -328,6 +331,9 @@ public class MeinMaeher extends AppCompatActivity implements View.OnClickListene
             notificationManager.createNotificationChannel(notificationChannel);
         }
     }
+    /*
+    Creates Channel for sending status notifications
+     */
         public void createStatusNotificationChannel(){
             if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
                 NotificationChannel notificationChannel = new NotificationChannel("002","Status",NotificationManager.IMPORTANCE_DEFAULT);
@@ -338,8 +344,10 @@ public class MeinMaeher extends AppCompatActivity implements View.OnClickListene
             }
     }
 
-    //Send Error Notifiaction
-    public void sendNotification(String message ){
+    /*
+    Send Error Notifiaction
+     */
+    public void sendErrorNotification(String message ){
 
         NotificationCompat.Builder notficiationBuilder =
                 new NotificationCompat.Builder(this,"001")
@@ -352,7 +360,9 @@ public class MeinMaeher extends AppCompatActivity implements View.OnClickListene
         NotificationManagerCompat notificationManagerCompat = NotificationManagerCompat.from(this);
         notificationManagerCompat.notify(001,notficiationBuilder.build());
     }
-    //Send Status Notifiaction
+    /*
+    Send Status Notifiaction
+     */
     public void sendStatusNotification(String message ){
         NotificationCompat.Builder notficiationBuilder =
                 new NotificationCompat.Builder(this,"002")
@@ -364,12 +374,6 @@ public class MeinMaeher extends AppCompatActivity implements View.OnClickListene
         NotificationManagerCompat notificationManagerCompat = NotificationManagerCompat.from(this);
         notificationManagerCompat.notify(002,notficiationBuilder.build());
     }
-
-
-
-
-
-
 
 
     /* Schaltet die Funktionsweise der Buttons (Start,Pause,Stop, GoHome)aus indem
