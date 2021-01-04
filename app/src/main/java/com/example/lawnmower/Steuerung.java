@@ -8,6 +8,7 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -18,24 +19,24 @@ import io.github.controlwear.virtual.joystick.android.JoystickView;
 
 import org.freedesktop.gstreamer.GStreamer;
 
-public class Steuerung extends AppCompatActivity
-        //implements SurfaceHolder.Callback
-        {
+public class Steuerung extends AppCompatActivity implements SurfaceHolder.Callback {
 
     /*private JoystickView mJoystick;
     private JoystickMessageGenerator mJoystickMessageGenerator;
     private final double DEADZONE = 0.15;*/
 
+    private native void nativeSurfaceInit(Object surface);
+    private native void nativeSurfaceFinalize();
+
     private native void nativeInit();     // Initialize native code, build pipeline, etc
     private native void nativeFinalize(); // Destroy pipeline and shutdown native code
-    //private native void nativePlay();     // Set pipeline to PLAYING
-    //private native void nativePause();    // Set pipeline to PAUSED
+    private native void nativePlay();     // Set pipeline to PLAYING
+    private native void nativePause();    // Set pipeline to PAUSED
     private static native boolean nativeClassInit(); // Initialize native class: cache Method IDs for callbacks
-    //private native void nativeSurfaceInit(Object surface);
-    //private native void nativeSurfaceFinalize();
     private long native_custom_data;      // Native code will use this to keep private data
 
     private boolean is_playing_desired;   // Whether the user asked to go to PLAYING
+    //private String mediaUri;
 
     // Called when the activity is first created.
     @Override
@@ -54,14 +55,15 @@ public class Steuerung extends AppCompatActivity
 
         setContentView(R.layout.activity_steuerung);
 
-        /*ImageButton play = this.findViewById(R.id.play);
+        Button play = this.findViewById(R.id.play);
         play.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
+                is_playing_desired = true;
                 nativePlay();
             }
         });
 
-        ImageButton pause = this.findViewById(R.id.stop);
+        Button pause = this.findViewById(R.id.pause);
         pause.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 is_playing_desired = false;
@@ -69,21 +71,14 @@ public class Steuerung extends AppCompatActivity
             }
         });
 
+        SurfaceView sv = this.findViewById(R.id.gStreamer);
+        SurfaceHolder sh = sv.getHolder();
+        sh.addCallback(this);
+
         this.findViewById(R.id.play).setEnabled(false);
-        this.findViewById(R.id.stop).setEnabled(false);*/
+        this.findViewById(R.id.pause).setEnabled(false);
         nativeInit();
 
-        /*SurfaceView sv = (SurfaceView) this.findViewById(R.id.gStream);
-        SurfaceHolder sh = sv.getHolder();
-        sh.addCallback(this);*/
-
-        /*if (savedInstanceState != null) {
-            is_playing_desired = savedInstanceState.getBoolean("playing");
-            Log.i ("GStreamer", "Activity created. Saved state is playing:" + is_playing_desired);
-        } else {
-            is_playing_desired = false;
-            Log.i ("GStreamer", "Activity created. There is no saved state, playing: false");
-        }*/
 
         // Start with disabled buttons, until native code is initialized
         //init();
@@ -141,6 +136,34 @@ public class Steuerung extends AppCompatActivity
     // the main loop is running, so it is ready to accept commands.
     private void onGStreamerInitialized () {
         Log.i ("GStreamer", "Gst initialized. Restoring state, playing:" + is_playing_desired);
+        nativePause();
+        final Activity activity = this;
+        runOnUiThread(new Runnable() {
+            public void run() {
+                activity.findViewById(R.id.play).setEnabled(true);
+                activity.findViewById(R.id.pause).setEnabled(true);
+            }
+        });
+    }
+
+    public void surfaceChanged(SurfaceHolder holder, int format, int width,
+                                       int height) {
+        Log.d("GStreamer", "Surface changed to format " + format + " width "
+                + width + " height " + height);
+        nativeSurfaceInit (holder.getSurface());
+    }
+
+    public void surfaceCreated(SurfaceHolder holder) {
+        Log.d("GStreamer", "Surface created: " + holder.getSurface());
+    }
+
+    public void surfaceDestroyed(SurfaceHolder holder) {
+        Log.d("GStreamer", "Surface destroyed");
+        nativeSurfaceFinalize ();
+    }
+
+    private void setMediaUri() {
+        //nativeSetUri();
     }
 
     static {

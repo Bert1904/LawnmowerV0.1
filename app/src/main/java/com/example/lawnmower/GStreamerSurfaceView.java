@@ -1,5 +1,6 @@
 package com.example.lawnmower;
 
+
 import android.content.Context;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -83,3 +84,4 @@ public class GStreamerSurfaceView extends SurfaceView {
     }
 
 }
+
