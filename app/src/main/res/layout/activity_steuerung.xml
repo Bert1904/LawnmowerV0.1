@@ -4,29 +4,35 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-    <TextureView
-        android:id="@+id/robotVideo"
+    <com.example.lawnmower.GStreamerSurfaceView
+        android:id="@+id/gStream"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_weight="1" />
+        android:layout_gravity="center_vertical|center_horizontal"
+        android:layout_weight="0" />
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_weight="4">
 
-        <TextView
-            android:id="@+id/textView"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_weight="10"
-            android:text="TextView" />
-
         <io.github.controlwear.virtual.joystick.android.JoystickView
             android:id="@+id/JoystickView"
-            android:layout_width="wrap_content"
+            android:layout_width="0pt"
             android:layout_height="wrap_content"
             android:layout_weight="1" />
+
+        <Button
+            android:id="@+id/play"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Play" />
+
+        <Button
+            android:id="@+id/pause"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Pause" />
     </LinearLayout>
 
 </LinearLayout>

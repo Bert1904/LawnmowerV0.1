@@ -11,7 +11,7 @@ import java.net.InetAddress;
 
 import java.nio.ByteBuffer;
 
-public class UDPReciever extends Thread {
+public class UDPReciever implements Runnable {
 
     /* Consider working with Interrupts instead of flags
      */

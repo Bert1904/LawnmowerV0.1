@@ -1,9 +1,15 @@
 
 package com.example.lawnmower;
 
+import android.app.Activity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Gravity;
+import android.view.SurfaceHolder;
+import android.view.SurfaceView;
 import android.view.TextureView;
+import android.view.View;
+import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -12,6 +18,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.ObjectOutputStream;
@@ -21,47 +28,88 @@ import java.io.PrintWriter;
 import java.net.Socket;
 
 import io.github.controlwear.virtual.joystick.android.JoystickView;
+import org.freedesktop.gstreamer.GStreamer;
 
-public class Steuerung extends AppCompatActivity {
+public class Steuerung extends Activity implements SurfaceHolder.Callback {
 
-    private TextureView robotVideo;
     private JoystickView mJoystick;
-    private TextView mTextView;
     //private JoystickMessageGenerator mJoystickMessageGenerator;
     private final double DEADZONE = 0.15;
-    private final int WIDTH = 1280;
-    private final int HEIGHT = 720;
     private static final String NO_CONNECTION = "Verbindung nicht möglich. \nBitte überprüfe deine Einstellung";
 
     //add udp port
     //private final int UDPPORT = 4567;
     private Socket socket;
-    private ImageAdapter imgAdapter;
     private OutputStream toServer ;
-    private Thread UDP;
+    private Thread UDP = null;
+
+    //GStreamer Variables
+    private native void nativeInit();     // Initialize native code, build pipeline, etc
+    private native void nativeFinalize(); // Destroy pipeline and shutdown native code
+    private native void nativePlay();     // Set pipeline to PLAYING
+    private native void nativePause();    // Set pipeline to PAUSED
+    private static native boolean nativeClassInit(); // Initialize native class: cache Method IDs for callbacks
+    private native void nativeSurfaceInit(Object surface);
+    private native void nativeSurfaceFinalize();
+    private long native_custom_data; //Native code will use this to keep private data
 
     //private PrintWriter message_BufferOut;
+
+    private void setMessage(String message) {
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        try  {
+            GStreamer.init(this);
+        } catch (Exception e) {
+            Toast.makeText(this, e.getMessage(), Toast.LENGTH_LONG).show();
+            finish();
+            return;
+        }
+
         setContentView(R.layout.activity_steuerung);
+
+        SurfaceView stream = this.findViewById(R.id.gStream);
+        SurfaceHolder sh = stream.getHolder();
+        sh.addCallback(this);
+
         init();
     }
 
+    static {
+        System.loadLibrary("gstreamer_android");
+        System.loadLibrary("Lawnmower");
+    }
+
     private void init() {
-        socket = SocketService.getSocket();
-        robotVideo = findViewById(R.id.robotVideo);
+        //socket = SocketService.getSocket();
         mJoystick = findViewById(R.id.JoystickView);
+        ImageButton play = this.findViewById(R.id.play);
+        ImageButton pause = this.findViewById(R.id.pause);
+        play.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                nativePlay();
+            }
+        });
+        pause.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                nativePause();
+            }
+        });
+        play.setEnabled(false);
+        pause.setEnabled(false);
         //mJoystickMessageGenerator = new JoystickMessageGenerator();
-        imgAdapter = new ImageAdapter(WIDTH, HEIGHT);
-        mTextView = findViewById(R.id.textView);
 
         //Check connection status before
-        if(socket.isConnected()) {
+        /*if(socket.isConnected()) {
             UDP = new Thread(new UDPReciever());
             UDP.start();
-        }
+        }*/
 
         //publish AppControls messages for the Joystick
         mJoystick.setOnMoveListener(new JoystickView.OnMoveListener() {
@@ -79,75 +127,52 @@ public class Steuerung extends AppCompatActivity {
                     y = 0.0;
                 }
 
-                AppControlsProtos.AppControls msg = JoystickMessageGenerator.buildMessage(x, y);
+                //AppControlsProtos.AppControls msg = JoystickMessageGenerator.buildMessage(x, y);
                 //sendMessage(mJoystickMessageGenerator.buildMessage(x,y));
-                send(msg);
+                //send(msg);
                 //mTextView.setText(msg.toString());
+            }
+        });
+        nativeInit();
+    }
+
+    @Override
+    protected void onDestroy() {
+        nativeFinalize();
+        super.onDestroy();
+    }
+
+    private void onGStreamerInitialized() {
+        Log.i("GStreamer" , "Gst initialized.");
+        final Activity activity = this;
+        nativePause();
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                activity.findViewById(R.id.play).setEnabled(true);
+                activity.findViewById(R.id.pause).setEnabled(true);
             }
         });
     }
 
-    public void send(AppControlsProtos.AppControls msg) {
-        //  1. Möglichkeit
-
-        //byteArrayOutStr = new ByteArrayOutputStream();
-        // outputStr = new ByteArrayOutputStream();
-        // byteArrayOutStr.write(message);
-        // byteArrayOutStr.writeTo(outputStr);
-
-        //  2. Möglichkeit
-        /*try{
-            toServer= new ObjectOutputStream(new BufferedOutputStream(socket.getOutputStream()));
-            toServer.write(message);
-            toServer.flush();
-
-            // liest Nachricht vom Server
-            fromServer = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            System.out.println(fromServer +" from server ");
-        }
-        catch (java.net.SocketException e){
-            Toast toast = Toast.makeText(Steuerung.this,NO_CONNECTION,Toast.LENGTH_LONG);
-            toast.setGravity(Gravity.CENTER,0,50);
-            toast.show();
-            e.printStackTrace();
-        }*/
-
-        //  3. Möglichkeit
-//        try{
-//            toServer = socket.getOutputStream();
-//            toServer.write(message);
-//            toServer.flush();
-//        }catch (Exception e){
-//            e.printStackTrace();
-//        }
-
-        //  4. Möglichkeit
-        try {
-            msg.writeTo(socket.getOutputStream());
-            socket.getOutputStream().flush();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
+    static {
+        System.loadLibrary("gstreamer_android");
+        System.loadLibrary("GStream");
+        nativeClassInit();
     }
 
-    /*public void sendMessage(final AppControlsProtos.AppControls proto_buff){
-        Runnable runnable = new Runnable() {
-            @Override
-            public void run() {
-                if(message_BufferOut != null){
-                    message_BufferOut.println(proto_buff);
-                    message_BufferOut.flush();
-                    try {
-                        message_BufferOut = new PrintWriter(new BufferedWriter(new OutputStreamWriter(socket.getOutputStream())),true);
-                    } catch (IOException e) {
-                        System.out.println("_________________________________");
-                        e.printStackTrace();
-                    }
-                }
-            }
-        };
-        Thread thread = new Thread(runnable);
-        thread.start();
-    }*/
+    public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
+        Log.d("GStreamer", "Surface changed to format " + format + " width "
+                + width + " height " + height);
+        nativeSurfaceInit(holder.getSurface());
+    }
+
+    public void surfaceCreated(SurfaceHolder holder) {
+        Log.d("GStreamer", "Surface created: " + holder.getSurface());
+    }
+
+    public void surfaceDestroyed(SurfaceHolder holder) {
+        Log.d("GStreamer", "Surface destroyed");
+        nativeSurfaceFinalize();
+    }
 }
