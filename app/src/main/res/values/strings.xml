@@ -2,4 +2,7 @@
     <string name="app_name">Lawnmower</string>
     <string name="versionNumber">Version 0.42</string>
     <string name="whs_adresse">https://www.w-hs.de/</string>
+    <string name="title_activity_maps">Map</string>
+
+    <string name="API_KEY">AIzaSyB4igh24I4mYtyLTCdn-QEWMfm-sBQODws</string>
 </resources>

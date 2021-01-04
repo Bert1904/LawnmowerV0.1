@@ -53,13 +53,13 @@ public class HomeActivity extends AppCompatActivity {
         });
 
 
-        /*buttonMap =(ImageButton) findViewById(R.id.buttonMap);
+        buttonMap =(ImageButton) findViewById(R.id.buttonMap);
         buttonMap.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 openMap();
             }
-        });*/
+        });
 
     }
     /*public void openMap(){
@@ -83,4 +83,8 @@ public class HomeActivity extends AppCompatActivity {
         Intent intent = new Intent(this, Steuerung.class);
         startActivity(intent);
     }
+    public void openMap(){
+        Intent intent = new Intent(this, MapsActivity.class);
+        startActivity(intent);
+}
 }
