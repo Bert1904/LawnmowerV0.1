@@ -591,13 +591,13 @@ JNI_OnLoad (JavaVM * vm, void * reserved)
   jclass klass = (*env)->FindClass (env, "org/freedesktop/gstreamer/GStreamer");
   if (!klass) {
     __android_log_print (ANDROID_LOG_ERROR, "GStreamer",
-        "Could not retrieve class org.freedesktop.gstreamer.GStreamer");
+        "Could not retrieve class com.example.lawnmower.GStreamer");
     return 0;
   }
   if ((*env)->RegisterNatives (env, klass, native_methods,
           G_N_ELEMENTS (native_methods))) {
     __android_log_print (ANDROID_LOG_ERROR, "GStreamer",
-        "Could not register native methods for org.freedesktop.gstreamer.GStreamer");
+        "Could not register native methods for com.example.lawnmower.GStreamer");
     return 0;
   }
 

@@ -387,7 +387,7 @@ JNI_OnLoad (JavaVM * vm, void *reserved)
     java_vm = vm;
 
     if ((*vm)->GetEnv (vm, (void **) &env, JNI_VERSION_1_4) != JNI_OK) {
-        __android_log_print (ANDROID_LOG_ERROR, "tutorial-3",
+        __android_log_print (ANDROID_LOG_ERROR, "lawnmower",
                              "Could not retrieve JNIEnv");
         return 0;
     }

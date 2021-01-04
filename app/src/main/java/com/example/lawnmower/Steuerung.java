@@ -4,31 +4,16 @@ package com.example.lawnmower;
 import android.app.Activity;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.Gravity;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
-import android.view.TextureView;
 import android.view.View;
 import android.widget.ImageButton;
-import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.appcompat.app.AppCompatActivity;
-
-import java.io.BufferedOutputStream;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.ObjectOutputStream;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
 import java.net.Socket;
 
 import io.github.controlwear.virtual.joystick.android.JoystickView;
-import org.freedesktop.gstreamer.GStreamer;
 
 public class Steuerung extends Activity implements SurfaceHolder.Callback {
 
@@ -79,10 +64,6 @@ public class Steuerung extends Activity implements SurfaceHolder.Callback {
         init();
     }
 
-    static {
-        System.loadLibrary("gstreamer_android");
-        System.loadLibrary("Lawnmower");
-    }
 
     private void init() {
         //socket = SocketService.getSocket();
@@ -142,25 +123,6 @@ public class Steuerung extends Activity implements SurfaceHolder.Callback {
         super.onDestroy();
     }
 
-    private void onGStreamerInitialized() {
-        Log.i("GStreamer" , "Gst initialized.");
-        final Activity activity = this;
-        nativePause();
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                activity.findViewById(R.id.play).setEnabled(true);
-                activity.findViewById(R.id.pause).setEnabled(true);
-            }
-        });
-    }
-
-    static {
-        System.loadLibrary("gstreamer_android");
-        System.loadLibrary("GStream");
-        nativeClassInit();
-    }
-
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
         Log.d("GStreamer", "Surface changed to format " + format + " width "
                 + width + " height " + height);
@@ -174,5 +136,24 @@ public class Steuerung extends Activity implements SurfaceHolder.Callback {
     public void surfaceDestroyed(SurfaceHolder holder) {
         Log.d("GStreamer", "Surface destroyed");
         nativeSurfaceFinalize();
+    }
+
+    private void onGStreamerInitialized() {
+        Log.i("GStreamer" , "Gst initialized.");
+        nativePause();
+        final Activity activity = this;
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                activity.findViewById(R.id.play).setEnabled(true);
+                activity.findViewById(R.id.pause).setEnabled(true);
+            }
+        });
+    }
+
+    static {
+        System.loadLibrary("gstreamer_android");
+        System.loadLibrary("GStream");
+        nativeClassInit();
     }
 }
