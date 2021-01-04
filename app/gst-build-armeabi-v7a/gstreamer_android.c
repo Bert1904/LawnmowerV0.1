@@ -55,7 +55,7 @@ extern void G_PASTE(g_io_, G_PASTE(name, _load)) (gpointer data)
 G_PASTE(g_io_, G_PASTE(name, _load)) (NULL)
 
 /* Declaration of static plugins */
-  GST_PLUGIN_STATIC_DECLARE(coreelements);
+  GST_PLUGIN_STATIC_DECLARE(coreelements);  GST_PLUGIN_STATIC_DECLARE(coretracers);  GST_PLUGIN_STATIC_DECLARE(adder);  GST_PLUGIN_STATIC_DECLARE(app);  GST_PLUGIN_STATIC_DECLARE(audioconvert);  GST_PLUGIN_STATIC_DECLARE(audiomixer);  GST_PLUGIN_STATIC_DECLARE(audiorate);  GST_PLUGIN_STATIC_DECLARE(audioresample);  GST_PLUGIN_STATIC_DECLARE(audiotestsrc);  GST_PLUGIN_STATIC_DECLARE(compositor);  GST_PLUGIN_STATIC_DECLARE(gio);  GST_PLUGIN_STATIC_DECLARE(overlaycomposition);  GST_PLUGIN_STATIC_DECLARE(pango);  GST_PLUGIN_STATIC_DECLARE(rawparse);  GST_PLUGIN_STATIC_DECLARE(typefindfunctions);  GST_PLUGIN_STATIC_DECLARE(videoconvert);  GST_PLUGIN_STATIC_DECLARE(videorate);  GST_PLUGIN_STATIC_DECLARE(videoscale);  GST_PLUGIN_STATIC_DECLARE(videotestsrc);  GST_PLUGIN_STATIC_DECLARE(volume);  GST_PLUGIN_STATIC_DECLARE(autodetect);  GST_PLUGIN_STATIC_DECLARE(videofilter);  GST_PLUGIN_STATIC_DECLARE(opengl);  GST_PLUGIN_STATIC_DECLARE(ipcpipeline);  GST_PLUGIN_STATIC_DECLARE(opensles);
 
 /* Declaration of static gio modules */
  
@@ -64,7 +64,7 @@ G_PASTE(g_io_, G_PASTE(name, _load)) (NULL)
 void
 gst_android_register_static_plugins (void)
 {
-  GST_PLUGIN_STATIC_REGISTER(coreelements);
+  GST_PLUGIN_STATIC_REGISTER(coreelements);  GST_PLUGIN_STATIC_REGISTER(coretracers);  GST_PLUGIN_STATIC_REGISTER(adder);  GST_PLUGIN_STATIC_REGISTER(app);  GST_PLUGIN_STATIC_REGISTER(audioconvert);  GST_PLUGIN_STATIC_REGISTER(audiomixer);  GST_PLUGIN_STATIC_REGISTER(audiorate);  GST_PLUGIN_STATIC_REGISTER(audioresample);  GST_PLUGIN_STATIC_REGISTER(audiotestsrc);  GST_PLUGIN_STATIC_REGISTER(compositor);  GST_PLUGIN_STATIC_REGISTER(gio);  GST_PLUGIN_STATIC_REGISTER(overlaycomposition);  GST_PLUGIN_STATIC_REGISTER(pango);  GST_PLUGIN_STATIC_REGISTER(rawparse);  GST_PLUGIN_STATIC_REGISTER(typefindfunctions);  GST_PLUGIN_STATIC_REGISTER(videoconvert);  GST_PLUGIN_STATIC_REGISTER(videorate);  GST_PLUGIN_STATIC_REGISTER(videoscale);  GST_PLUGIN_STATIC_REGISTER(videotestsrc);  GST_PLUGIN_STATIC_REGISTER(volume);  GST_PLUGIN_STATIC_REGISTER(autodetect);  GST_PLUGIN_STATIC_REGISTER(videofilter);  GST_PLUGIN_STATIC_REGISTER(opengl);  GST_PLUGIN_STATIC_REGISTER(ipcpipeline);  GST_PLUGIN_STATIC_REGISTER(opensles);
 }
 
 /* Call this function to load GIO modules */
@@ -591,13 +591,13 @@ JNI_OnLoad (JavaVM * vm, void * reserved)
   jclass klass = (*env)->FindClass (env, "org/freedesktop/gstreamer/GStreamer");
   if (!klass) {
     __android_log_print (ANDROID_LOG_ERROR, "GStreamer",
-        "Could not retrieve class com.example.lawnmower.GStreamer");
+        "Could not retrieve class org.freedesktop.gstreamer.GStreamer");
     return 0;
   }
   if ((*env)->RegisterNatives (env, klass, native_methods,
           G_N_ELEMENTS (native_methods))) {
     __android_log_print (ANDROID_LOG_ERROR, "GStreamer",
-        "Could not register native methods for com.example.lawnmower.GStreamer");
+        "Could not register native methods for org.freedesktop.gstreamer.GStreamer");
     return 0;
   }
 

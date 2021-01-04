@@ -7,47 +7,44 @@ import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.widget.ImageButton;
+import android.widget.TextView;
 import android.widget.Toast;
 
-import java.io.OutputStream;
-import java.net.Socket;
+import androidx.appcompat.app.AppCompatActivity;
 
 import io.github.controlwear.virtual.joystick.android.JoystickView;
 
-public class Steuerung extends Activity implements SurfaceHolder.Callback {
+import org.freedesktop.gstreamer.GStreamer;
 
-    private JoystickView mJoystick;
-    //private JoystickMessageGenerator mJoystickMessageGenerator;
-    private final double DEADZONE = 0.15;
-    private static final String NO_CONNECTION = "Verbindung nicht möglich. \nBitte überprüfe deine Einstellung";
+public class Steuerung extends AppCompatActivity
+        //implements SurfaceHolder.Callback
+        {
 
-    //add udp port
-    //private final int UDPPORT = 4567;
-    private Socket socket;
-    private OutputStream toServer ;
-    private Thread UDP = null;
+    /*private JoystickView mJoystick;
+    private JoystickMessageGenerator mJoystickMessageGenerator;
+    private final double DEADZONE = 0.15;*/
 
-    //GStreamer Variables
     private native void nativeInit();     // Initialize native code, build pipeline, etc
     private native void nativeFinalize(); // Destroy pipeline and shutdown native code
-    private native void nativePlay();     // Set pipeline to PLAYING
-    private native void nativePause();    // Set pipeline to PAUSED
+    //private native void nativePlay();     // Set pipeline to PLAYING
+    //private native void nativePause();    // Set pipeline to PAUSED
     private static native boolean nativeClassInit(); // Initialize native class: cache Method IDs for callbacks
-    private native void nativeSurfaceInit(Object surface);
-    private native void nativeSurfaceFinalize();
-    private long native_custom_data; //Native code will use this to keep private data
+    //private native void nativeSurfaceInit(Object surface);
+    //private native void nativeSurfaceFinalize();
+    private long native_custom_data;      // Native code will use this to keep private data
 
-    //private PrintWriter message_BufferOut;
+    private boolean is_playing_desired;   // Whether the user asked to go to PLAYING
 
-    private void setMessage(String message) {
-    }
-
+    // Called when the activity is first created.
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    public void onCreate(Bundle savedInstanceState)
+    {
         super.onCreate(savedInstanceState);
 
-        try  {
+        // Initialize GStreamer and warn if it fails
+        try {
             GStreamer.init(this);
         } catch (Exception e) {
             Toast.makeText(this, e.getMessage(), Toast.LENGTH_LONG).show();
@@ -57,40 +54,44 @@ public class Steuerung extends Activity implements SurfaceHolder.Callback {
 
         setContentView(R.layout.activity_steuerung);
 
-        SurfaceView stream = this.findViewById(R.id.gStream);
-        SurfaceHolder sh = stream.getHolder();
-        sh.addCallback(this);
-
-        init();
-    }
-
-
-    private void init() {
-        //socket = SocketService.getSocket();
-        mJoystick = findViewById(R.id.JoystickView);
-        ImageButton play = this.findViewById(R.id.play);
-        ImageButton pause = this.findViewById(R.id.pause);
+        /*ImageButton play = this.findViewById(R.id.play);
         play.setOnClickListener(new View.OnClickListener() {
-            @Override
             public void onClick(View v) {
                 nativePlay();
             }
         });
+
+        ImageButton pause = this.findViewById(R.id.stop);
         pause.setOnClickListener(new View.OnClickListener() {
-            @Override
             public void onClick(View v) {
+                is_playing_desired = false;
                 nativePause();
             }
         });
-        play.setEnabled(false);
-        pause.setEnabled(false);
-        //mJoystickMessageGenerator = new JoystickMessageGenerator();
 
-        //Check connection status before
-        /*if(socket.isConnected()) {
-            UDP = new Thread(new UDPReciever());
-            UDP.start();
+        this.findViewById(R.id.play).setEnabled(false);
+        this.findViewById(R.id.stop).setEnabled(false);*/
+        nativeInit();
+
+        /*SurfaceView sv = (SurfaceView) this.findViewById(R.id.gStream);
+        SurfaceHolder sh = sv.getHolder();
+        sh.addCallback(this);*/
+
+        /*if (savedInstanceState != null) {
+            is_playing_desired = savedInstanceState.getBoolean("playing");
+            Log.i ("GStreamer", "Activity created. Saved state is playing:" + is_playing_desired);
+        } else {
+            is_playing_desired = false;
+            Log.i ("GStreamer", "Activity created. There is no saved state, playing: false");
         }*/
+
+        // Start with disabled buttons, until native code is initialized
+        //init();
+    }
+
+    /*private void init() {
+        mJoystick = findViewById(R.id.JoystickView);
+        mJoystickMessageGenerator = new JoystickMessageGenerator();
 
         //publish AppControls messages for the Joystick
         mJoystick.setOnMoveListener(new JoystickView.OnMoveListener() {
@@ -108,47 +109,38 @@ public class Steuerung extends Activity implements SurfaceHolder.Callback {
                     y = 0.0;
                 }
 
-                //AppControlsProtos.AppControls msg = JoystickMessageGenerator.buildMessage(x, y);
+                AppControlsProtos.AppControls msg = mJoystickMessageGenerator.buildMessage(x, y);
                 //sendMessage(mJoystickMessageGenerator.buildMessage(x,y));
-                //send(msg);
-                //mTextView.setText(msg.toString());
             }
         });
-        nativeInit();
+    }*/
+
+
+    protected void onSaveInstanceState (Bundle outState) {
+        super.onSaveInstanceState(outState);
+        Log.d("GStreamer", "Saving state, playing:" + is_playing_desired);
+        outState.putBoolean("playing", is_playing_desired);
     }
 
-    @Override
     protected void onDestroy() {
         nativeFinalize();
         super.onDestroy();
     }
 
-    public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
-        Log.d("GStreamer", "Surface changed to format " + format + " width "
-                + width + " height " + height);
-        nativeSurfaceInit(holder.getSurface());
-    }
-
-    public void surfaceCreated(SurfaceHolder holder) {
-        Log.d("GStreamer", "Surface created: " + holder.getSurface());
-    }
-
-    public void surfaceDestroyed(SurfaceHolder holder) {
-        Log.d("GStreamer", "Surface destroyed");
-        nativeSurfaceFinalize();
-    }
-
-    private void onGStreamerInitialized() {
-        Log.i("GStreamer" , "Gst initialized.");
-        nativePause();
-        final Activity activity = this;
+    private void setMessage(final String message) {
+        final TextView tv = this.findViewById(R.id.status);
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                activity.findViewById(R.id.play).setEnabled(true);
-                activity.findViewById(R.id.pause).setEnabled(true);
+                tv.setText(message);
             }
         });
+    }
+
+    // Called from native code. Native code calls this once it has created its pipeline and
+    // the main loop is running, so it is ready to accept commands.
+    private void onGStreamerInitialized () {
+        Log.i ("GStreamer", "Gst initialized. Restoring state, playing:" + is_playing_desired);
     }
 
     static {
