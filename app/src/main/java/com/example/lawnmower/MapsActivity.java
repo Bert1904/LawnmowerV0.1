@@ -9,6 +9,9 @@ import android.Manifest;
 import android.app.Activity;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
+import android.graphics.Bitmap;
+import android.graphics.Matrix;
+import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.widget.Toast;
 
@@ -17,6 +20,9 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptor;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.GroundOverlayOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.protobuf.InvalidProtocolBufferException;
@@ -54,7 +60,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
         socket = SocketService.getSocket();
-        connectionHandler();
+
         createErrorNotificationChannel();
     }
     public  void connectionHandler(){
@@ -199,17 +205,27 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
      */
     @Override
     public void onMapReady(GoogleMap googleMap) {
-
+        connectionHandler();
         mMap = googleMap;
+        int height = 125;
+        int width = 125;
 
 
+        BitmapDrawable bitmapdraw = (BitmapDrawable)getResources().getDrawable(R.drawable.logomarkerr);
+        Bitmap b = bitmapdraw.getBitmap();
+
+        Bitmap smallMarker = Bitmap.createScaledBitmap(b, width, height, false);
+        BitmapDescriptor bitmapDescriptor = BitmapDescriptorFactory.fromBitmap(b);
+
+        mMap.setMapType(GoogleMap.MAP_TYPE_SATELLITE);
         // Add a marker to current lawnmower position and move the camera
         LatLng lawnmower_gps = new LatLng(handleGpsLatitude(), handleGpslongitude());
-
+        //mMap.addGroundOverlay(new GroundOverlayOptions().image(bitmapDescriptor).position(lawnmower_gps,100));
         System.out.println("*******************"+"" +lawnmower_gps);
         // Create marker Options
-        MarkerOptions options = new MarkerOptions().position(lawnmower_gps).title("Lawnmower");
-        mMap.addMarker(new MarkerOptions().position(lawnmower_gps).title("Lawnmower Position"));
+        MarkerOptions options = new MarkerOptions().position(lawnmower_gps).title("Lawnmower").icon(BitmapDescriptorFactory.fromBitmap(smallMarker));
+
+        mMap.addMarker(options.position(lawnmower_gps).title("Lawnmower Position"));
        // googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(lawnmower_gps,100));
 
         googleMap.addMarker(options);
