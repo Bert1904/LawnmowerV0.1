@@ -171,4 +171,17 @@ public class Steuerung extends AppCompatActivity implements SurfaceHolder.Callba
         System.loadLibrary("GStream");
         nativeClassInit();
     }
+
+    /*private void onMediaSizeChanged (int width, int height) {
+        Log.i ("GStreamer", "Media size changed to " + width + "x" + height);
+        final GStreamerSurfaceView gsv = this.findViewById(R.id.gStreamer);
+        gsv.media_width = width;
+        gsv.media_height = height;
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                gsv.requestLayout();
+            }
+        });
+    }*/
 }
