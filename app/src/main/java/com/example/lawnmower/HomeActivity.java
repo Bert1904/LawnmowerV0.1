@@ -9,7 +9,7 @@ import android.widget.ImageButton;
 
 
 
-public class HomeActivity extends AppCompatActivity {
+public class HomeActivity extends BaseAppCompatAcitivty {
     private ImageButton mowButton;
     private ImageButton buttonInfo;
     private ImageButton buttonControl;

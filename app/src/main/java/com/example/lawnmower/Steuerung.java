@@ -15,7 +15,7 @@ import java.net.Socket;
 
 import io.github.controlwear.virtual.joystick.android.JoystickView;
 
-public class Steuerung extends AppCompatActivity {
+public class Steuerung extends BaseAppCompatAcitivty {
 
     private TextureView robotVideo;
     private JoystickView mJoystick;

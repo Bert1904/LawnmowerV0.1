@@ -1,35 +1,28 @@
 package com.example.lawnmower;
 
-import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 import androidx.fragment.app.FragmentActivity;
 
-import android.Manifest;
-import android.app.Activity;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.graphics.Bitmap;
-import android.graphics.Matrix;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.widget.Toast;
 
-import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
-import com.google.android.gms.maps.model.GroundOverlayOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.protobuf.InvalidProtocolBufferException;
 
 import java.io.DataInputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.net.Socket;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
@@ -38,7 +31,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private GoogleMap mMap;
     private Socket socket;
     private boolean isConnected= false;
-
+    private double latitute = 51.574534546129726d;
+    private double longitude = 7.026503346726579d;
+    private NotificationHandler nfhandler ;
 
 
     private static final String NO_CONNECTION = "Verbindung nicht möglich. \nBitte überprüfe deine Einstellung";
@@ -52,6 +47,19 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
 
     @Override
+    protected void onPause() {
+        super.onPause();
+        LawnmowerApp.onPauseActivity();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        LawnmowerApp.onResumeActivity();
+    }
+
+
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
@@ -60,7 +68,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
         socket = SocketService.getSocket();
-
+        nfhandler =  new NotificationHandler(this);
         createErrorNotificationChannel();
     }
     public  void connectionHandler(){
@@ -112,21 +120,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         try {
             AppControlsProtos.LawnmowerStatus lawnmowerStatus = AppControlsProtos.LawnmowerStatus.parseFrom(data);
                handleMowingErrors(lawnmowerStatus.getError());
-               handleGpsLatitude();
-               handleGpslongitude();
+               latitute = lawnmowerStatus.getLatitude();
+               longitude = lawnmowerStatus.getLongitude();
 
         } catch (InvalidProtocolBufferException e) {
             e.printStackTrace();
         }
-    }
-   private double handleGpsLatitude(){
-        double latitude= AppControlsProtos.LawnmowerStatus.LATITUDE_FIELD_NUMBER;
-        return latitude;
-    }
-    private double handleGpslongitude(){
-       double longitude=AppControlsProtos.LawnmowerStatus.LONGITUDE_FIELD_NUMBER;
-        
-        return longitude;
     }
 
     /*
@@ -171,6 +170,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     Creates Channel for sending error notifications
     */
     public void createErrorNotificationChannel(){
+
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
             NotificationChannel notificationChannel = new NotificationChannel("001","Error", NotificationManager.IMPORTANCE_DEFAULT);
             notificationChannel.setDescription("This is a error notification channel");
@@ -182,6 +182,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     Send Error Notifiaction
      */
     public void sendErrorNotification(String message ){
+        if(LawnmowerApp.isVisibile()) return;
 
         NotificationCompat.Builder notficiationBuilder =
                 new NotificationCompat.Builder(this,"001")
@@ -207,11 +208,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     public void onMapReady(GoogleMap googleMap) {
         connectionHandler();
         mMap = googleMap;
-        int height = 125;
-        int width = 125;
+        int height = 200;
+        int width = 200;
 
 
-        BitmapDrawable bitmapdraw = (BitmapDrawable)getResources().getDrawable(R.drawable.logomarkerr);
+        BitmapDrawable bitmapdraw = (BitmapDrawable)getResources().getDrawable(R.drawable.logomark);
         Bitmap b = bitmapdraw.getBitmap();
 
         Bitmap smallMarker = Bitmap.createScaledBitmap(b, width, height, false);
@@ -219,14 +220,15 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         mMap.setMapType(GoogleMap.MAP_TYPE_SATELLITE);
         // Add a marker to current lawnmower position and move the camera
-        LatLng lawnmower_gps = new LatLng(handleGpsLatitude(), handleGpslongitude());
+        LatLng lawnmower_gps = new LatLng(latitute, longitude);
         //mMap.addGroundOverlay(new GroundOverlayOptions().image(bitmapDescriptor).position(lawnmower_gps,100));
         System.out.println("*******************"+"" +lawnmower_gps);
         // Create marker Options
         MarkerOptions options = new MarkerOptions().position(lawnmower_gps).title("Lawnmower").icon(BitmapDescriptorFactory.fromBitmap(smallMarker));
 
         mMap.addMarker(options.position(lawnmower_gps).title("Lawnmower Position"));
-       // googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(lawnmower_gps,100));
+
+       googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(lawnmower_gps,16));
 
         googleMap.addMarker(options);
     }
