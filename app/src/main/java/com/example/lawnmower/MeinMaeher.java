@@ -1,6 +1,7 @@
 package com.example.lawnmower;
 
 
+import android.app.MediaRouteButton;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.os.Bundle;
@@ -70,8 +71,8 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements View.OnClickLis
     private OutputStream toServer ;
     private DataInputStream data_Server;
     private boolean isConnected= false;
-    private ImageView MowingStatusView;
-   
+    public ImageView MowingStatusView;
+    private Thread HealthCheckThread;
 
 
     @Override
@@ -79,8 +80,6 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements View.OnClickLis
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_meinmaeher);
         nfhandler =  new NotificationHandler(this);
-        createErrorNotificationChannel();
-        createStatusNotificationChannel();
         this.MowingStatusView= (ImageView)findViewById(R.id.MowingStatusView);
 
         socket = SocketService.getSocket();
@@ -154,7 +153,9 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements View.OnClickLis
     /*
      Deals with LawnmowerStatus
      */
+
     protected void healthCheck(byte[] data) {
+
         AppControlsProtos.LawnmowerStatus status = null;
         try {
             AppControlsProtos.LawnmowerStatus lawnmowerStatus = AppControlsProtos.LawnmowerStatus.parseFrom(data);
@@ -181,7 +182,7 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements View.OnClickLis
                 break;
             }
             case 2:{
-                sendStatusNotification(paused);
+                nfhandler.sendStatusNotification(paused);
                 Toast.makeText(getApplicationContext(),paused, Toast.LENGTH_LONG).show();
                 break;
             }
@@ -190,7 +191,7 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements View.OnClickLis
                 break;
             }
             case 4:{
-                sendStatusNotification(low_Light);
+                nfhandler.sendStatusNotification(low_Light);
                 Toast.makeText(getApplicationContext(),low_Light, Toast.LENGTH_LONG).show();
                 break;
             }
@@ -210,31 +211,31 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements View.OnClickLis
                 return;
             }
             case 1:{
-                sendErrorNotification(ROBOT_STUCK);
+                nfhandler.sendErrorNotification( ROBOT_STUCK);
                 nfhandler.sendErrorNotification(ROBOT_STUCK);
                 Toast.makeText(getApplicationContext(),ROBOT_STUCK, Toast.LENGTH_LONG).show();
                 break;
             }
             case 2:{
-                sendErrorNotification(BLADE_STUCK);
+                nfhandler.sendErrorNotification( BLADE_STUCK);
                 nfhandler.sendErrorNotification(BLADE_STUCK);
                 Toast.makeText(getApplicationContext(),BLADE_STUCK, Toast.LENGTH_LONG).show();
                 break;
             }
             case 3:{
-                sendErrorNotification(PICKUP);
+                nfhandler.sendErrorNotification( PICKUP);
                 nfhandler.sendErrorNotification(PICKUP);
                 Toast.makeText(getApplicationContext(),PICKUP, Toast.LENGTH_LONG).show();
                 break;
             }
             case 4:{
-                sendErrorNotification(LOST);
+                nfhandler.sendErrorNotification( LOST);
                 nfhandler.sendErrorNotification(LOST);
                 Toast.makeText(getApplicationContext(),LOST, Toast.LENGTH_LONG).show();
                 break;
             }
             case -1:{
-                sendErrorNotification(UNRECOGNIZED);
+                nfhandler.sendErrorNotification( UNRECOGNIZED);
                 nfhandler.sendErrorNotification( UNRECOGNIZED );
                 Toast.makeText(getApplicationContext(),UNRECOGNIZED, Toast.LENGTH_LONG).show();
                 break;
@@ -246,145 +247,95 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements View.OnClickLis
             Send Messages to TCP Server
              */
     @Override
-    public void onClick(View v) {
-        switch (v.getId()){
-            case R.id.buttonStartMow:{
-                byte[] msg = btnMessageGenerator.buildMessage(START).toByteArray();
-                try {
-                    MowingStatusView.setVisibility(MowingStatusView.GONE);
-                    int imgageResource = getResources().getIdentifier("@drawable/mahvorgang",null,this.getPackageName());
-                    this.MowingStatusView.setImageResource(imgageResource);
-                    this.MowingStatusView.setVisibility(MowingStatusView.VISIBLE);
-                    serialize(msg);
-                    Toast.makeText(getApplicationContext(), start, Toast.LENGTH_LONG).show();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                break;
+    public void onClick(final View v) {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                runOnUiThread(new Runnable() {
+                    private ImageView MowingStatusView = (ImageView)findViewById(R.id.MowingStatusView);
+                    @Override
+                    public void run() {
+                        switch (v.getId()){
+                            case R.id.buttonStartMow:{
+                                byte[] msg = btnMessageGenerator.buildMessage(START).toByteArray();
+                                try {
+                                    this.MowingStatusView.setVisibility(MowingStatusView.GONE);
+                                    int imgageResource = getResources().getIdentifier("@drawable/mahvorgang",null,getPackageName());
+                                    this.MowingStatusView.setImageResource(imgageResource);
+                                    MowingStatusView.setVisibility(MowingStatusView.VISIBLE);
+                                    serialize(msg);
+                                    Toast.makeText(getApplicationContext(), start, Toast.LENGTH_LONG).show();
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
+                                break;
+                            }
+                            case R.id.buttonPauseMow:{
+                                byte[] msg = btnMessageGenerator.buildMessage(PAUSE).toByteArray();
 
-            }
-            case R.id.buttonPauseMow:{
-                byte[] msg = btnMessageGenerator.buildMessage(PAUSE).toByteArray();
+                                try {
+                                    nfhandler.sendErrorNotification( ROBOT_STUCK);
+                                    nfhandler.sendStatusNotification("nice");
+                                    this.MowingStatusView.setVisibility(MowingStatusView.GONE);
+                                    int imgageResource = getResources().getIdentifier("@drawable/mahvorgangpausiert",null,getPackageName());
+                                    this.MowingStatusView.setImageResource(imgageResource);
+                                    this.MowingStatusView.setVisibility(MowingStatusView.VISIBLE);
+                                    serialize(msg);
+                                    Toast.makeText(getApplicationContext(), pausiere, Toast.LENGTH_LONG).show();
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
 
-                try {
-                    nfhandler.sendErrorNotification( ROBOT_STUCK);
-                    nfhandler.sendStatusNotification("nice");
-                    MowingStatusView.setVisibility(MowingStatusView.GONE);
-                    int imgageResource = getResources().getIdentifier("@drawable/mahvorgangpausiert",null,this.getPackageName());
-                    this.MowingStatusView.setImageResource(imgageResource);
-                    this.MowingStatusView.setVisibility(MowingStatusView.VISIBLE);
+                                break;
+                            }
+                            case R.id.buttonStopMow:{
+                                try {
+                                    Thread.sleep(2000);
+                                    nfhandler.sendErrorNotification( "''''''''''''''''''''####");
+                                } catch (InterruptedException e) {
+                                    e.printStackTrace();
+                                }
 
-                    serialize(msg);
-                    Toast.makeText(getApplicationContext(), pausiere, Toast.LENGTH_LONG).show();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+                                byte[] msg = btnMessageGenerator.buildMessage(STOP).toByteArray();
 
-                break;
-            }
-            case R.id.buttonStopMow:{
-                try {
-                    Thread.sleep(2000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
+                                try {
+                                    this.MowingStatusView.setVisibility(MowingStatusView.GONE);
+                                    int imgageResource = getResources().getIdentifier("@drawable/mahvorgangstop",null,getPackageName());
+                                    this.MowingStatusView.setImageResource(imgageResource);
+                                    this.MowingStatusView.setVisibility(MowingStatusView.VISIBLE);
+                                    serialize(msg);
+                                    Toast.makeText(getApplicationContext(), stoppe, Toast.LENGTH_LONG).show();
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
 
-                byte[] msg = btnMessageGenerator.buildMessage(STOP).toByteArray();
+                                break;
+                            }
+                            case R.id.buttonGoHome: {
+                                byte[] msg = btnMessageGenerator.buildMessage(HOME).toByteArray();
+                                try {
 
-                try {
-                    MowingStatusView.setVisibility(MowingStatusView.GONE);
-                    int imgageResource = getResources().getIdentifier("@drawable/mahvorgangstop",null,this.getPackageName());
-                    this.MowingStatusView.setImageResource(imgageResource);
-                    this.MowingStatusView.setVisibility(MowingStatusView.VISIBLE);
-                    serialize(msg);
-                    Toast.makeText(getApplicationContext(), stoppe, Toast.LENGTH_LONG).show();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-
-
-                break;
-            }
-            case R.id.buttonGoHome: {
-                byte[] msg = btnMessageGenerator.buildMessage(HOME).toByteArray();
-                try {
-
-                    MowingStatusView.setVisibility(MowingStatusView.GONE);
-                    int imgageResource = getResources().getIdentifier("@drawable/backhome",null,this.getPackageName());
-                    this.MowingStatusView.setImageResource(imgageResource);
-                    this.MowingStatusView.setVisibility(MowingStatusView.VISIBLE);
-
-
-                    serialize(msg);
-                    Toast.makeText(getApplicationContext(), GoHome, Toast.LENGTH_LONG).show();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                    break;
-                }
+                                    this.MowingStatusView.setVisibility(MowingStatusView.GONE);
+                                    int imgageResource = getResources().getIdentifier("@drawable/backhome",null,getPackageName());
+                                    this.MowingStatusView.setImageResource(imgageResource);
+                                    this.MowingStatusView.setVisibility(MowingStatusView.VISIBLE);
 
 
-                break;
-            }
-        }
+                                    serialize(msg);
+                                    Toast.makeText(getApplicationContext(), GoHome, Toast.LENGTH_LONG).show();
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                    break;
+                                }
+
+                                break;
+                            }
+                        }
+                    }
+                });
+                    }
+                }).start();
     }
-
-    /*
-     Creates Channel for sending error notifications
-     */
-    public void createErrorNotificationChannel(){
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-            NotificationChannel notificationChannel = new NotificationChannel("001","Error",NotificationManager.IMPORTANCE_DEFAULT);
-            notificationChannel.setDescription("This is a error notification channel");
-            NotificationManager notificationManager = getSystemService(NotificationManager.class);
-            notificationManager.createNotificationChannel(notificationChannel);
-        }
-    }
-    /*
-    Creates Channel for sending status notifications
-     */
-        public void createStatusNotificationChannel(){
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-                NotificationChannel notificationChannel = new NotificationChannel("002","Status",NotificationManager.IMPORTANCE_DEFAULT);
-                notificationChannel.setDescription("This is a status notification channel");
-
-                NotificationManager notificationManager = getSystemService(NotificationManager.class);
-                notificationManager.createNotificationChannel(notificationChannel);
-            }
-    }
-
-    /*
-    Send Error Notifiaction
-     */
-    public void sendErrorNotification(String message ){
-
-        NotificationCompat.Builder notficiationBuilder =
-                new NotificationCompat.Builder(this,"001")
-                        .setSmallIcon(R.drawable.ic_stat_error_outline)
-                        .setContentTitle("Lawnmower Error")
-                        .setContentText(message)
-                        .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-                        .setAutoCancel(true)
-                ;
-        NotificationManagerCompat notificationManagerCompat = NotificationManagerCompat.from(this);
-        notificationManagerCompat.notify(001,notficiationBuilder.build());
-    }
-    /*
-    Send Status Notifiaction
-     */
-    public void sendStatusNotification(String message ){
-        if (LawnmowerApp.isVisibile()) return;
-        NotificationCompat.Builder notficiationBuilder =
-                new NotificationCompat.Builder(this,"002")
-                        .setSmallIcon(R.drawable.icon_status)
-                        .setContentTitle("Lawnmower Status Update")
-                        .setContentText(message)
-                        .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-                        .setAutoCancel(true);
-        NotificationManagerCompat notificationManagerCompat = NotificationManagerCompat.from(this);
-        notificationManagerCompat.notify(002,notficiationBuilder.build());
-    }
-
-
     /* Schaltet die Funktionsweise der Buttons (Start,Pause,Stop, GoHome)aus indem
        die  Buttons grau dargestellt werden und oben genannte Buttons haben keine Funkionsweise mehr,
        wenn keine Connection aufgebaut werden kann;
@@ -406,20 +357,6 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements View.OnClickLis
         ((ImageButton) findViewById(R.id.buttonStopMow)).setAlpha(1.0F);
         ((ImageButton) findViewById(R.id.buttonGoHome)).setAlpha(1.0F);
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
     // Serialize und versendet die Nachricht
@@ -497,3 +434,60 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements View.OnClickLis
         }
          */
 }
+
+
+//    /*
+//     Creates Channel for sending error notifications
+//     */
+//    public void createErrorNotificationChannel(){
+//        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+//            NotificationChannel notificationChannel = new NotificationChannel("001","Error",NotificationManager.IMPORTANCE_DEFAULT);
+//            notificationChannel.setDescription("This is a error notification channel");
+//            NotificationManager notificationManager = getSystemService(NotificationManager.class);
+//            notificationManager.createNotificationChannel(notificationChannel);
+//        }
+//    }
+//    /*
+//    Creates Channel for sending status notifications
+//     */
+//        public void createStatusNotificationChannel(){
+//            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+//                NotificationChannel notificationChannel = new NotificationChannel("002","Status",NotificationManager.IMPORTANCE_DEFAULT);
+//                notificationChannel.setDescription("This is a status notification channel");
+//
+//                NotificationManager notificationManager = getSystemService(NotificationManager.class);
+//                notificationManager.createNotificationChannel(notificationChannel);
+//            }
+//    }
+//
+//    /*
+//    Send Error Notifiaction
+//     */
+//    public void sendErrorNotification(String message ){
+//
+//        NotificationCompat.Builder notficiationBuilder =
+//                new NotificationCompat.Builder(this,"001")
+//                        .setSmallIcon(R.drawable.ic_stat_error_outline)
+//                        .setContentTitle("Lawnmower Error")
+//                        .setContentText(message)
+//                        .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+//                        .setAutoCancel(true)
+//                ;
+//        NotificationManagerCompat notificationManagerCompat = NotificationManagerCompat.from(this);
+//        notificationManagerCompat.notify(001,notficiationBuilder.build());
+//    }
+//    /*
+//    Send Status Notifiaction
+//     */
+//    public void sendStatusNotification(String message ){
+//        if (LawnmowerApp.isVisibile()) return;
+//        NotificationCompat.Builder notficiationBuilder =
+//                new NotificationCompat.Builder(this,"002")
+//                        .setSmallIcon(R.drawable.icon_status)
+//                        .setContentTitle("Lawnmower Status Update")
+//                        .setContentText(message)
+//                        .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+//                        .setAutoCancel(true);
+//        NotificationManagerCompat notificationManagerCompat = NotificationManagerCompat.from(this);
+//        notificationManagerCompat.notify(002,notficiationBuilder.build());
+//    }

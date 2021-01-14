@@ -7,29 +7,26 @@ import android.content.Context;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 
-public class NotificationHandler {
+public class NotificationHandler implements  Runnable {
 
     private Context ctx;
     private NotificationChannel errorChannel;
     private NotificationChannel statusChannel;
     private static final String ATTENTION = "Schaue nach deinem Rasenmäher";
-    private Thread thread = new Thread(){
-      @Override
-      public void run() {
-          try {
-              createErrorNotificationChannel();
-              createStatusNotificationChannel();
+    private Thread NotificationThread;
 
-          } catch (Exception e) {
-              e.printStackTrace();
-          }
-      }
-    };
     public NotificationHandler(Context ctx) {
         this.ctx = ctx;
-        System.out.println("########################### "+ ctx);
-        createErrorNotificationChannel();
-        createStatusNotificationChannel();
+        NotificationThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                createErrorNotificationChannel();
+                createStatusNotificationChannel();
+            }
+        });
+        NotificationThread.start();
+
+
     }
 
     private void createErrorNotificationChannel(){
@@ -74,5 +71,12 @@ public class NotificationHandler {
                 ;
         NotificationManagerCompat notificationManagerCompat = NotificationManagerCompat.from(ctx);
         notificationManagerCompat.notify(channelId,notficiationBuilder.build());
+    }
+
+    @Override
+    public void run() {
+        System.out.println("-------------------------------wird aufgerufen");
+        createErrorNotificationChannel();
+        createStatusNotificationChannel();
     }
 }
