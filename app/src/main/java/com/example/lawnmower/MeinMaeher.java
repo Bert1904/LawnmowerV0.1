@@ -23,6 +23,8 @@ import java.io.InputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.util.Timer;
+import java.util.TimerTask;
 
 
 public class MeinMaeher extends BaseAppCompatAcitivty implements View.OnClickListener {
@@ -64,7 +66,7 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements View.OnClickLis
     private Socket socket;
     private String SERVER_IP = "192.168.0.8";
     private int SERVER_PORT = 6750;
-
+    ListenerThread thread;
     // Creates notification channel and publish notification
     private NotificationHandler nfhandler;
     // Keep the  ui updated if the Lawnmower status changed
@@ -77,7 +79,7 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements View.OnClickLis
     private boolean isConnected = false;
     public ImageView MowingStatusView;
     private Thread HealthCheckThread;
-
+    private Timer t = new Timer();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -100,7 +102,7 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements View.OnClickLis
         // Toast  lawnmower back home
         buttonGoHome = (ImageButton) findViewById(R.id.buttonGoHome);
         buttonGoHome.setOnClickListener(this);
-        //connectionHandler();
+        connectionHandler();
 
 
     }
@@ -111,29 +113,37 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements View.OnClickLis
      */
     public void connectionHandler() {
 
-        if (!socket.isConnected()) {
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    Toast.makeText(getApplicationContext(), NO_CONNECTION, Toast.LENGTH_LONG).show();
-                    isConnected = false;
+        t.scheduleAtFixedRate(new TimerTask() {
+            @Override
+            public void run() {
+                if (!socket.isConnected()) {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast.makeText(getApplicationContext(), NO_CONNECTION, Toast.LENGTH_LONG).show();
+                            isConnected = false;
+                        }
+                    });
+                    setNoConnection();
+                    return;
+                } else {
+                    setConnection();
+                    Thread listenFromServerThread = new Thread(new ListenerThread());
+                    listenFromServerThread.start();
+                    isConnected = true;
                 }
-            });
-            setNoConnection();
-            return;
-        } else {
-            setConnection();
-            isConnected = true;
-            Thread listenFromServerThread = new Thread(new ListenerThread());
-            listenFromServerThread.start();
+            }
+        },0,10000);
 
-        }
     }
+
+
 
     /*
      ListenerThread to read incoming messages from tcp server
      */
     class ListenerThread implements Runnable {
+
 
         @Override
         public void run() {
@@ -150,7 +160,10 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements View.OnClickLis
                     break;
                 }
             }
-        }
+
+            };
+
+
     }
     /*
      Deals with LawnmowerStatus
