@@ -110,27 +110,26 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements View.OnClickLis
      */
     public void connectionHandler() {
 
-//        t.scheduleAtFixedRate(new TimerTask() {
-//            @Override
-//            public void run() {
-//                if (!socket.isConnected()) {
-//                    runOnUiThread(new Runnable() {
-//                        @Override
-//                        public void run() {
-//                            Toast.makeText(getApplicationContext(), NO_CONNECTION, Toast.LENGTH_LONG).show();
-//                            isConnected = false;
-//                        }
-//                    });
-//                    setNoConnection();
-//                    return;
-//                }
-//            }
-//        }, 0, 10000);
-//        if (socket.isConnected()) {
-//            setConnection();
-//           new ListenerThread().execute();
-//        }
-        new ListenerThread().execute();
+        t.scheduleAtFixedRate(new TimerTask() {
+            @Override
+            public void run() {
+                if (!socket.isConnected()) {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast.makeText(getApplicationContext(), NO_CONNECTION, Toast.LENGTH_LONG).show();
+                            isConnected = false;
+                        }
+                    });
+                    setNoConnection();
+                    return;
+                }
+            }
+        }, 0, 10000);
+        if (socket.isConnected()) {
+            setConnection();
+           new ListenerThread().execute();
+        }
 
     }
 
