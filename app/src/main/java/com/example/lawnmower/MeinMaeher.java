@@ -3,31 +3,20 @@ package com.example.lawnmower;
 
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.MediaRouteButton;
-import android.app.NotificationChannel;
-import android.app.NotificationManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.Gravity;
 import android.view.View;
-import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
-import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.core.app.ActivityCompat;
-import androidx.core.app.NotificationCompat;
-import androidx.core.app.NotificationManagerCompat;
-
+import com.google.android.gms.common.util.JsonUtils;
 import com.google.protobuf.InvalidProtocolBufferException;
 
-import java.io.BufferedOutputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 import java.util.Timer;
@@ -88,6 +77,7 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements View.OnClickLis
     private Thread HealthCheckThread;
     private Timer t = new Timer();
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -120,48 +110,38 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements View.OnClickLis
      */
     public void connectionHandler() {
 
-        t.scheduleAtFixedRate(new TimerTask() {
-            @Override
-            public void run() {
-                if (!socket.isConnected()) {
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            Toast.makeText(getApplicationContext(), NO_CONNECTION, Toast.LENGTH_LONG).show();
-                            isConnected = false;
-                        }
-                    });
-                    setNoConnection();
-                    return;
-                }
-            }
-        }, 0, 10000);
-        if (socket.isConnected()) {
-            setConnection();
-            ListenerThread listenerThread= new ListenerThread();
-            listenerThread.doInBackground();
-//            Thread listenFromServerThread = new Thread(new ListenerThread(MeinMaeher,));
-//            listenFromServerThread.start();
-//            isConnected = true;
-        }
-
+//        t.scheduleAtFixedRate(new TimerTask() {
+//            @Override
+//            public void run() {
+//                if (!socket.isConnected()) {
+//                    runOnUiThread(new Runnable() {
+//                        @Override
+//                        public void run() {
+//                            Toast.makeText(getApplicationContext(), NO_CONNECTION, Toast.LENGTH_LONG).show();
+//                            isConnected = false;
+//                        }
+//                    });
+//                    setNoConnection();
+//                    return;
+//                }
+//            }
+//        }, 0, 10000);
+//        if (socket.isConnected()) {
+//            setConnection();
+//           new ListenerThread().execute();
+//        }
+        new ListenerThread().execute();
 
     }
 
 
-    class ListenerThread extends AsyncTask<String, Void, String> {
+    class ListenerThread extends AsyncTask<String, Void, Boolean> {
+
         Activity activity;
         IOException ioException;
-
-        public ListenerThread() {
-            super();
-            this.activity=activity;
-            this.ioException=null;
-        }
-
-
         @Override
-        protected String doInBackground(String... strings) {
+        protected Boolean doInBackground(String... Boolean) {
+            System.out.println("''''''''''''''''''''''''''''''''''''''''29409238490238904792AAAAAAAAA************''''''''''''''''''''''''''''''''''''''''");
             StringBuilder sb = new StringBuilder();
             while (isConnected) {
                 try {
@@ -175,16 +155,16 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements View.OnClickLis
                     e.printStackTrace();
                     break;
                 }
+                //Possible wrong
                 try {
                     data_Server.close();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
             }
-            return sb.toString();
+            return isConnected;
         }
 
-        @Override
         protected void onPostExecute(String result) {
             if (this.ioException != null) {
                 new AlertDialog.Builder(this.activity)
@@ -195,6 +175,7 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements View.OnClickLis
             }
         }
     }
+
 
     /*
      ListenerThread to read incoming messages from tcp server
