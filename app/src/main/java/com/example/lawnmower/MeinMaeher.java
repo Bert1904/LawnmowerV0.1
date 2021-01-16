@@ -46,35 +46,39 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements View.OnClickLis
     private static final String PICKUP = "Roboter aufnehmen";
     private static final String LOST = "Roboter lost";
 
-    //
+    //Values Lawnmower
     private final int START = 1;
     private final int STOP = 2;
     private final int PAUSE = 3;
     private final int HOME = 4;
 
+    //ButtonMessageGenerator for protobuf file
     private ButtonMessageGenerator btnMessageGenerator = new ButtonMessageGenerator();
-    //private ErrorMessageGenerator errorMessageGenerator = new ErrorMessageGenerator();
+
     // Variablen für Mäher Funktionen
     private ImageButton buttonStartMow;
     private ImageButton buttonPauseMow;
     private ImageButton buttonStopMow;
     private ImageButton buttonGoHome;
     private Socket socket;
-    private String SERVER_IP = "192.168.0.8";
-    private int SERVER_PORT = 6750;
-    ListenerThread thread;
+
     // Creates notification channel and publish notification
     private NotificationHandler nfhandler;
+
     // Keep the  ui updated if the Lawnmower status changed
     private StatusViewHandler svhandler;  //
+
     // messages to send and receive from tcp server
     private OutputStream toServer;
-    private OutputStream outToServer;
-    private InputStream inFromServer;
+    public OutputStream outToServer;
+    public InputStream inFromServer;
     private DataInputStream data_Server;
+
+    //Value if TCP Server is connected
     private boolean isConnected = false;
+    // ImageView to display Lawnmower Status
     public ImageView MowingStatusView;
-    private Thread HealthCheckThread;
+    // Timer to set up for connection handler to repeat tcp connection attempt
     private Timer t = new Timer();
 
 
@@ -105,8 +109,8 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements View.OnClickLis
     }
 
     /*
-     Check if connection to tcp server is possbible, start thread if connected
-     display toast if client is not connected
+     *Check if connection to tcp server is possbible, start thread if connected
+     *display toast if client is not connected
      */
     public void connectionHandler() {
 
@@ -128,20 +132,21 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements View.OnClickLis
         }, 0, 10000);
         if (socket.isConnected()) {
             setConnection();
-           new ListenerThread().execute();
+            new ListenerThread().execute();
         }
 
     }
 
-
+    /*
+     * ListenerThread to read incoming messages from tcp server
+     */
     class ListenerThread extends AsyncTask<String, Void, Boolean> {
 
         Activity activity;
         IOException ioException;
+
         @Override
         protected Boolean doInBackground(String... Boolean) {
-            System.out.println("''''''''''''''''''''''''''''''''''''''''29409238490238904792AAAAAAAAA************''''''''''''''''''''''''''''''''''''''''");
-            StringBuilder sb = new StringBuilder();
             while (isConnected) {
                 try {
                     data_Server = new DataInputStream(socket.getInputStream());
@@ -176,36 +181,9 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements View.OnClickLis
     }
 
 
+
     /*
-     ListenerThread to read incoming messages from tcp server
-     */
-//    class ListenerThread implements Runnable {
-//
-//
-//        @Override
-//        public void run() {
-//            while (isConnected) {
-//                try {
-//                    data_Server = new DataInputStream(socket.getInputStream());
-//                    int length = data_Server.readChar();
-//                    byte[] data = new byte[length];
-//                    data_Server.readFully(data);
-//                    healthCheck(data);
-//
-//                } catch (IOException e) {
-//                    e.printStackTrace();
-//                    break;
-//                }
-//            }
-//
-//        }
-//
-//        ;
-//
-//
-//    }
-    /*
-     Deals with LawnmowerStatus
+     *Deals with LawnmowerStatus
      */
 
     protected void healthCheck(byte[] data) {
