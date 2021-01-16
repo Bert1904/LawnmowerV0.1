@@ -181,19 +181,6 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements View.OnClickLis
                     e.printStackTrace();
                 }
             }
-
-            try {
-                data_Server = new DataInputStream(socket.getInputStream());
-                int length = data_Server.readChar();
-                byte[] data = new byte[length];
-                data_Server.readFully(data);
-                healthCheck(data);
-                Log.i("Do Background", "Background task started");
-            } catch (IOException e) {
-                Log.i("Error", "IOException");
-                e.printStackTrace();
-
-            }
             return sb.toString();
         }
 
