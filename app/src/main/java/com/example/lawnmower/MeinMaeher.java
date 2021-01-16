@@ -1,16 +1,23 @@
 package com.example.lawnmower;
 
 
+import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.MediaRouteButton;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 
@@ -126,27 +133,36 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements View.OnClickLis
                     });
                     setNoConnection();
                     return;
-                } else {
-                    setConnection();
-                    Thread listenFromServerThread = new Thread(new ListenerThread());
-                    listenFromServerThread.start();
-                    isConnected = true;
                 }
             }
-        },0,10000);
+        }, 0, 10000);
+        if (socket.isConnected()) {
+            setConnection();
+            ListenerThread listenerThread= new ListenerThread();
+            listenerThread.doInBackground();
+//            Thread listenFromServerThread = new Thread(new ListenerThread(MeinMaeher,));
+//            listenFromServerThread.start();
+//            isConnected = true;
+        }
+
 
     }
 
 
+    class ListenerThread extends AsyncTask<String, Void, String> {
+        Activity activity;
+        IOException ioException;
 
-    /*
-     ListenerThread to read incoming messages from tcp server
-     */
-    class ListenerThread implements Runnable {
+        public ListenerThread() {
+            super();
+            this.activity=activity;
+            this.ioException=null;
+        }
 
 
         @Override
-        public void run() {
+        protected String doInBackground(String... strings) {
+            StringBuilder sb = new StringBuilder();
             while (isConnected) {
                 try {
                     data_Server = new DataInputStream(socket.getInputStream());
@@ -154,17 +170,73 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements View.OnClickLis
                     byte[] data = new byte[length];
                     data_Server.readFully(data);
                     healthCheck(data);
-
+                    Log.i("Do Background", "Background task started");
                 } catch (IOException e) {
                     e.printStackTrace();
                     break;
                 }
+                try {
+                    data_Server.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
 
-            };
+            try {
+                data_Server = new DataInputStream(socket.getInputStream());
+                int length = data_Server.readChar();
+                byte[] data = new byte[length];
+                data_Server.readFully(data);
+                healthCheck(data);
+                Log.i("Do Background", "Background task started");
+            } catch (IOException e) {
+                Log.i("Error", "IOException");
+                e.printStackTrace();
 
+            }
+            return sb.toString();
+        }
 
+        @Override
+        protected void onPostExecute(String result) {
+            if (this.ioException != null) {
+                new AlertDialog.Builder(this.activity)
+                        .setTitle("An error occurrsed")
+                        .setMessage(this.ioException.toString())
+                        .setIcon(android.R.drawable.ic_dialog_alert)
+                        .show();
+            }
+        }
     }
+
+    /*
+     ListenerThread to read incoming messages from tcp server
+     */
+//    class ListenerThread implements Runnable {
+//
+//
+//        @Override
+//        public void run() {
+//            while (isConnected) {
+//                try {
+//                    data_Server = new DataInputStream(socket.getInputStream());
+//                    int length = data_Server.readChar();
+//                    byte[] data = new byte[length];
+//                    data_Server.readFully(data);
+//                    healthCheck(data);
+//
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                    break;
+//                }
+//            }
+//
+//        }
+//
+//        ;
+//
+//
+//    }
     /*
      Deals with LawnmowerStatus
      */
@@ -353,26 +425,39 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements View.OnClickLis
 
 
     // Serialized and sends message to tcp server
-    public void serialize(byte[] message) throws IOException {
+    public void serialize(final byte[] message) throws IOException {
+        Log.i("serialize", "SendDataToNetwork: opened  method serialize");
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    toServer = socket.getOutputStream();
+                    toServer.write(message);
+                    toServer.flush();
+                    Log.i("Success", "SendDataToNetwork:  Send message. ");
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
 
-        try {
-            toServer = socket.getOutputStream();
-            toServer.write(message);
-            toServer.flush();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        try {
-            while (isConnected) {
-                outToServer = socket.getOutputStream();
-                inFromServer = socket.getInputStream();
+                try {
+                    while (isConnected) {
+                        outToServer = socket.getOutputStream();
+                        inFromServer = socket.getInputStream();
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    Log.i("Failed", "SendDataToNetwork: Message send failed. Caught an exception");
+                }
             }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        }).start();
+        ;
 
 
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
     }
 }
 
