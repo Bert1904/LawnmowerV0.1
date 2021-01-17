@@ -74,6 +74,9 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements View.OnClickLis
     public InputStream inFromServer;
     private DataInputStream data_Server;
 
+    // False if activity is onStop, True if activity is runnung
+    static boolean active = false;
+
     //Value if TCP Server is connected
     private boolean isConnected = false;
     // ImageView to display Lawnmower Status
@@ -110,26 +113,35 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements View.OnClickLis
 
     /*
      *Check if connection to tcp server is possbible, start thread if connected
-     *display toast if client is not connected
+     *display toast if client is not connected,
+     * RunOnUi Thread establish a connection if activity is running but no connection
+     * is possible thread repeats functions after a period of 10000 ms
      */
     public void connectionHandler() {
-
+        if(!socket.isConnected()){
         t.scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
-                if (!socket.isConnected()) {
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            Toast.makeText(getApplicationContext(), NO_CONNECTION, Toast.LENGTH_LONG).show();
-                            isConnected = false;
+                           if( !active){
+                               t.cancel();
+                           }else{
+                               Toast.makeText(getApplicationContext(), NO_CONNECTION, Toast.LENGTH_LONG).show();
+                               isConnected = false;
+                           }
+
                         }
+
                     });
                     setNoConnection();
                     return;
-                }
             }
+
         }, 0, 10000);
+        }
+
         if (socket.isConnected()) {
             setConnection();
             new ListenerThread().execute();
@@ -406,7 +418,16 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements View.OnClickLis
     @Override
     protected void onDestroy() {
         super.onDestroy();
-
+    }
+    @Override
+    public void onStart(){
+        super.onStart();
+        active=true;
+    }
+    @Override
+    public void onStop(){
+        super.onStop();
+        active=false;
     }
 }
 
