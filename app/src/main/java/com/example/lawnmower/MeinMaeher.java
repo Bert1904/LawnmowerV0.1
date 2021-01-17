@@ -147,14 +147,15 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements View.OnClickLis
 
         @Override
         protected Boolean doInBackground(String... Boolean) {
-            while (isConnected) {
+            while (true) {
                 try {
+                    Log.i("Do Background", "Background task started");
                     data_Server = new DataInputStream(socket.getInputStream());
                     int length = data_Server.readChar();
                     byte[] data = new byte[length];
                     data_Server.readFully(data);
                     healthCheck(data);
-                    Log.i("Do Background", "Background task started");
+
                 } catch (IOException e) {
                     e.printStackTrace();
                     break;
@@ -166,10 +167,11 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements View.OnClickLis
                     e.printStackTrace();
                 }
             }
+            System.out.println(isConnected+"<-------------------------------------");
             return isConnected;
         }
 
-        protected void onPostExecute(String result) {
+        protected void onPostExecute() {
             if (this.ioException != null) {
                 new AlertDialog.Builder(this.activity)
                         .setTitle("An error occurrsed")
@@ -178,6 +180,7 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements View.OnClickLis
                         .show();
             }
         }
+
     }
 
 
@@ -403,6 +406,7 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements View.OnClickLis
     @Override
     protected void onDestroy() {
         super.onDestroy();
+
     }
 }
 
