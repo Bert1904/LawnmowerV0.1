@@ -1,58 +1,83 @@
+
 package com.example.lawnmower;
 
+import android.app.Activity;
 import android.os.Bundle;
-import android.view.TextureView;
+import android.util.Log;
+import android.view.SurfaceHolder;
+import android.view.SurfaceView;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import java.io.BufferedWriter;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
-import java.net.Socket;
-
 import io.github.controlwear.virtual.joystick.android.JoystickView;
 
-public class Steuerung extends BaseAppCompatAcitivty {
+import org.freedesktop.gstreamer.GStreamer;
+import org.w3c.dom.Text;
 
-    private TextureView robotVideo;
+import java.io.IOException;
+import java.net.Socket;
+
+public class Steuerung extends AppCompatActivity implements SurfaceHolder.Callback {
+
     private JoystickView mJoystick;
-    private TextView mTextView;
     private JoystickMessageGenerator mJoystickMessageGenerator;
     private final double DEADZONE = 0.15;
-    private final int WIDTH = 1280;
-    private final int HEIGHT = 720;
 
-    //add udp port
-    //private final int UDPPORT = 4567;
+    private native void nativeSurfaceInit(Object surface);
+    private native void nativeSurfaceFinalize();
+    private native void nativeInit();     // Initialize native code, build pipeline, etc
+    private native void nativeFinalize(); // Destroy pipeline and shutdown native code
+    private native void nativePlay();     // Set pipeline to PLAYING
+    //useless method cuz robot image is always playing
+    //private native void nativePause();    // Set pipeline to PAUSED
+    private static native boolean nativeClassInit(); // Initialize native class: cache Method IDs for callbacks
+    private long native_custom_data;      // Native code will use this to keep private data
+
+    //private boolean is_playing_desired;   // Whether the user asked to go to PLAYING
     private Socket socket;
-    private ImageAdapter imgAdapter;
-    private Thread UDP;
+    private String host = "192.168.0.8";
+    private int port = 6750;
 
-    //private PrintWriter message_BufferOut;
-
+    // Called when the activity is first created.
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    public void onCreate(Bundle savedInstanceState)
+    {
         super.onCreate(savedInstanceState);
+
+        // Initialize GStreamer and warn if it fails
+        try {
+            GStreamer.init(this);
+        } catch (Exception e) {
+            Toast.makeText(this, e.getMessage(), Toast.LENGTH_LONG).show();
+            finish();
+            return;
+        }
+
+        socket = SocketService.getSocket();
+
         setContentView(R.layout.activity_steuerung);
+
+        SurfaceView sv = this.findViewById(R.id.gStreamer);
+        SurfaceHolder sh = sv.getHolder();
+        sh.addCallback(this);
+
+        //Check connection status before calling nativeInit.
+        //if(socket.isConnected()) {
+            nativeInit();
+        //}
+
         init();
     }
 
     private void init() {
-        socket = SocketService.getSocket();
-        robotVideo = findViewById(R.id.robotVideo);
         mJoystick = findViewById(R.id.JoystickView);
         mJoystickMessageGenerator = new JoystickMessageGenerator();
-        imgAdapter = new ImageAdapter(WIDTH, HEIGHT);
-        mTextView = findViewById(R.id.textView);
-
-        //Check connection status before
-        if(socket.isConnected()) {
-            UDP = new Thread(new UDPReciever());
-            UDP.start();
-        }
 
         //publish AppControls messages for the Joystick
         mJoystick.setOnMoveListener(new JoystickView.OnMoveListener() {
@@ -72,28 +97,90 @@ public class Steuerung extends BaseAppCompatAcitivty {
 
                 AppControlsProtos.AppControls msg = mJoystickMessageGenerator.buildMessage(x, y);
                 //sendMessage(mJoystickMessageGenerator.buildMessage(x,y));
-                mTextView.setText(msg.toString());
             }
         });
     }
 
-    /*public void sendMessage(final AppControlsProtos.AppControls proto_buff){
-        Runnable runnable = new Runnable() {
+    private void serialize(final byte[] message) throws IOException {
+        Log.i("serialize","SendDataToNetwork: opened method serialze");
+        new Thread(new Runnable() {
             @Override
             public void run() {
-                if(message_BufferOut != null){
-                    message_BufferOut.println(proto_buff);
-                    message_BufferOut.flush();
-                    try {
-                        message_BufferOut = new PrintWriter(new BufferedWriter(new OutputStreamWriter(socket.getOutputStream())),true);
-                    } catch (IOException e) {
-                        System.out.println("_________________________________");
-                        e.printStackTrace();
-                    }
+                try {
+                    socket.getOutputStream().write(message);
+                    socket.getOutputStream().flush();
+                    Log.i("serialize","SendDataToNetwork: Success");
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
             }
-        };
-        Thread thread = new Thread(runnable);
-        thread.start();
+        }).start();
+    }
+
+
+    protected void onSaveInstanceState (Bundle outState) {
+        super.onSaveInstanceState(outState);
+    }
+
+    protected void onDestroy() {
+        nativeFinalize();
+        super.onDestroy();
+    }
+
+    private void setMessage(final String message) {
+        final TextView tv = this.findViewById(R.id.status);
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                tv.setText(message);
+            }
+        });
+    }
+
+    // Called from native code. Native code calls this once it has created its pipeline and
+    // the main loop is running, so it is ready to accept commands.
+    private void onGStreamerInitialized () {
+        Log.i ("GStreamer", "Gst initialized. Restoring state");
+        nativePlay();
+        final Activity activity = this;
+    }
+
+    public void surfaceChanged(SurfaceHolder holder, int format, int width,
+                                       int height) {
+        Log.d("GStreamer", "Surface changed to format " + format + " width "
+                + width + " height " + height);
+        nativeSurfaceInit (holder.getSurface());
+    }
+
+    public void surfaceCreated(SurfaceHolder holder) {
+        Log.d("GStreamer", "Surface created: " + holder.getSurface());
+    }
+
+    public void surfaceDestroyed(SurfaceHolder holder) {
+        Log.d("GStreamer", "Surface destroyed");
+        nativeSurfaceFinalize ();
+    }
+
+    private void setHostAndPort() {
+        //nativeSetHostAndPort();
+    }
+
+    static {
+        System.loadLibrary("gstreamer_android");
+        System.loadLibrary("GStream");
+        nativeClassInit();
+    }
+
+    /*private void onMediaSizeChanged (int width, int height) {
+        Log.i ("GStreamer", "Media size changed to " + width + "x" + height);
+        final GStreamerSurfaceView gsv = this.findViewById(R.id.gStreamer);
+        gsv.media_width = width;
+        gsv.media_height = height;
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                gsv.requestLayout();
+            }
+        });
     }*/
 }

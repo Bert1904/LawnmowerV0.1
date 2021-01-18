@@ -62,6 +62,7 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements View.OnClickLis
     private ImageButton buttonGoHome;
     private Socket socket;
 
+
     // Creates notification channel and publish notification
     private NotificationHandler nfhandler;
 
@@ -111,6 +112,7 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements View.OnClickLis
 
     }
 
+
     /*
      *Check if connection to tcp server is possbible, start thread if connected
      *display toast if client is not connected,
@@ -138,7 +140,6 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements View.OnClickLis
                     setNoConnection();
                     return;
             }
-
         }, 0, 10000);
         }
 
@@ -227,7 +228,6 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements View.OnClickLis
                 break;
             }
             case 1: {
-
                 Toast.makeText(getApplicationContext(), mowing, Toast.LENGTH_LONG).show();
                 break;
             }
@@ -430,4 +430,3 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements View.OnClickLis
         active=false;
     }
 }
-
