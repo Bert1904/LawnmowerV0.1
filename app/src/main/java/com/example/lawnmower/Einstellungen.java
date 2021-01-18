@@ -16,7 +16,7 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
 
-public class Einstellungen extends AppCompatActivity {
+public class Einstellungen extends BaseAppCompatAcitivty {
 
     private static final String CONNECTION_SERVER = "Versuche Verbindung zum Roboter aufzubauen";
     private static final String CONNECTION_LOST = "Verbindung Fehlgeschlagen";

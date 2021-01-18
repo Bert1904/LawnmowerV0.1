@@ -11,7 +11,7 @@ import androidx.appcompat.widget.Toolbar;
 import android.os.Handler;
 import android.view.View;
 
-public class Ladebildschirm extends AppCompatActivity {
+public class Ladebildschirm extends BaseAppCompatAcitivty {
     public final int LOAD_TIME = 3000;
 
     @Override

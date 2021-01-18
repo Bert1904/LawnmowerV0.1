@@ -1,7 +1,8 @@
 package com.example.lawnmower;
-
 public class ButtonMessageGenerator {
-
+    /*
+    * Build Lawnmower command messages from protobuff file
+    */
     public static AppControlsProtos.AppControls buildMessage(int i) {
         AppControlsProtos.AppControls btn;
         switch(i) {

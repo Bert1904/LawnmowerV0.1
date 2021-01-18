@@ -13,7 +13,7 @@ import android.widget.TextView;
 import java.net.Socket;
 
 
-public class HomeActivity extends AppCompatActivity {
+public class HomeActivity extends BaseAppCompatAcitivty {
     private ImageButton mowButton;
     private ImageButton buttonInfo;
     private ImageButton buttonControl;
@@ -66,13 +66,13 @@ public class HomeActivity extends AppCompatActivity {
         });
 
 
-        /*buttonMap =(ImageButton) findViewById(R.id.buttonMap);
+        buttonMap =(ImageButton) findViewById(R.id.buttonMap);
         buttonMap.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 openMap();
             }
-        });*/
+        });
 
     }
     /*public void openMap(){
@@ -96,4 +96,8 @@ public class HomeActivity extends AppCompatActivity {
         Intent intent = new Intent(this, Steuerung.class);
         startActivity(intent);
     }
+    public void openMap(){
+        Intent intent = new Intent(this, MapsActivity.class);
+        startActivity(intent);
+}
 }
