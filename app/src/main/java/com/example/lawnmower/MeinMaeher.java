@@ -62,7 +62,6 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements View.OnClickLis
     private ImageButton buttonGoHome;
     private Socket socket;
 
-
     // Creates notification channel and publish notification
     private NotificationHandler nfhandler;
 
@@ -76,7 +75,7 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements View.OnClickLis
     private DataInputStream data_Server;
 
     // False if activity is onStop, True if activity is runnung
-    static boolean active = false;
+    private static boolean active = false;
 
     //Value if TCP Server is connected
     private boolean isConnected = false;
@@ -112,7 +111,6 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements View.OnClickLis
 
     }
 
-
     /*
      *Check if connection to tcp server is possbible, start thread if connected
      *display toast if client is not connected,
@@ -120,34 +118,30 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements View.OnClickLis
      * is possible thread repeats functions after a period of 10000 ms
      */
     public void connectionHandler() {
-        if(!socket.isConnected()){
-        t.scheduleAtFixedRate(new TimerTask() {
-            @Override
-            public void run() {
+        if (!socket.isConnected()) {
+            t.scheduleAtFixedRate(new TimerTask() {
+                @Override
+                public void run() {
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                           if( !active){
-                               t.cancel();
-                           }else{
-                               Toast.makeText(getApplicationContext(), NO_CONNECTION, Toast.LENGTH_LONG).show();
-                               isConnected = false;
-                           }
-
+                            if (!active) {
+                                t.cancel();
+                            } else {
+                                Toast.makeText(getApplicationContext(), NO_CONNECTION, Toast.LENGTH_LONG).show();
+                                isConnected = false;
+                            }
                         }
 
                     });
                     setNoConnection();
                     return;
-            }
-        }, 0, 10000);
-        }
+                }
 
-        if (socket.isConnected()) {
+            }, 0, 10000);
+        } else
             setConnection();
-            new ListenerThread().execute();
-        }
-
+        new ListenerThread().execute();
     }
 
     /*
@@ -160,7 +154,7 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements View.OnClickLis
 
         @Override
         protected Boolean doInBackground(String... Boolean) {
-            while (true) {
+            while (isConnected) {
                 try {
                     Log.i("Do Background", "Background task started");
                     data_Server = new DataInputStream(socket.getInputStream());
@@ -170,6 +164,7 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements View.OnClickLis
                     healthCheck(data);
 
                 } catch (IOException e) {
+                    this.onPostExecute();
                     e.printStackTrace();
                     break;
                 }
@@ -180,14 +175,18 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements View.OnClickLis
                     e.printStackTrace();
                 }
             }
-            System.out.println(isConnected+"<-------------------------------------");
+            if (isConnected == false) {
+                onPostExecute();
+            }
+
             return isConnected;
         }
 
         protected void onPostExecute() {
+
             if (this.ioException != null) {
                 new AlertDialog.Builder(this.activity)
-                        .setTitle("An error occurrsed")
+                        .setTitle("Ein Fehler ist aufgetreten")
                         .setMessage(this.ioException.toString())
                         .setIcon(android.R.drawable.ic_dialog_alert)
                         .show();
@@ -203,8 +202,6 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements View.OnClickLis
      */
 
     protected void healthCheck(byte[] data) {
-
-        AppControlsProtos.LawnmowerStatus status = null;
         try {
             AppControlsProtos.LawnmowerStatus lawnmowerStatus = AppControlsProtos.LawnmowerStatus.parseDelimitedFrom(socket.getInputStream());
             handleStatus(lawnmowerStatus.getStatus());
@@ -228,6 +225,7 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements View.OnClickLis
                 break;
             }
             case 1: {
+
                 Toast.makeText(getApplicationContext(), mowing, Toast.LENGTH_LONG).show();
                 break;
             }
@@ -246,8 +244,6 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements View.OnClickLis
                 break;
             }
         }
-
-
     }
 
     /*
@@ -301,7 +297,6 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements View.OnClickLis
             public void run() {
                 runOnUiThread(new Runnable() {
                     private ImageView MowingStatusView = (ImageView) findViewById(R.id.MowingStatusView);
-
                     @Override
                     public void run() {
                         switch (v.getId()) {
@@ -328,7 +323,6 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements View.OnClickLis
                                 break;
                             }
                             case R.id.buttonStopMow: {
-
                                 byte[] msg = btnMessageGenerator.buildMessage(STOP).toByteArray();
 
                                 try {
@@ -409,14 +403,17 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements View.OnClickLis
     protected void onDestroy() {
         super.onDestroy();
     }
+
     @Override
-    public void onStart(){
+    public void onStart() {
         super.onStart();
-        active=true;
+        active = true;
     }
+
     @Override
-    public void onStop(){
+    public void onStop() {
         super.onStop();
-        active=false;
+        active = false;
     }
 }
+
