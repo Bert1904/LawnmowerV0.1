@@ -47,11 +47,11 @@
         <activity android:name=".MeinMaeher" />
         <activity android:name=".HomeActivity" />
         <activity android:name=".Einstellungen"/>
-        <activity android:name=".Ladebildschirm"/>
+        <activity android:name=".Steuerung"/>
 
         <activity
-        android:name=".Steuerung">
-        <!--android:configChanges="orientation|screenSize">-->
+        android:name=".Ladebildschirm"
+        android:configChanges="orientation|screenSize">
         <intent-filter>
             <action android:name="android.intent.action.MAIN" />
 

@@ -182,6 +182,8 @@ app_function (void *userdata)
     data->pipeline =
             gst_parse_launch ("videotestsrc ! warptv ! videoconvert ! autovideosink",
                               &error);
+    /* data->pipeline = gst_parse_launch ("udpsrc host=ipadress port=port timeout=5 ! warptv ! videoconvert ! autovideosink",&error);
+     * */
     if (error) {
         gchar *message =
                 g_strdup_printf ("Unable to build pipeline: %s", error->message);
@@ -284,7 +286,7 @@ gst_native_play (JNIEnv * env, jobject thiz)
 }
 
 /* Set pipeline to PAUSED state */
-static void
+/*static void
 gst_native_pause (JNIEnv * env, jobject thiz)
 {
     CustomData *data = GET_CUSTOM_DATA (env, thiz, custom_data_field_id);
@@ -292,7 +294,7 @@ gst_native_pause (JNIEnv * env, jobject thiz)
         return;
     GST_DEBUG ("Setting state to PAUSED");
     gst_element_set_state (data->pipeline, GST_STATE_PAUSED);
-}
+}*/
 
 /* Static class initializer: retrieve method and field IDs */
 static jboolean
@@ -371,7 +373,7 @@ static JNINativeMethod native_methods[] = {
         {"nativeInit", "()V", (void *) gst_native_init},
         {"nativeFinalize", "()V", (void *) gst_native_finalize},
         {"nativePlay", "()V", (void *) gst_native_play},
-        {"nativePause", "()V", (void *) gst_native_pause},
+        //{"nativePause", "()V", (void *) gst_native_pause},
         {"nativeSurfaceInit", "(Ljava/lang/Object;)V",
                 (void *) gst_native_surface_init},
         {"nativeSurfaceFinalize", "()V", (void *) gst_native_surface_finalize},
