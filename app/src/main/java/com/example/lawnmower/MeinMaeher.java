@@ -68,10 +68,9 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements View.OnClickLis
     // Keep the  ui updated if the Lawnmower status changed
     private StatusViewHandler svhandler;  //
 
-    // messages to send and receive from tcp server
+    // OutputStream  to send stream to tcp server
     private OutputStream toServer;
-    public OutputStream outToServer;
-    public InputStream inFromServer;
+    // DataInputStream to   receive incoming messages from  tcp server
     private DataInputStream data_Server;
 
     // False if activity is onStop, True if activity is runnung
@@ -225,11 +224,12 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements View.OnClickLis
                 break;
             }
             case 1: {
-
+                svhandler.setView(getResources().getIdentifier("@drawable/mahvorgang", null, getPackageName()));
                 Toast.makeText(getApplicationContext(), mowing, Toast.LENGTH_LONG).show();
                 break;
             }
             case 2: {
+                svhandler.setView(getResources().getIdentifier("@drawable/mahvorgangpausiert", null, getPackageName()));
                 nfhandler.sendStatusNotification(paused);
                 Toast.makeText(getApplicationContext(), paused, Toast.LENGTH_LONG).show();
                 break;
@@ -303,7 +303,6 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements View.OnClickLis
                             case R.id.buttonStartMow: {
                                 byte[] msg = btnMessageGenerator.buildMessage(START).toByteArray();
                                 try {
-                                    svhandler.setView(getResources().getIdentifier("@drawable/mahvorgang", null, getPackageName()));
                                     serialize(msg);
                                     Toast.makeText(getApplicationContext(), start, Toast.LENGTH_LONG).show();
                                 } catch (IOException e) {
@@ -314,7 +313,6 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements View.OnClickLis
                             case R.id.buttonPauseMow: {
                                 byte[] msg = btnMessageGenerator.buildMessage(PAUSE).toByteArray();
                                 try {
-                                    svhandler.setView(getResources().getIdentifier("@drawable/mahvorgangpausiert", null, getPackageName()));
                                     serialize(msg);
                                     Toast.makeText(getApplicationContext(), pausiere, Toast.LENGTH_LONG).show();
                                 } catch (IOException e) {
@@ -324,7 +322,6 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements View.OnClickLis
                             }
                             case R.id.buttonStopMow: {
                                 byte[] msg = btnMessageGenerator.buildMessage(STOP).toByteArray();
-
                                 try {
                                     svhandler.setView(getResources().getIdentifier("@drawable/mahvorgangstop", null, getPackageName()));
                                     serialize(msg);
