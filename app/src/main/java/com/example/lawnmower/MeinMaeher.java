@@ -398,16 +398,6 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements View.OnClickLis
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
-
-                try {
-                    while (isConnected) {
-                        outToServer = socket.getOutputStream();
-                        inFromServer = socket.getInputStream();
-                    }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                    Log.i("Failed", "SendDataToNetwork: Message send failed. Caught an exception");
-                }
             }
         }).start();
         ;
