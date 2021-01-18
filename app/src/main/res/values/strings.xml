@@ -3,6 +3,18 @@
     <string name="versionNumber">Version 0.7</string>
     <string name="whs_adresse">https://www.w-hs.de/</string>
     <string name="title_activity_maps">Map</string>
+    <string name="welcome">Willkommen</string>
+    <string name="MowActivityTitle">Mein Rasenmäher</string>
+
+    <string name="default_server_ip">192.168.0.8</string>
+    <string name="default_server_port">6750</string>
+    <string name="defaultIPHint">Default IP-Address 192.168.0.8</string>
+    <string name="defaultPortHint">Default Port Setting : 6750</string>
+
+    <string name="button_play">Play</string>
+    <string name="button_stop">Stop</string>
+
+    <string name="connect_button">Connect To Server</string>
 
     <string name="API_KEY">AIzaSyB4igh24I4mYtyLTCdn-QEWMfm-sBQODws</string>
 </resources>

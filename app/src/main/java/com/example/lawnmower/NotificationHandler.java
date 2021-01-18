@@ -70,7 +70,7 @@ public class NotificationHandler implements  Runnable {
       *
       */
     public void sendStatusNotification(String msg){
-        this.sendNotification(2, "Lawnmower Status", msg, R.drawable.icon_status);
+        this.sendNotification(2, "Lawnmower Status", msg, R.drawable.logomarkerr);
     }
 
      /**
