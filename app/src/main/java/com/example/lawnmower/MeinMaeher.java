@@ -196,7 +196,8 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements View.OnClickLis
 
     protected void healthCheck(byte[] data) {
         try {
-            AppControlsProtos.LawnmowerStatus lawnmowerStatus = AppControlsProtos.LawnmowerStatus.parseDelimitedFrom(socket.getInputStream());
+            AppControlsProtos.LawnmowerStatus lawnmowerStatus = AppControlsProtos.LawnmowerStatus.parseFrom(data);
+            // Möglichkeit 2 AppControlsProtos.LawnmowerStatus lawnmowerStatus = AppControlsProtos.LawnmowerStatus.parseDelimitedFrom(socket.getInputStream());
             handleStatus(lawnmowerStatus.getStatus());
             handleMowingErrors(lawnmowerStatus.getError());
 
