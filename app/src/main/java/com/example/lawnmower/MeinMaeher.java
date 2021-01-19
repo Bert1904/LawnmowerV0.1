@@ -156,7 +156,7 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements View.OnClickLis
                 try {
                     Log.i("Do Background", "Background task started");
                     data_Server = new DataInputStream(socket.getInputStream());
-                    while(isConnected){
+                    while(socket.isConnected()){
                         int length = data_Server.readChar();
                         byte[] data = new byte[length];
                         data_Server.readFully(data);
