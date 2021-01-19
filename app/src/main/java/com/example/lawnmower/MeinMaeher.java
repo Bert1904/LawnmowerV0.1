@@ -154,10 +154,8 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements View.OnClickLis
         @Override
         protected Boolean doInBackground(String... Boolean) {
                 try {
-
                     Log.i("Do Background", "Background task started");
                     data_Server = new DataInputStream(socket.getInputStream());
-
                     while(isConnected){
                         int length = data_Server.readChar();
                         byte[] data = new byte[length];
@@ -174,11 +172,6 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements View.OnClickLis
             } catch (IOException e) {
                 e.printStackTrace();
             }
-
-            if (isConnected == false) {
-                onPostExecute();
-            }
-
             return isConnected;
         }
 
