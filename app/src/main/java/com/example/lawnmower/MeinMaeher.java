@@ -138,9 +138,10 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements View.OnClickLis
                 }
 
             }, 0, 10000);
-        } else
+        } else {
             setConnection();
-        new ListenerThread().execute();
+            new ListenerThread().execute();
+        }
     }
 
     /*
@@ -153,20 +154,20 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements View.OnClickLis
 
         @Override
         protected Boolean doInBackground(String... Boolean) {
-                try {
-                    Log.i("Do Background", "Background task started");
-                    data_Server = new DataInputStream(socket.getInputStream());
-                    while(socket.isConnected()){
-                        int length = data_Server.readChar();
-                        byte[] data = new byte[length];
-                        data_Server.readFully(data);
-                        healthCheck(data);}
-
-                } catch (IOException e) {
-                    this.onPostExecute();
-                    e.printStackTrace();
-
+            try {
+                Log.i("Do Background", "Background task started");
+                data_Server = new DataInputStream(socket.getInputStream());
+                while (socket.isConnected()) {
+                    int length = data_Server.readChar();
+                    byte[] data = new byte[length];
+                    data_Server.readFully(data);
+                    healthCheck(data);
                 }
+
+            } catch (IOException e) {
+                e.printStackTrace();
+
+            }
             try {
                 data_Server.close();
             } catch (IOException e) {
@@ -292,6 +293,7 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements View.OnClickLis
             public void run() {
                 runOnUiThread(new Runnable() {
                     private ImageView MowingStatusView = (ImageView) findViewById(R.id.MowingStatusView);
+
                     @Override
                     public void run() {
                         switch (v.getId()) {
