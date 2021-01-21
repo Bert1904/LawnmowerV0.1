@@ -4,11 +4,15 @@ import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 import androidx.fragment.app.FragmentActivity;
 
+import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -70,6 +74,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         socket = SocketService.getSocket();
         nfhandler =  new NotificationHandler(this);
         createErrorNotificationChannel();
+        connectionHandler();
     }
     public  void connectionHandler(){
 
@@ -81,11 +86,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     isConnected=false;
                 }
             });
-
             return;
         }else{
-            Thread listenFromServerThread = new Thread(new ListenerThread());
-            listenFromServerThread.start();
+            new ListenerThread().execute();
             isConnected=true;
         }
     }
@@ -93,30 +96,52 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     /*
     ListenerThread to read incoming messages from tcp server
     */
-    class ListenerThread implements  Runnable{
+    class ListenerThread extends AsyncTask<String, Void, Boolean> {
+
+        Activity activity;
+        IOException ioException;
 
         @Override
-        public void run() {
-            while(isConnected){
-                try{
-                    data_Server = new DataInputStream(socket.getInputStream());
+        protected Boolean doInBackground(String... Boolean) {
+            try {
+                Log.i("Do Background", "Background task started");
+                data_Server = new DataInputStream(socket.getInputStream());
+                while (socket.isConnected()) {
                     int length = data_Server.readChar();
-                    byte[]data = new byte[length];
+                    byte[] data = new byte[length];
                     data_Server.readFully(data);
                     healthCheck(data);
-
-                } catch (IOException e) {
-                    e.printStackTrace();
-                    break;
                 }
+
+            } catch (IOException e) {
+                e.printStackTrace();
+
+            }
+            try {
+                data_Server.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return isConnected;
+        }
+
+        protected void onPostExecute() {
+
+            if (this.ioException != null) {
+                new AlertDialog.Builder(this.activity)
+                        .setTitle("Ein Fehler ist aufgetreten")
+                        .setMessage(this.ioException.toString())
+                        .setIcon(android.R.drawable.ic_dialog_alert)
+                        .show();
             }
         }
+
     }
     /*
      Deals with LawnmowerStatus
      */
     protected void healthCheck(byte[] data) {
-        AppControlsProtos.LawnmowerStatus status = null;
+
         try {
             AppControlsProtos.LawnmowerStatus lawnmowerStatus = AppControlsProtos.LawnmowerStatus.parseFrom(data);
                handleMowingErrors(lawnmowerStatus.getError());
@@ -198,8 +223,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     /**
      * Manipulates the map once available.
      * This callback is triggered when the map is ready to be used.
-     * This is where we can add markers or lines, add listeners or move the camera. In this case,
-     * we just add a marker near Sydney, Australia.
+     * If there is no connection possible, default marker is set to WHS Gelsenkirchen
      * If Google Play services is not installed on the device, the user will be prompted to install
      * it inside the SupportMapFragment. This method will only be triggered once the user has
      * installed Google Play services and returned to the app.
@@ -232,8 +256,4 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         googleMap.addMarker(options);
     }
-
-  
-
-
 }

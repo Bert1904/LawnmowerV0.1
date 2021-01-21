@@ -177,7 +177,7 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements View.OnClickLis
         }
 
         protected void onPostExecute() {
-
+            Log.i(" Background", "Background task ended");
             if (this.ioException != null) {
                 new AlertDialog.Builder(this.activity)
                         .setTitle("Ein Fehler ist aufgetreten")
