@@ -46,7 +46,6 @@ public class Steuerung extends AppCompatActivity implements SurfaceHolder.Callba
     private Socket socket;
     private String host = "192.168.0.8";
     private int port = 6750;
-    private TextView joystickMsg;
     private double xJoystick = 0.0;
     private double yJoystick = 0.0;
     private double lastSentX = 0.0;
@@ -86,7 +85,6 @@ public class Steuerung extends AppCompatActivity implements SurfaceHolder.Callba
     private void init() {
         mJoystick = findViewById(R.id.JoystickView);
         mJoystickMessageGenerator = new JoystickMessageGenerator();
-        joystickMsg = this.findViewById(R.id.joystick);
 
         //publish AppControls messages for the Joystick
         mJoystick.setOnMoveListener(new JoystickView.OnMoveListener() {
@@ -101,7 +99,6 @@ public class Steuerung extends AppCompatActivity implements SurfaceHolder.Callba
                     lastSentX = xJoystick;
                     lastSentY = yJoystick;
                     AppControlsProtos.AppControls msg = mJoystickMessageGenerator.buildMessage(xJoystick, yJoystick);
-                    joystickMsg.setText(msg.toString());
                     try {
                         serialize(msg.toByteArray());
                     } catch (Exception e) {

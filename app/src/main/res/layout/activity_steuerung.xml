@@ -28,12 +28,10 @@
         android:layout_gravity="center_horizontal"
         android:layout_weight="0">
 
-        <TextView
-            android:id="@+id/joystick"
+        <Space
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="TextView" />
+            android:layout_weight="1" />
 
         <io.github.controlwear.virtual.joystick.android.JoystickView
             android:id="@+id/JoystickView"

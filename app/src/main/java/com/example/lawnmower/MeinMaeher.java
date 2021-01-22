@@ -3,6 +3,7 @@ package com.example.lawnmower;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.net.sip.SipSession;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.NetworkOnMainThreadException;
@@ -102,11 +103,11 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements View.OnClickLis
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_meinmaeher);
-        try {
+        /*try {
             serverSocket= SocketChannel.open();
         } catch (IOException e) {
             e.printStackTrace();
-        }
+        }*/
         nfhandler = new NotificationHandler(this);
         this.MowingStatusView = (ImageView) findViewById(R.id.MowingStatusView);
         svhandler = new StatusViewHandler((ImageView) findViewById(R.id.MowingStatusView));
@@ -173,7 +174,7 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements View.OnClickLis
 
         @Override
         protected Boolean doInBackground(String... Boolean) {
-            Log.i("Do Background", "Background task started");
+            /*Log.i("Do Background", "Background task started");
             try{
                 serverSocket.socket().setReuseAddress(true);
                 serverSocket.connect(new InetSocketAddress(socket.getInetAddress(),socket.getPort()));
@@ -193,7 +194,7 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements View.OnClickLis
                 handleMowingErrors(lawnmowerStatus.getError());
             } catch (IOException e) {
                 e.printStackTrace();
-            }
+            }*/
 
             return isConnected;
         }
