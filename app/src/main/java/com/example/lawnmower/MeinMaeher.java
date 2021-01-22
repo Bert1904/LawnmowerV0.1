@@ -5,20 +5,27 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.NetworkOnMainThreadException;
+import android.renderscript.ScriptGroup;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.common.util.JsonUtils;
 import com.google.protobuf.InvalidProtocolBufferException;
 
+import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.nio.ByteBuffer;
+import java.nio.channels.SocketChannel;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -61,6 +68,12 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements View.OnClickLis
     private ImageButton buttonStopMow;
     private ImageButton buttonGoHome;
     private Socket socket;
+    private SocketChannel serverSocket;
+
+    AppControlsProtos.LawnmowerStatus status;
+    private byte[] buffer;
+    private int bufferSize;
+    private TextView msgRecieved;
 
     // Creates notification channel and publish notification
     private NotificationHandler nfhandler;
@@ -72,6 +85,7 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements View.OnClickLis
     private OutputStream toServer;
     // DataInputStream to   receive incoming messages from  tcp server
     private DataInputStream data_Server;
+    private InputStream fromServer;
 
     // False if activity is onStop, True if activity is runnung
     private static boolean active = false;
@@ -88,6 +102,11 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements View.OnClickLis
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_meinmaeher);
+        try {
+            serverSocket= SocketChannel.open();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         nfhandler = new NotificationHandler(this);
         this.MowingStatusView = (ImageView) findViewById(R.id.MowingStatusView);
         svhandler = new StatusViewHandler((ImageView) findViewById(R.id.MowingStatusView));
@@ -105,9 +124,9 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements View.OnClickLis
         // Toast  lawnmower back home
         buttonGoHome = (ImageButton) findViewById(R.id.buttonGoHome);
         buttonGoHome.setOnClickListener(this);
+        bufferSize = 1024;
+        buffer = new byte[bufferSize];
         connectionHandler();
-
-
     }
 
     /*
@@ -154,25 +173,28 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements View.OnClickLis
 
         @Override
         protected Boolean doInBackground(String... Boolean) {
-            try {
-                Log.i("Do Background", "Background task started");
-                data_Server = new DataInputStream(socket.getInputStream());
-                while (socket.isConnected()) {
-                    int length = data_Server.readChar();
-                    byte[] data = new byte[length];
-                    data_Server.readFully(data);
-                    healthCheck(data);
-                }
-
-            } catch (IOException e) {
-                e.printStackTrace();
-
-            }
-            try {
-                data_Server.close();
-            } catch (IOException e) {
+            Log.i("Do Background", "Background task started");
+            try{
+                serverSocket.socket().setReuseAddress(true);
+                serverSocket.connect(new InetSocketAddress(socket.getInetAddress(),socket.getPort()));
+                serverSocket.configureBlocking(true);}
+            catch (NetworkOnMainThreadException | IOException e){
                 e.printStackTrace();
             }
+            ByteBuffer socketBuffer= ByteBuffer.allocate(1024);
+            socketBuffer.flip();
+            byte[]buffer=new byte[socketBuffer.remaining()];
+            socketBuffer.get(buffer);
+            ByteArrayInputStream byteStream = new ByteArrayInputStream(buffer);
+            AppControlsProtos.LawnmowerStatus lawnmowerStatus = null;
+            try {
+                lawnmowerStatus = AppControlsProtos.LawnmowerStatus.parseDelimitedFrom((byteStream));
+                handleStatus(lawnmowerStatus.getStatus());
+                handleMowingErrors(lawnmowerStatus.getError());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
             return isConnected;
         }
 
@@ -186,100 +208,72 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements View.OnClickLis
                         .show();
             }
         }
+        private void handleStatus(AppControlsProtos.LawnmowerStatus.Status status) {
 
-    }
+            switch (status.getNumber()) {
+                case 0: {
+                    Toast.makeText(getApplicationContext(), ready, Toast.LENGTH_LONG).show();
+                    break;
+                }
+                case 1: {
+                    svhandler.setView(getResources().getIdentifier("@drawable/mahvorgang", null, getPackageName()));
+                    Toast.makeText(getApplicationContext(), mowing, Toast.LENGTH_LONG).show();
+                    break;
+                }
+                case 2: {
+                    svhandler.setView(getResources().getIdentifier("@drawable/mahvorgangpausiert", null, getPackageName()));
+                    nfhandler.sendStatusNotification(paused);
+                    Toast.makeText(getApplicationContext(), paused, Toast.LENGTH_LONG).show();
+                    break;
+                }
+                case 3: {
+                    Toast.makeText(getApplicationContext(), manual, Toast.LENGTH_LONG).show();
+                    break;
+                }
+                case 4: {
+                    nfhandler.sendStatusNotification(low_Light);
+                    Toast.makeText(getApplicationContext(), low_Light, Toast.LENGTH_LONG).show();
+                    break;
+                }
+            }
+        }
+        private void handleMowingErrors(AppControlsProtos.LawnmowerStatus.Error error) {
 
 
-
-    /*
-     *Deals with LawnmowerStatus
-     */
-
-    protected void healthCheck(byte[] data) {
-        try {
-            AppControlsProtos.LawnmowerStatus lawnmowerStatus = AppControlsProtos.LawnmowerStatus.parseFrom(data);
-            // Möglichkeit 2 AppControlsProtos.LawnmowerStatus lawnmowerStatus = AppControlsProtos.LawnmowerStatus.parseDelimitedFrom(socket.getInputStream());
-            handleStatus(lawnmowerStatus.getStatus());
-            handleMowingErrors(lawnmowerStatus.getError());
-
-        } catch (InvalidProtocolBufferException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
+            switch (error.getNumber()) {
+                case 0: {
+                    Toast.makeText(getApplicationContext(), NO_ERROR, Toast.LENGTH_LONG).show();
+                    return;
+                }
+                case 1: {
+                    nfhandler.sendErrorNotification(ROBOT_STUCK);
+                    Toast.makeText(getApplicationContext(), ROBOT_STUCK, Toast.LENGTH_LONG).show();
+                    break;
+                }
+                case 2: {
+                    nfhandler.sendErrorNotification(BLADE_STUCK);
+                    Toast.makeText(getApplicationContext(), BLADE_STUCK, Toast.LENGTH_LONG).show();
+                    break;
+                }
+                case 3: {
+                    nfhandler.sendErrorNotification(PICKUP);
+                    Toast.makeText(getApplicationContext(), PICKUP, Toast.LENGTH_LONG).show();
+                    break;
+                }
+                case 4: {
+                    nfhandler.sendErrorNotification(LOST);
+                    Toast.makeText(getApplicationContext(), LOST, Toast.LENGTH_LONG).show();
+                    break;
+                }
+                case -1: {
+                    nfhandler.sendErrorNotification(UNRECOGNIZED);
+                    Toast.makeText(getApplicationContext(), UNRECOGNIZED, Toast.LENGTH_LONG).show();
+                    break;
+                }
+            }
         }
     }
 
-    /*
-     Handle status updates coming from Lawnmower
-     */
-    private void handleStatus(AppControlsProtos.LawnmowerStatus.Status status) {
-
-        switch (status.getNumber()) {
-            case 0: {
-                Toast.makeText(getApplicationContext(), ready, Toast.LENGTH_LONG).show();
-                break;
-            }
-            case 1: {
-                svhandler.setView(getResources().getIdentifier("@drawable/mahvorgang", null, getPackageName()));
-                Toast.makeText(getApplicationContext(), mowing, Toast.LENGTH_LONG).show();
-                break;
-            }
-            case 2: {
-                svhandler.setView(getResources().getIdentifier("@drawable/mahvorgangpausiert", null, getPackageName()));
-                nfhandler.sendStatusNotification(paused);
-                Toast.makeText(getApplicationContext(), paused, Toast.LENGTH_LONG).show();
-                break;
-            }
-            case 3: {
-                Toast.makeText(getApplicationContext(), manual, Toast.LENGTH_LONG).show();
-                break;
-            }
-            case 4: {
-                nfhandler.sendStatusNotification(low_Light);
-                Toast.makeText(getApplicationContext(), low_Light, Toast.LENGTH_LONG).show();
-                break;
-            }
-        }
-    }
-
-    /*
-     Handle mowing-errors coming from Lawnmower
-     */
-    private void handleMowingErrors(AppControlsProtos.LawnmowerStatus.Error error) {
-
-
-        switch (error.getNumber()) {
-            case 0: {
-                Toast.makeText(getApplicationContext(), NO_ERROR, Toast.LENGTH_LONG).show();
-                return;
-            }
-            case 1: {
-                nfhandler.sendErrorNotification(ROBOT_STUCK);
-                Toast.makeText(getApplicationContext(), ROBOT_STUCK, Toast.LENGTH_LONG).show();
-                break;
-            }
-            case 2: {
-                nfhandler.sendErrorNotification(BLADE_STUCK);
-                Toast.makeText(getApplicationContext(), BLADE_STUCK, Toast.LENGTH_LONG).show();
-                break;
-            }
-            case 3: {
-                nfhandler.sendErrorNotification(PICKUP);
-                Toast.makeText(getApplicationContext(), PICKUP, Toast.LENGTH_LONG).show();
-                break;
-            }
-            case 4: {
-                nfhandler.sendErrorNotification(LOST);
-                Toast.makeText(getApplicationContext(), LOST, Toast.LENGTH_LONG).show();
-                break;
-            }
-            case -1: {
-                nfhandler.sendErrorNotification(UNRECOGNIZED);
-                Toast.makeText(getApplicationContext(), UNRECOGNIZED, Toast.LENGTH_LONG).show();
-                break;
-            }
-        }
-    }
 
     /*
      * Send Messages to TCP Server
@@ -350,7 +344,7 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements View.OnClickLis
     /* Disable the functionality of the buttons (Start,Pause,Stop,GoHome)
      * Set visibility to grey if there is no connection
      */
-    void setNoConnection() {
+    private void setNoConnection() {
         buttonStartMow.setEnabled(false);
         buttonPauseMow.setEnabled(false);
         buttonStopMow.setEnabled(false);
@@ -364,7 +358,7 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements View.OnClickLis
     /* Set visibility to normal value if connection is possible.
      *
      */
-    void setConnection() {
+    private void setConnection() {
         ((ImageButton) findViewById(R.id.buttonStartMow)).setAlpha(1.0F);
         ((ImageButton) findViewById(R.id.buttonPauseMow)).setAlpha(1.0F);
         ((ImageButton) findViewById(R.id.buttonStopMow)).setAlpha(1.0F);

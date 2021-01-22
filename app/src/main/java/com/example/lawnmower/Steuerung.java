@@ -29,7 +29,7 @@ public class Steuerung extends AppCompatActivity implements SurfaceHolder.Callba
 
     private JoystickView mJoystick;
     private JoystickMessageGenerator mJoystickMessageGenerator;
-    private final double DEADZONE = 0.15;
+    private final double DEADZONE = 0.0;
 
     private native void nativeSurfaceInit(Object surface);
     //private native void nativeSetHostAndPort(String Host, int port);
@@ -46,8 +46,12 @@ public class Steuerung extends AppCompatActivity implements SurfaceHolder.Callba
     private Socket socket;
     private String host = "192.168.0.8";
     private int port = 6750;
+    private TextView joystickMsg;
     private double xJoystick = 0.0;
     private double yJoystick = 0.0;
+    private double lastSentX = 0.0;
+    private double lastSentY = 0.0;
+    private final double MINDIF = 0.00;
 
     // Called when the activity is first created.
     @Override
@@ -82,31 +86,38 @@ public class Steuerung extends AppCompatActivity implements SurfaceHolder.Callba
     private void init() {
         mJoystick = findViewById(R.id.JoystickView);
         mJoystickMessageGenerator = new JoystickMessageGenerator();
+        joystickMsg = this.findViewById(R.id.joystick);
 
         //publish AppControls messages for the Joystick
         mJoystick.setOnMoveListener(new JoystickView.OnMoveListener() {
             @Override
             public void onMove(int angle, int strength) {
 
-                // rearrange the values of x,y to -1 to 1 with -1,-1 being the top left corner
-                xJoystick = (mJoystick.getNormalizedX()/50.0)-1.0;
-                if(Math.abs(xJoystick) < DEADZONE) {
-                    xJoystick = 0.0;
+                // rearrange the values of x,y to -1 to 1
+                xJoystick = -((mJoystick.getNormalizedY()/50.0)-1.0);
+                yJoystick = -((mJoystick.getNormalizedX()/50.0)-1.0);
+
+                if(difference(xJoystick, yJoystick, lastSentX, lastSentY) > MINDIF) {
+                    lastSentX = xJoystick;
+                    lastSentY = yJoystick;
+                    AppControlsProtos.AppControls msg = mJoystickMessageGenerator.buildMessage(xJoystick, yJoystick);
+                    joystickMsg.setText(msg.toString());
+                    try {
+                        serialize(msg.toByteArray());
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
                 }
 
-                yJoystick = (mJoystick.getNormalizedY()/50.0)-1.0;
-                if(Math.abs(yJoystick) < DEADZONE) {
-                    yJoystick = 0.0;
-                }
-
-                AppControlsProtos.AppControls msg = mJoystickMessageGenerator.buildMessage(xJoystick, yJoystick);
-                try {
-                    serialize(msg.toByteArray());
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
             }
         });
+    }
+
+    private double difference(double x, double y,double lastX, double lastY) {
+        double diffX = x-lastX;
+        double diffY = y-lastY;
+        double diff = Math.sqrt(diffY * diffY + diffX * diffX);
+        return diff;
     }
 
     private void serialize(final byte[] message) throws IOException {

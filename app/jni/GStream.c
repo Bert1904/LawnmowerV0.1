@@ -182,8 +182,7 @@ app_function (void *userdata)
     data->pipeline =
             gst_parse_launch ("videotestsrc ! warptv ! videoconvert ! autovideosink",
                               &error);
-    /* data->pipeline = gst_parse_launch ("udpsrc host=ipadress port=port timeout=5 ! warptv ! videoconvert ! autovideosink",&error);
-     * */
+     //data->pipeline = gst_parse_launch ("udpsrc adress=192.168.0.230 port=6750   ! rtph265depay !warptv ! videoconvert ! autovideosink",&error);
     if (error) {
         gchar *message =
                 g_strdup_printf ("Unable to build pipeline: %s", error->message);
