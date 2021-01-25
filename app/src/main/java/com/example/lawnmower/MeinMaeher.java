@@ -3,16 +3,20 @@ package com.example.lawnmower;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.Toast;
 
-import com.google.android.gms.common.util.JsonUtils;
-import com.google.protobuf.InvalidProtocolBufferException;
+import androidx.annotation.RequiresApi;
+
+import com.google.protobuf.CodedInputStream;
 
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -36,7 +40,11 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements View.OnClickLis
     private static final String paused = "Mähvorgang pausiert";
     private static final String manual = "Starte manuelle Bedienung";
     private static final String low_Light = "Geringer Batteriestatus";
-
+    // Boolean values to restore Image Status , set to true if image view was previos visible
+    private boolean isStopped = false;
+    private boolean isMowing = false;
+    private boolean isPaused = false;
+    private boolean isGoingHome = false;
 
     // Status Error Messages
     private static final String UNRECOGNIZED = "Unbekannter Fehler";
@@ -70,6 +78,7 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements View.OnClickLis
 
     // OutputStream  to send stream to tcp server
     private OutputStream toServer;
+    private InputStream fromServer;
     // DataInputStream to   receive incoming messages from  tcp server
     private DataInputStream data_Server;
 
@@ -82,6 +91,8 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements View.OnClickLis
     public ImageView MowingStatusView;
     // Timer to set up for connection handler to repeat tcp connection attempt
     private Timer t = new Timer();
+
+    public SharedPreferences lawnmowerpref;
 
 
     @Override
@@ -105,9 +116,10 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements View.OnClickLis
         // Toast  lawnmower back home
         buttonGoHome = (ImageButton) findViewById(R.id.buttonGoHome);
         buttonGoHome.setOnClickListener(this);
-        connectionHandler();
+        //connectionHandler();
 
-
+        // Restore ui elements when BackButton is clicked
+        lawnmowerpref = PreferenceManager.getDefaultSharedPreferences(this);
     }
 
     /*
@@ -147,33 +159,28 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements View.OnClickLis
     /*
      * ListenerThread to read incoming messages from tcp server
      */
-    class ListenerThread extends AsyncTask<String, Void, Boolean> {
+    class ListenerThread extends AsyncTask<Void, Void, Void> {
 
         Activity activity;
         IOException ioException;
 
+        @RequiresApi(api = Build.VERSION_CODES.N)
         @Override
-        protected Boolean doInBackground(String... Boolean) {
-            try {
-                Log.i("Do Background", "Background task started");
-                data_Server = new DataInputStream(socket.getInputStream());
-                while (socket.isConnected()) {
-                    int length = data_Server.readChar();
-                    byte[] data = new byte[length];
-                    data_Server.readFully(data);
-                    healthCheck(data);
+        protected Void doInBackground(Void... params) {
+            Log.i("Do Background", "Background task started");
+            while (true) {
+                try {
+                    Log.i("Waiting for msg ", "Waiting for messages started");
+                    CodedInputStream cis = CodedInputStream.newInstance(socket.getInputStream());
+                    AppControlsProtos.LawnmowerStatus lawnmowerStatus = AppControlsProtos.LawnmowerStatus.parseFrom(cis);
+                    handleStatus(lawnmowerStatus.getStatus());
+                    handleMowingErrors(lawnmowerStatus.getError());
+                    socket.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
-
-            } catch (IOException e) {
-                e.printStackTrace();
-
             }
-            try {
-                data_Server.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            return isConnected;
+
         }
 
         protected void onPostExecute() {
@@ -186,7 +193,6 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements View.OnClickLis
                         .show();
             }
         }
-
     }
 
 
@@ -195,19 +201,12 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements View.OnClickLis
      *Deals with LawnmowerStatus
      */
 
-    protected void healthCheck(byte[] data) {
-        try {
-            AppControlsProtos.LawnmowerStatus lawnmowerStatus = AppControlsProtos.LawnmowerStatus.parseFrom(data);
-            // Möglichkeit 2 AppControlsProtos.LawnmowerStatus lawnmowerStatus = AppControlsProtos.LawnmowerStatus.parseDelimitedFrom(socket.getInputStream());
-            handleStatus(lawnmowerStatus.getStatus());
-            handleMowingErrors(lawnmowerStatus.getError());
-
-        } catch (InvalidProtocolBufferException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    protected void healthCheck(AppControlsProtos.LawnmowerStatus lawnmowerStatus) {
+        Log.i(" healthCheck", "healthCheck started");
+        handleStatus(lawnmowerStatus.getStatus());
+        handleMowingErrors(lawnmowerStatus.getError());
     }
+
 
     /*
      Handle status updates coming from Lawnmower
@@ -220,11 +219,13 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements View.OnClickLis
                 break;
             }
             case 1: {
+                isMowing = true;
                 svhandler.setView(getResources().getIdentifier("@drawable/mahvorgang", null, getPackageName()));
                 Toast.makeText(getApplicationContext(), mowing, Toast.LENGTH_LONG).show();
                 break;
             }
             case 2: {
+                isPaused = true;
                 svhandler.setView(getResources().getIdentifier("@drawable/mahvorgangpausiert", null, getPackageName()));
                 nfhandler.sendStatusNotification(paused);
                 Toast.makeText(getApplicationContext(), paused, Toast.LENGTH_LONG).show();
@@ -310,6 +311,8 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements View.OnClickLis
                             case R.id.buttonPauseMow: {
                                 byte[] msg = btnMessageGenerator.buildMessage(PAUSE).toByteArray();
                                 try {
+                                    isPaused = true;
+                                    svhandler.setView(getResources().getIdentifier("@drawable/mahvorgangpausiert", null, getPackageName()));
                                     serialize(msg);
                                     Toast.makeText(getApplicationContext(), pausiere, Toast.LENGTH_LONG).show();
                                 } catch (IOException e) {
@@ -320,6 +323,7 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements View.OnClickLis
                             case R.id.buttonStopMow: {
                                 byte[] msg = btnMessageGenerator.buildMessage(STOP).toByteArray();
                                 try {
+                                    isStopped = true;
                                     svhandler.setView(getResources().getIdentifier("@drawable/mahvorgangstop", null, getPackageName()));
                                     serialize(msg);
                                     Toast.makeText(getApplicationContext(), stoppe, Toast.LENGTH_LONG).show();
@@ -331,6 +335,7 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements View.OnClickLis
                             case R.id.buttonGoHome: {
                                 byte[] msg = btnMessageGenerator.buildMessage(HOME).toByteArray();
                                 try {
+                                    isGoingHome = true;
                                     svhandler.setView(getResources().getIdentifier("@drawable/backhome", null, getPackageName()));
                                     serialize(msg);
                                     Toast.makeText(getApplicationContext(), GoHome, Toast.LENGTH_LONG).show();
@@ -389,8 +394,34 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements View.OnClickLis
             }
         }).start();
         ;
+    }
 
-
+    /* Method to restore ui status when moving bewteen screen or activites in Lawnmower app
+     * Set status true if imagage is visible
+     */
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if (isPaused) {
+            lawnmowerpref.edit().putBoolean("PausedTrue", true).apply();
+        } else {
+            lawnmowerpref.edit().putBoolean("PausedTrue", false).apply();
+        }
+        if (isMowing) {
+            lawnmowerpref.edit().putBoolean("MowingTrue", true).apply();
+        } else {
+            lawnmowerpref.edit().putBoolean("MowingTrue", false).apply();
+        }
+        if (isGoingHome) {
+            lawnmowerpref.edit().putBoolean("GoHomeTrue", true).apply();
+        } else {
+            lawnmowerpref.edit().putBoolean("GoHomeTrue", false).apply();
+        }
+        if (isStopped) {
+            lawnmowerpref.edit().putBoolean("StopTrue", true).apply();
+        } else {
+            lawnmowerpref.edit().putBoolean("StopTrue", false).apply();
+        }
     }
 
     @Override
@@ -409,5 +440,21 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements View.OnClickLis
         super.onStop();
         active = false;
     }
-}
 
+    /* Method to restore ui status
+     * Set previous image view in activity
+     */
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (lawnmowerpref.getBoolean("PausedTrue", false)) {
+            svhandler.setView(getResources().getIdentifier("@drawable/mahvorgangpausiert", null, getPackageName()));
+        } else if (lawnmowerpref.getBoolean("MowingTrue", false)) {
+            svhandler.setView(getResources().getIdentifier("@drawable/mahvorgang", null, getPackageName()));
+        } else if (lawnmowerpref.getBoolean("GoHomeTrue", false)) {
+            svhandler.setView(getResources().getIdentifier("@drawable/backhome", null, getPackageName()));
+        } else if (lawnmowerpref.getBoolean("StopTrue", false)) {
+            svhandler.setView(getResources().getIdentifier("@drawable/mahvorgangstop", null, getPackageName()));
+        }
+    }
+}

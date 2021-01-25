@@ -15,7 +15,7 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import org.freedesktop.gstreamer.GStreamer;
+//import org.freedesktop.gstreamer.GStreamer;
 
 import io.github.controlwear.virtual.joystick.android.JoystickView;
 
@@ -57,7 +57,7 @@ public class Steuerung extends AppCompatActivity implements SurfaceHolder.Callba
 
         // Initialize GStreamer and warn if it fails
         try {
-            GStreamer.init(this);
+            //GStreamer.init(this);
         } catch (Exception e) {
             Toast.makeText(this, e.getMessage(), Toast.LENGTH_LONG).show();
             finish();
@@ -74,9 +74,9 @@ public class Steuerung extends AppCompatActivity implements SurfaceHolder.Callba
 
         //Check connection status before calling nativeInit.
         //if(socket.isConnected()) {
-            nativeInit();
+            //nativeInit();
         //}
-        init();
+        //init();
     }
 
     private void init() {
