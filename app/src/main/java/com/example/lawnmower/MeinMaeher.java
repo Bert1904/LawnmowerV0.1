@@ -355,7 +355,7 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements View.OnClickLis
     /* Disable the functionality of the buttons (Start,Pause,Stop,GoHome)
      * Set visibility to grey if there is no connection
      */
-    void setNoConnection() {
+    private void setNoConnection() {
         buttonStartMow.setEnabled(false);
         buttonPauseMow.setEnabled(false);
         buttonStopMow.setEnabled(false);
@@ -369,7 +369,7 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements View.OnClickLis
     /* Set visibility to normal value if connection is possible.
      *
      */
-    void setConnection() {
+    private void setConnection() {
         ((ImageButton) findViewById(R.id.buttonStartMow)).setAlpha(1.0F);
         ((ImageButton) findViewById(R.id.buttonPauseMow)).setAlpha(1.0F);
         ((ImageButton) findViewById(R.id.buttonStopMow)).setAlpha(1.0F);
