@@ -18,6 +18,8 @@ import androidx.annotation.RequiresApi;
 
 import com.google.protobuf.CodedInputStream;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -170,9 +172,24 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements View.OnClickLis
             Log.i("Do Background", "Background task started");
             while (true) {
                 try {
+                    // Methode 1
+                    fromServer = socket.getInputStream();
+                    int nRead;
+                    byte[]data = new byte[1024];
+                    ByteArrayOutputStream buffer= new ByteArrayOutputStream();
+                    while((nRead=fromServer.read(data,0,data.length))!=-1){
+                        buffer.write(data,0,nRead);
+                    }
+
+                    AppControlsProtos.LawnmowerStatus lawnmowerStatus = AppControlsProtos.LawnmowerStatus.parseFrom(buffer.toByteArray());
+
+
                     Log.i("Waiting for msg ", "Waiting for messages started");
-                    CodedInputStream cis = CodedInputStream.newInstance(socket.getInputStream());
-                    AppControlsProtos.LawnmowerStatus lawnmowerStatus = AppControlsProtos.LawnmowerStatus.parseFrom(cis);
+                    // Methode 2
+//                    CodedInputStream cis = CodedInputStream.newInstance(socket.getInputStream());
+//                    AppControlsProtos.LawnmowerStatus lawnmowerStatus = AppControlsProtos.LawnmowerStatus.parseFrom(cis);
+
+
                     handleStatus(lawnmowerStatus.getStatus());
                     handleMowingErrors(lawnmowerStatus.getError());
                     socket.close();

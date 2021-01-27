@@ -1,4 +1,5 @@
 
+
 package com.example.lawnmower;
 
 import android.app.Activity;
@@ -15,7 +16,7 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-//import org.freedesktop.gstreamer.GStreamer;
+import org.freedesktop.gstreamer.GStreamer;
 
 import io.github.controlwear.virtual.joystick.android.JoystickView;
 
@@ -60,7 +61,7 @@ public class Steuerung extends AppCompatActivity implements SurfaceHolder.Callba
 
         // Initialize GStreamer and warn if it fails
         try {
-            //GStreamer.init(this);
+            GStreamer.init(this);
         } catch (Exception e) {
             Toast.makeText(this, e.getMessage(), Toast.LENGTH_LONG).show();
             finish();
@@ -77,9 +78,9 @@ public class Steuerung extends AppCompatActivity implements SurfaceHolder.Callba
 
         //Check connection status before calling nativeInit.
         //if(socket.isConnected()) {
-            //nativeInit();
+        nativeInit();
         //}
-        //init();
+        init();
     }
 
     private void init() {
@@ -161,7 +162,7 @@ public class Steuerung extends AppCompatActivity implements SurfaceHolder.Callba
     }
 
     public void surfaceChanged(SurfaceHolder holder, int format, int width,
-                                       int height) {
+                               int height) {
         Log.d("GStreamer", "Surface changed to format " + format + " width "
                 + width + " height " + height);
         nativeSurfaceInit (holder.getSurface());
