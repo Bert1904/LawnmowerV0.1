@@ -193,7 +193,7 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements View.OnClickLis
                     // Methode 1
                     length = new byte[4];
                     socket.getInputStream().read(length);
-                    msgLength = length[0];
+                    msgLength = convertByteArrayToInt(length);
                     msg = new byte[msgLength];
                     readExact(socket.getInputStream(),msg,0,msgLength);
                     Log.i("bytes read", "successfully read bytes");
@@ -204,7 +204,7 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements View.OnClickLis
                         Log.i("Exception", "msg: " + e.getMessage());
                     }
 
-                    Log.i("Message","revieved Message");
+                    Log.i("Message","reveived Message");
                     //handleStatus(lawnmowerStatus.getStatus());
                     //handleMowingErrors(lawnmowerStatus.getError());
                     //Thread.sleep(10);
@@ -215,6 +215,16 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements View.OnClickLis
                 }
             }
             //return null;
+        }
+
+        private int convertByteArrayToInt(byte[] data) {
+            if (data == null || data.length != 4) return 0x0;
+            // ----------
+            return
+                    ((0xff & data[0]) << 0  |
+                            (0xff & data[1]) << 8  |
+                            (0xff & data[2]) << 16   |
+                            (0xff & data[3]) << 24);
         }
 
         private void readExact(InputStream stream, byte[] buffer, int offset, int count) throws Exception{
