@@ -3,11 +3,13 @@ package com.example.lawnmower;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.provider.ContactsContract;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
@@ -16,7 +18,9 @@ import android.widget.Toast;
 
 import androidx.annotation.RequiresApi;
 
+import com.google.protobuf.ByteString;
 import com.google.protobuf.CodedInputStream;
+import com.google.protobuf.InvalidProtocolBufferException;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -25,6 +29,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.net.SocketException;
+import java.nio.ByteBuffer;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -71,6 +77,7 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements View.OnClickLis
     private ImageButton buttonStopMow;
     private ImageButton buttonGoHome;
     private Socket socket;
+    private AsyncTask<Void, AppControlsProtos.LawnmowerStatus, Void> backgroundTask;
 
     // Creates notification channel and publish notification
     private NotificationHandler nfhandler;
@@ -118,7 +125,7 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements View.OnClickLis
         // Toast  lawnmower back home
         buttonGoHome = (ImageButton) findViewById(R.id.buttonGoHome);
         buttonGoHome.setOnClickListener(this);
-        //connectionHandler();
+        connectionHandler();
 
         // Restore ui elements when BackButton is clicked
         lawnmowerpref = PreferenceManager.getDefaultSharedPreferences(this);
@@ -154,14 +161,14 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements View.OnClickLis
             }, 0, 10000);
         } else {
             setConnection();
-            new ListenerThread().execute();
+            backgroundTask = new ListenerThread().execute();
         }
     }
 
     /*
      * ListenerThread to read incoming messages from tcp server
      */
-    class ListenerThread extends AsyncTask<Void, Void, Void> {
+    class ListenerThread extends AsyncTask<Void, AppControlsProtos.LawnmowerStatus, Void> {
 
         Activity activity;
         IOException ioException;
@@ -170,34 +177,62 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements View.OnClickLis
         @Override
         protected Void doInBackground(Void... params) {
             Log.i("Do Background", "Background task started");
+            byte[] length;
+            int msgLength;
+            DataInputStream dis = null;
+            try {
+                dis = new DataInputStream(socket.getInputStream());
+            } catch (IOException e) {
+                e.printStackTrace();
+                return null;
+            }
+            byte[]msg;
+            AppControlsProtos.LawnmowerStatus lawnmowerStatus = null;
             while (true) {
                 try {
                     // Methode 1
-                    fromServer = socket.getInputStream();
-                    int nRead;
-                    byte[]data = new byte[1024];
-                    ByteArrayOutputStream buffer= new ByteArrayOutputStream();
-                    while((nRead=fromServer.read(data,0,data.length))!=-1){
-                        buffer.write(data,0,nRead);
+                    length = new byte[4];
+                    socket.getInputStream().read(length);
+                    msgLength = length[0];
+                    msg = new byte[msgLength];
+                    readExact(socket.getInputStream(),msg,0,msgLength);
+                    Log.i("bytes read", "successfully read bytes");
+                    try {
+                        lawnmowerStatus = AppControlsProtos.LawnmowerStatus.parseFrom(msg);
+                        Log.i("msg", "" + lawnmowerStatus.toString());
+                    } catch(InvalidProtocolBufferException e) {
+                        Log.i("Exception", "msg: " + e.getMessage());
                     }
 
-                    AppControlsProtos.LawnmowerStatus lawnmowerStatus = AppControlsProtos.LawnmowerStatus.parseFrom(buffer.toByteArray());
-
-
-                    Log.i("Waiting for msg ", "Waiting for messages started");
-                    // Methode 2
-//                    CodedInputStream cis = CodedInputStream.newInstance(socket.getInputStream());
-//                    AppControlsProtos.LawnmowerStatus lawnmowerStatus = AppControlsProtos.LawnmowerStatus.parseFrom(cis);
-
-
-                    handleStatus(lawnmowerStatus.getStatus());
-                    handleMowingErrors(lawnmowerStatus.getError());
-                    socket.close();
+                    Log.i("Message","revieved Message");
+                    //handleStatus(lawnmowerStatus.getStatus());
+                    //handleMowingErrors(lawnmowerStatus.getError());
+                    //Thread.sleep(10);
                 } catch (IOException e) {
+                    e.printStackTrace();
+                } catch ( Exception e) {
                     e.printStackTrace();
                 }
             }
+            //return null;
+        }
 
+        private void readExact(InputStream stream, byte[] buffer, int offset, int count) throws Exception{
+            int bytesRead;
+            if(count < 0) {
+                throw new IllegalArgumentException();
+            }
+            while(count != 0 &&
+                    (bytesRead = stream.read(buffer, offset, count)) > 0) {
+                offset += bytesRead;
+                count -= bytesRead;
+            }
+            if(count != 0) throw new Exception("End of stream was reached.");
+        }
+
+        @Override
+        protected void onProgressUpdate(AppControlsProtos.LawnmowerStatus... values) {
+            super.onProgressUpdate(values);
         }
 
         protected void onPostExecute() {
@@ -443,6 +478,7 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements View.OnClickLis
 
     @Override
     protected void onDestroy() {
+        backgroundTask.cancel(true);
         super.onDestroy();
     }
 
