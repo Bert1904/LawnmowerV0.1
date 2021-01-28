@@ -7,6 +7,8 @@ import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.View;
@@ -14,9 +16,12 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+
 import androidx.annotation.RequiresApi;
 
 import com.google.protobuf.CodedInputStream;
+import com.google.protobuf.UnknownFieldSetLite;
+
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -25,6 +30,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.nio.ByteBuffer;
+import java.sql.SQLWarning;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -158,6 +165,7 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements View.OnClickLis
         }
     }
 
+
     /*
      * ListenerThread to read incoming messages from tcp server
      */
@@ -170,35 +178,19 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements View.OnClickLis
         @Override
         protected Void doInBackground(Void... params) {
             Log.i("Do Background", "Background task started");
-            while (true) {
-                try {
-                    // Methode 1
-                    fromServer = socket.getInputStream();
-                    int nRead;
-                    byte[]data = new byte[1024];
-                    ByteArrayOutputStream buffer= new ByteArrayOutputStream();
-                    while((nRead=fromServer.read(data,0,data.length))!=-1){
-                        buffer.write(data,0,nRead);
-                    }
+    try {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
 
-                    AppControlsProtos.LawnmowerStatus lawnmowerStatus = AppControlsProtos.LawnmowerStatus.parseFrom(buffer.toByteArray());
-
-
-                    Log.i("Waiting for msg ", "Waiting for messages started");
-                    // Methode 2
-//                    CodedInputStream cis = CodedInputStream.newInstance(socket.getInputStream());
-//                    AppControlsProtos.LawnmowerStatus lawnmowerStatus = AppControlsProtos.LawnmowerStatus.parseFrom(cis);
-
-
-                    handleStatus(lawnmowerStatus.getStatus());
-                    handleMowingErrors(lawnmowerStatus.getError());
-                    socket.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
             }
+        });
+    }catch (final Exception e){
 
-        }
+    }
+
+
+        return null; }
 
         protected void onPostExecute() {
             Log.i(" Background", "Background task ended");
@@ -209,10 +201,24 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements View.OnClickLis
                         .setIcon(android.R.drawable.ic_dialog_alert)
                         .show();
             }
+
         }
+
     }
 
 
+//    private class HandleUITask implements  Runnable{
+//
+//        @Override
+//        public void run() {
+//            try{
+//                handleStatus(AppControlsProtos.LawnmowerStatus.Status status);
+//                handleMowingErrors(AppControlsProtos.LawnmowerStatus.Status status);
+//            } catch (Exception e) {
+//                e.printStackTrace();
+//            }
+//        }
+//    }
 
     /*
      *Deals with LawnmowerStatus

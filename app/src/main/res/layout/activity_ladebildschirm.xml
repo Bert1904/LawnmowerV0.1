@@ -16,43 +16,29 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
+
         <ImageView
             android:id="@+id/background"
-            android:layout_width="410dp"
-            android:layout_height="610dp"
+            android:layout_width="416dp"
+            android:layout_height="286dp"
 
             android:adjustViewBounds="true"
 
-            android:background="@drawable/background"
+            android:background="@drawable/loading"
             android:contentDescription="TODO"
             android:scaleType="centerCrop"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.3"
+            app:layout_constraintHorizontal_bias="0.443"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_bias="1.0" />
-
-        <ImageView
-            android:id="@+id/logo"
-            android:layout_width="252dp"
-            android:layout_height="213dp"
-
-            android:adjustViewBounds="true"
-            android:scaleType="centerCrop"
-            android:src="@drawable/logorob"
-            app:layout_constraintBottom_toBottomOf="@+id/background"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.427"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_bias="0.475" />
+            app:layout_constraintVertical_bias="0.449" />
 
         <TextView
             android:id="@+id/willkommen"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="32dp"
+            android:layout_marginBottom="128dp"
             android:text="@string/welcome"
             android:textAlignment="center"
             android:textColor="#000000"

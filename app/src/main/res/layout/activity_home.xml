@@ -35,12 +35,12 @@
 
             <ImageButton
                 android:id="@+id/buttonMow"
-                android:layout_width="144dp"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:background="#00FFFFFF"
                 android:backgroundTint="#00FFFFFF"
 
-                android:src="@drawable/meinm"
+                android:src="@drawable/buttonmaeher"
                 app:layout_column="0"
                 app:layout_row="0" />
 
