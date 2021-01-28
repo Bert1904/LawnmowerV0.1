@@ -16,4 +16,5 @@
     <string name="connect_button">Connect To Server</string>
     <string name="API_KEY">AIzaSyB4igh24I4mYtyLTCdn-QEWMfm-sBQODws</string>
     <string name="msgRecieved">I recieved a message.</string>
+    <string name="version"> Version 0,9</string>
 </resources>
