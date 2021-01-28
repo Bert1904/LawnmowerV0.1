@@ -205,7 +205,7 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements View.OnClickLis
                     }
 
                     Log.i("Message","reveived Message");
-                    //handleStatus(lawnmowerStatus.getStatus());
+                    handleStatus(lawnmowerStatus.getStatus());
                     //handleMowingErrors(lawnmowerStatus.getError());
                     //Thread.sleep(10);
                 } catch (IOException e) {
@@ -257,19 +257,6 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements View.OnClickLis
         }
     }
 
-
-
-    /*
-     *Deals with LawnmowerStatus
-     */
-
-    protected void healthCheck(AppControlsProtos.LawnmowerStatus lawnmowerStatus) {
-        Log.i(" healthCheck", "healthCheck started");
-        handleStatus(lawnmowerStatus.getStatus());
-        handleMowingErrors(lawnmowerStatus.getError());
-    }
-
-
     /*
      Handle status updates coming from Lawnmower
      */
@@ -277,29 +264,54 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements View.OnClickLis
 
         switch (status.getNumber()) {
             case 0: {
-                Toast.makeText(getApplicationContext(), ready, Toast.LENGTH_LONG).show();
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast.makeText(getApplicationContext(), ready, Toast.LENGTH_LONG).show();
+                    }
+                });
                 break;
             }
             case 1: {
                 isMowing = true;
-                svhandler.setView(getResources().getIdentifier("@drawable/mahvorgang", null, getPackageName()));
-                Toast.makeText(getApplicationContext(), mowing, Toast.LENGTH_LONG).show();
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        svhandler.setView(getResources().getIdentifier("@drawable/mahvorgang", null, getPackageName()));
+                        Toast.makeText(getApplicationContext(), mowing, Toast.LENGTH_LONG).show();
+                    }
+                });
                 break;
             }
             case 2: {
                 isPaused = true;
-                svhandler.setView(getResources().getIdentifier("@drawable/mahvorgangpausiert", null, getPackageName()));
-                nfhandler.sendStatusNotification(paused);
-                Toast.makeText(getApplicationContext(), paused, Toast.LENGTH_LONG).show();
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        svhandler.setView(getResources().getIdentifier("@drawable/mahvorgangpausiert", null, getPackageName()));
+                        nfhandler.sendStatusNotification(paused);
+                        Toast.makeText(getApplicationContext(), paused, Toast.LENGTH_LONG).show();
+                    }
+                });
                 break;
             }
             case 3: {
-                Toast.makeText(getApplicationContext(), manual, Toast.LENGTH_LONG).show();
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast.makeText(getApplicationContext(), manual, Toast.LENGTH_LONG).show();
+                    }
+                });
                 break;
             }
             case 4: {
-                nfhandler.sendStatusNotification(low_Light);
-                Toast.makeText(getApplicationContext(), low_Light, Toast.LENGTH_LONG).show();
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        nfhandler.sendStatusNotification(low_Light);
+                        Toast.makeText(getApplicationContext(), low_Light, Toast.LENGTH_LONG).show();
+                    }
+                });
                 break;
             }
         }
