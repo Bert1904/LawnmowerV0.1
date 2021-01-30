@@ -64,9 +64,9 @@
             <ImageButton
                 android:id="@+id/lawbnower"
                 android:layout_width="wrap_content"
-                android:layout_height="188dp"
+                android:layout_height="wrap_content"
                 android:layout_centerHorizontal="true"
-                android:background="@drawable/roblab" />
+                android:background="@drawable/ic_lawnmowerlogonotext" />
 
 
         </LinearLayout>

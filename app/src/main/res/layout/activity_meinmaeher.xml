@@ -36,7 +36,7 @@
             android:layout_width="0pt"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:src="@drawable/logorob" />
+            android:src="@drawable/lawnmowerlogo" />
 
         <Space
             android:layout_width="wrap_content"

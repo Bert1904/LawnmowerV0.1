@@ -3,7 +3,7 @@ package com.example.lawnmower;
 import android.widget.ImageView;
 
 /**
- * Updates the ui and set imageview on "MeinMaeher" if lawnmower status is channged
+ * Updates the ui and set imageview on "MeinMaeher" if lawnmower status is changed
  */
 public class StatusViewHandler extends Thread {
     public ImageView MowingStatusView;

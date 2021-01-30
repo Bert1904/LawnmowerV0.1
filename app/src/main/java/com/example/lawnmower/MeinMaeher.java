@@ -125,8 +125,8 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements View.OnClickLis
         // Toast  lawnmower back home
         buttonGoHome = (ImageButton) findViewById(R.id.buttonGoHome);
         buttonGoHome.setOnClickListener(this);
-        connectionHandler();
-
+        //connectionHandler();
+        setConnection();
         // Restore ui elements when BackButton is clicked
         lawnmowerpref = PreferenceManager.getDefaultSharedPreferences(this);
     }
@@ -375,6 +375,7 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements View.OnClickLis
                             case R.id.buttonStartMow: {
                                 byte[] msg = btnMessageGenerator.buildMessage(START).toByteArray();
                                 try {
+                                    svhandler.setView(getResources().getIdentifier("@drawable/mowing", null, getPackageName()));
                                     serialize(msg);
                                     Toast.makeText(getApplicationContext(), start, Toast.LENGTH_LONG).show();
                                 } catch (IOException e) {
@@ -386,7 +387,7 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements View.OnClickLis
                                 byte[] msg = btnMessageGenerator.buildMessage(PAUSE).toByteArray();
                                 try {
                                     isPaused = true;
-                                    svhandler.setView(getResources().getIdentifier("@drawable/mahvorgangpausiert", null, getPackageName()));
+                                    svhandler.setView(getResources().getIdentifier("@drawable/mowpause", null, getPackageName()));
                                     serialize(msg);
                                     Toast.makeText(getApplicationContext(), pausiere, Toast.LENGTH_LONG).show();
                                 } catch (IOException e) {
@@ -398,7 +399,7 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements View.OnClickLis
                                 byte[] msg = btnMessageGenerator.buildMessage(STOP).toByteArray();
                                 try {
                                     isStopped = true;
-                                    svhandler.setView(getResources().getIdentifier("@drawable/mahvorgangstop", null, getPackageName()));
+                                    svhandler.setView(getResources().getIdentifier("@drawable/mowstop", null, getPackageName()));
                                     serialize(msg);
                                     Toast.makeText(getApplicationContext(), stoppe, Toast.LENGTH_LONG).show();
                                 } catch (IOException e) {
@@ -410,7 +411,7 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements View.OnClickLis
                                 byte[] msg = btnMessageGenerator.buildMessage(HOME).toByteArray();
                                 try {
                                     isGoingHome = true;
-                                    svhandler.setView(getResources().getIdentifier("@drawable/backhome", null, getPackageName()));
+                                    svhandler.setView(getResources().getIdentifier("@drawable/mowback", null, getPackageName()));
                                     serialize(msg);
                                     Toast.makeText(getApplicationContext(), GoHome, Toast.LENGTH_LONG).show();
                                 } catch (IOException e) {
