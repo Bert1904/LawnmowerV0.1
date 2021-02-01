@@ -2,6 +2,8 @@
     <string name="app_name">Lawnmower</string>
     <string name="versionNumber">Version 0.7</string>
     <string name="whs_adresse">https://www.w-hs.de/</string>
+
+    <string name ="roblab_adresse">https://roblab2.ik.w-hs.de/mediawiki/index.php/Lawnmower></string>
     <string name="title_activity_maps">Map</string>
     <string name="welcome">Willkommen</string>
     <string name="MowActivityTitle">Mein Rasenmäher</string>

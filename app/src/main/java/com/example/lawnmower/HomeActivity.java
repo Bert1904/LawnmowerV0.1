@@ -14,11 +14,12 @@ import java.net.Socket;
 
 
 public class HomeActivity extends BaseAppCompatAcitivty {
-    private ImageButton mowButton;
+    private ImageButton buttonMow;
     private ImageButton buttonInfo;
     private ImageButton buttonControl;
     private ImageButton buttonSettings;
     private ImageButton buttonMap;
+    private ImageButton buttonWeather;
     private Socket socket;
 
     @Override
@@ -57,8 +58,8 @@ public class HomeActivity extends BaseAppCompatAcitivty {
             }
         });
 
-        mowButton = findViewById(R.id.buttonMow);
-        mowButton.setOnClickListener(new View.OnClickListener() {
+        buttonMow = findViewById(R.id.buttonMow);
+        buttonMow.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 openMeinmaeher();
@@ -74,12 +75,24 @@ public class HomeActivity extends BaseAppCompatAcitivty {
             }
         });
 
+        buttonWeather =(ImageButton) findViewById(R.id.buttonEmpty);
+        buttonWeather.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                openWeather();
+            }
+        });
+
+
     }
     /*public void openMap(){
         Intent intent = new Intent(this, com.example.lawnmower.map.MapMain.class);
         startActivity(intent);
     }*/
-
+    public void openWeather(){
+        Intent intent = new Intent(this, WeatherActivity.class);
+        startActivity(intent);
+    }
     public void openSetting(){
         Intent intent = new Intent(this, Einstellungen.class);
         startActivity(intent);

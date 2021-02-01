@@ -501,7 +501,7 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements View.OnClickLis
 
     @Override
     protected void onDestroy() {
-        backgroundTask.cancel(true);
+        //backgroundTask.cancel(true);
         super.onDestroy();
     }
 
