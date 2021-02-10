@@ -134,8 +134,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         //mMap.addGroundOverlay(new GroundOverlayOptions().image(bitmapDescriptor).position(lawnmower_gps,100));
         System.out.println("*******************"+"" +lawnmower_gps);
         // Create marker Options
-        MarkerOptions options = new MarkerOptions().position(lawnmower_gps).title("Lawnmower").icon(BitmapDescriptorFactory.fromBitmap(smallMarker));
-
+        // TODO : Change Icon to actual Logo MarkerOptions options = new MarkerOptions().position(lawnmower_gps).title("Lawnmower").icon(BitmapDescriptorFactory.fromBitmap(smallMarker));
+        MarkerOptions options = new MarkerOptions().position(lawnmower_gps).title("Lawnmower");
         mMap.addMarker(options.position(lawnmower_gps).title("Lawnmower Position"));
 
        googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(lawnmower_gps,16));

@@ -39,7 +39,7 @@ public class WeatherActivity extends BaseAppCompatAcitivty {
     private final double longitude = 7.026503346726579d;
     private List<Address> addresses;
     String CityName;
-    String lawnmower = "Lawnmower Position:";
+    String lawnmower = "Lawnmower Position";
     TextView txtCityLocation, txtTime, txtValue, txtrain, txtValueHumidity, txtValueClouds;
 
     String nameIcon = "10d";
@@ -204,7 +204,7 @@ public class WeatherActivity extends BaseAppCompatAcitivty {
 
             Long time = jsonObject.getLong("dt");
 
-            String sTime = new SimpleDateFormat("dd-MM-yyyy hh:mm:ss", Locale.GERMAN)
+            String sTime = new SimpleDateFormat("dd.MM.yyyy hh:mm:ss", Locale.GERMAN)
                     .format(new Date(time * 1000));
 
 

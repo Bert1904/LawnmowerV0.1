@@ -24,25 +24,23 @@
 
             <TextView
                 android:id="@+id/txtCityLocation"
-                android:layout_width="81dp"
-                android:layout_height="47dp"
-                android:layout_marginEnd="304dp"
-                android:layout_marginBottom="-50dp" />
-
-            <TextView
-                android:id="@+id/txtCity"
-                android:layout_width="30dp"
-                android:layout_height="23dp"
-                android:fontFamily="sans-serif-medium"
-                android:text="City"
+                android:layout_width="258dp"
+                android:layout_height="57dp"
+                android:layout_above="@+id/imgIcon"
+                android:layout_alignTop="@+id/txtTime"
+                android:layout_marginTop="-58dp"
+                android:layout_marginEnd="-55dp"
+                android:layout_marginBottom="64dp"
+                android:layout_toStartOf="@+id/txtValue"
                 android:textColor="#ffffff"
-                android:textSize="32dp" />
+                android:textSize="23dp" />
 
             <TextView
                 android:id="@+id/txtTime"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_below="@id/txtCity"
+                android:layout_width="135dp"
+                android:layout_height="62dp"
+
+                android:layout_marginTop="52dp"
                 android:fontFamily="sans-serif"
                 android:text="Time"
                 android:textColor="#ffffff"
@@ -50,9 +48,10 @@
 
             <ImageView
                 android:id="@+id/imgIcon"
-                android:layout_width="140dp"
-                android:layout_height="140dp"
-                android:layout_below="@id/txtTime"
+                android:layout_width="207dp"
+                android:layout_height="70dp"
+                android:layout_below="@+id/txtTime"
+                android:layout_marginTop="11dp"
                 android:src="@drawable/phc" />
 
             <TextView
@@ -61,6 +60,8 @@
                 android:layout_height="wrap_content"
                 android:layout_alignBottom="@id/imgIcon"
                 android:layout_alignParentRight="true"
+                android:layout_marginRight="20dp"
+                android:layout_marginBottom="1dp"
                 android:fontFamily="sans-serif-condensed-light"
                 android:text="3°"
                 android:textColor="#ffffff"
@@ -138,12 +139,11 @@
 
             <ImageView
                 android:id="@+id/imgVision"
-                android:layout_width="wrap_content"
+                android:layout_width="51dp"
                 android:layout_height="wrap_content"
-                android:src="@drawable/cloud"
                 android:layout_below="@id/imgHumidity"
                 android:layout_marginTop="30dp"
-                />
+                android:src="@drawable/cloud" />
 
             <TextView
                 android:id="@+id/txtTitleVision"
@@ -175,7 +175,8 @@
         android:id="@+id/btnLoading"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
+        android:layout_alignEnd="@+id/rlWeather"
+        android:layout_marginEnd="76dp"
         android:onClick="loading"
         android:text="@string/aktuallisiere_wetterdaten" />
 
