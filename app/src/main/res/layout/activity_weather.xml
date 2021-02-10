@@ -23,6 +23,13 @@
             android:padding="16dp">
 
             <TextView
+                android:id="@+id/txtCityLocation"
+                android:layout_width="81dp"
+                android:layout_height="47dp"
+                android:layout_marginEnd="304dp"
+                android:layout_marginBottom="-50dp" />
+
+            <TextView
                 android:id="@+id/txtCity"
                 android:layout_width="30dp"
                 android:layout_height="23dp"
@@ -168,19 +175,8 @@
         android:id="@+id/btnLoading"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Aktuallisiere Wetterdaten"
-        android:onClick="loading"
-        android:layout_below="@id/txtCityLocation"
         android:layout_centerHorizontal="true"
-        />
-
-    <TextView
-        android:id="@+id/txtCityLocation"
-        android:layout_width="75dp"
-        android:layout_height="50dp"
-        android:layout_above="@+id/rlWeather"
-        android:layout_alignEnd="@+id/rlWeather"
-        android:layout_marginEnd="304dp"
-        android:layout_marginBottom="-50dp" />
+        android:onClick="loading"
+        android:text="@string/aktuallisiere_wetterdaten" />
 
 </RelativeLayout>

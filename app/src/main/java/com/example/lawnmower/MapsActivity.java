@@ -35,8 +35,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private GoogleMap mMap;
     private Socket socket;
     private boolean isConnected= false;
-    private double latitute = 51.574534546129726d;
-    private double longitude = 7.026503346726579d;
+    private double latitute ;
+    private double longitude ;
     private NotificationHandler nfhandler ;
 
 
@@ -48,7 +48,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private static final String BLADE_STUCK = "Klinge hängt fest";
     private static final String PICKUP = "Roboter aufnehmen";
     private static final String LOST = "Roboter lost";
-
+    private  GeographicCoordinateService geoService;
 
     @Override
     protected void onPause() {
@@ -74,123 +74,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         socket = SocketService.getSocket();
         nfhandler =  new NotificationHandler(this);
         createErrorNotificationChannel();
-        connectionHandler();
-    }
-    public  void connectionHandler(){
-
-        if (!socket.isConnected()) {
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    Toast.makeText(getApplicationContext(), NO_CONNECTION, Toast.LENGTH_LONG).show();
-                    isConnected=false;
-                }
-            });
-            return;
-        }else{
-            new ListenerThread().execute();
-            isConnected=true;
-        }
+        geoService=GeographicCoordinateService.getGeographicCoordinateService();
     }
 
-    /*
-    ListenerThread to read incoming messages from tcp server
-    */
-    class ListenerThread extends AsyncTask<String, Void, Boolean> {
-
-        Activity activity;
-        IOException ioException;
-
-        @Override
-        protected Boolean doInBackground(String... Boolean) {
-            try {
-                Log.i("Do Background", "Background task started");
-                data_Server = new DataInputStream(socket.getInputStream());
-                while (socket.isConnected()) {
-                    int length = data_Server.readChar();
-                    byte[] data = new byte[length];
-                    data_Server.readFully(data);
-                    healthCheck(data);
-                }
-
-            } catch (IOException e) {
-                e.printStackTrace();
-
-            }
-            try {
-                data_Server.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            return isConnected;
-        }
-
-        protected void onPostExecute() {
-
-            if (this.ioException != null) {
-                new AlertDialog.Builder(this.activity)
-                        .setTitle("Ein Fehler ist aufgetreten")
-                        .setMessage(this.ioException.toString())
-                        .setIcon(android.R.drawable.ic_dialog_alert)
-                        .show();
-            }
-        }
-
-    }
-    /*
-     Deals with LawnmowerStatus
-     */
-    protected void healthCheck(byte[] data) {
-
-        try {
-            AppControlsProtos.LawnmowerStatus lawnmowerStatus = AppControlsProtos.LawnmowerStatus.parseFrom(data);
-               handleMowingErrors(lawnmowerStatus.getError());
-               latitute = lawnmowerStatus.getLatitude();
-               longitude = lawnmowerStatus.getLongitude();
-
-        } catch (InvalidProtocolBufferException e) {
-            e.printStackTrace();
-        }
-    }
-
-    /*
-    Handle mowing-errors coming from Lawnmower
-    */
-    private void handleMowingErrors(AppControlsProtos.LawnmowerStatus.Error error) {
-
-
-        switch (error.getNumber()){
-            case 0:{
-                Toast.makeText(getApplicationContext(),NO_ERROR, Toast.LENGTH_LONG).show();
-                return;
-            }
-            case 1:{
-                sendErrorNotification(ROBOT_STUCK);
-                Toast.makeText(getApplicationContext(),ROBOT_STUCK, Toast.LENGTH_LONG).show();
-                break;
-            }
-            case 2:{
-                sendErrorNotification(BLADE_STUCK);
-                Toast.makeText(getApplicationContext(),BLADE_STUCK, Toast.LENGTH_LONG).show();
-                break;
-            }
-            case 3:{
-                sendErrorNotification(PICKUP);
-                Toast.makeText(getApplicationContext(),PICKUP, Toast.LENGTH_LONG).show();
-                break;
-            }
-            case 4:{
-                sendErrorNotification(LOST);
-                Toast.makeText(getApplicationContext(),LOST, Toast.LENGTH_LONG).show();
-                break;
-            }
-            case -1:{
-                sendErrorNotification(UNRECOGNIZED);
-                Toast.makeText(getApplicationContext(),UNRECOGNIZED, Toast.LENGTH_LONG).show();
-                break;
-            }
-        }
-    }
     /*
     Creates Channel for sending error notifications
     */
@@ -230,7 +116,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
      */
     @Override
     public void onMapReady(GoogleMap googleMap) {
-        connectionHandler();
         mMap = googleMap;
         int height = 200;
         int width = 200;
@@ -241,10 +126,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         Bitmap smallMarker = Bitmap.createScaledBitmap(b, width, height, false);
         BitmapDescriptor bitmapDescriptor = BitmapDescriptorFactory.fromBitmap(b);
-
+        System.out.println(geoService.getlatitude()+"<------------------");
+        System.out.println(geoService.getlongitude()+"<------------------");
         mMap.setMapType(GoogleMap.MAP_TYPE_SATELLITE);
         // Add a marker to current lawnmower position and move the camera
-        LatLng lawnmower_gps = new LatLng(latitute, longitude);
+        LatLng lawnmower_gps = new LatLng(geoService.getlatitude(), geoService.getlongitude());
         //mMap.addGroundOverlay(new GroundOverlayOptions().image(bitmapDescriptor).position(lawnmower_gps,100));
         System.out.println("*******************"+"" +lawnmower_gps);
         // Create marker Options

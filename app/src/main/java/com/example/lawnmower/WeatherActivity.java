@@ -190,7 +190,6 @@ public class WeatherActivity extends BaseAppCompatAcitivty {
             JSONObject jsonObject = new JSONObject(result);
 
             JSONObject main = jsonObject.getJSONObject("main");
-
             String temp = main.getString("temp");
             String humidity = main.getString("humidity");
 

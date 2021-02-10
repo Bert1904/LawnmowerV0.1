@@ -71,7 +71,7 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements View.OnClickLis
     //ButtonMessageGenerator for protobuf file
     private ButtonMessageGenerator btnMessageGenerator = new ButtonMessageGenerator();
 
-    // Variablen für Mäher Funktionen
+    // Values for mower function
     private ImageButton buttonStartMow;
     private ImageButton buttonPauseMow;
     private ImageButton buttonStopMow;
@@ -102,7 +102,9 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements View.OnClickLis
     private Timer t = new Timer();
 
     public SharedPreferences lawnmowerpref;
-
+    public double latitude;
+    public double longitude;
+    public GeographicCoordinateService geoServiceHandler;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -112,7 +114,7 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements View.OnClickLis
         this.MowingStatusView = (ImageView) findViewById(R.id.MowingStatusView);
         svhandler = new StatusViewHandler((ImageView) findViewById(R.id.MowingStatusView));
         socket = SocketService.getSocket();
-
+        geoServiceHandler =GeographicCoordinateService.getGeographicCoordinateService();
         // Toast start mowing process
         buttonStartMow = (ImageButton) findViewById(R.id.buttonStartMow);
         buttonStartMow.setOnClickListener(this);
@@ -129,13 +131,17 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements View.OnClickLis
         setConnection();
         // Restore ui elements when BackButton is clicked
         lawnmowerpref = PreferenceManager.getDefaultSharedPreferences(this);
+
+       // Testing delete later
+        handleGeoCoordinatesLatitude(51.6559681);
+        handleGeoCoordinatesLongitude(6.9642606);
     }
 
     /*
      *Check if connection to tcp server is possbible, start thread if connected
      *display toast if client is not connected,
-     * RunOnUi Thread establish a connection if activity is running but no connection
-     * is possible thread repeats functions after a period of 10000 ms
+     * RunOnUi Thread establish a connection if activity is running
+     * If  no  connection is possible thread repeats functions after a period of 10000 ms
      */
     public void connectionHandler() {
         if (!socket.isConnected()) {
@@ -186,7 +192,7 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements View.OnClickLis
                 e.printStackTrace();
                 return null;
             }
-            byte[]msg;
+            byte[] msg;
             AppControlsProtos.LawnmowerStatus lawnmowerStatus = null;
             while (true) {
                 try {
@@ -195,22 +201,24 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements View.OnClickLis
                     socket.getInputStream().read(length);
                     msgLength = convertByteArrayToInt(length);
                     msg = new byte[msgLength];
-                    readExact(socket.getInputStream(),msg,0,msgLength);
+                    readExact(socket.getInputStream(), msg, 0, msgLength);
                     Log.i("bytes read", "successfully read bytes");
                     try {
                         lawnmowerStatus = AppControlsProtos.LawnmowerStatus.parseFrom(msg);
                         Log.i("msg", "" + lawnmowerStatus.toString());
-                    } catch(InvalidProtocolBufferException e) {
+                    } catch (InvalidProtocolBufferException e) {
                         Log.i("Exception", "msg: " + e.getMessage());
                     }
 
-                    Log.i("Message","reveived Message");
+                    Log.i("Message", "reveived Message");
                     handleStatus(lawnmowerStatus.getStatus());
+                    handleGeoCoordinatesLatitude(lawnmowerStatus.getLatitude());
+                    handleGeoCoordinatesLongitude(lawnmowerStatus.getLongitude());
                     //handleMowingErrors(lawnmowerStatus.getError());
                     //Thread.sleep(10);
                 } catch (IOException e) {
                     e.printStackTrace();
-                } catch ( Exception e) {
+                } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
@@ -221,23 +229,23 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements View.OnClickLis
             if (data == null || data.length != 4) return 0x0;
             // ----------
             return
-                    ((0xff & data[0]) << 0  |
-                            (0xff & data[1]) << 8  |
-                            (0xff & data[2]) << 16   |
+                    ((0xff & data[0]) << 0 |
+                            (0xff & data[1]) << 8 |
+                            (0xff & data[2]) << 16 |
                             (0xff & data[3]) << 24);
         }
 
-        private void readExact(InputStream stream, byte[] buffer, int offset, int count) throws Exception{
+        private void readExact(InputStream stream, byte[] buffer, int offset, int count) throws Exception {
             int bytesRead;
-            if(count < 0) {
+            if (count < 0) {
                 throw new IllegalArgumentException();
             }
-            while(count != 0 &&
+            while (count != 0 &&
                     (bytesRead = stream.read(buffer, offset, count)) > 0) {
                 offset += bytesRead;
                 count -= bytesRead;
             }
-            if(count != 0) throw new Exception("End of stream was reached.");
+            if (count != 0) throw new Exception("End of stream was reached.");
         }
 
         @Override
@@ -255,6 +263,18 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements View.OnClickLis
                         .show();
             }
         }
+    }
+
+    private void handleGeoCoordinatesLatitude(double latitude) {
+        this.latitude = latitude;
+        System.out.println(latitude);
+        geoServiceHandler.setLatitude(latitude);
+    }
+
+    private void handleGeoCoordinatesLongitude(double longitude) {
+        this.longitude = longitude;
+        System.out.println(longitude);
+        geoServiceHandler.setLongitude(longitude);
     }
 
     /*

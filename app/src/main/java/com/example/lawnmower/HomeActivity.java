@@ -75,7 +75,7 @@ public class HomeActivity extends BaseAppCompatAcitivty {
             }
         });
 
-        buttonWeather =(ImageButton) findViewById(R.id.buttonEmpty);
+        buttonWeather =(ImageButton) findViewById(R.id.buttonWeather);
         buttonWeather.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
