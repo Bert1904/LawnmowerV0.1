@@ -48,14 +48,14 @@
 
             <ImageView
                 android:id="@+id/imgIcon"
-                android:layout_width="207dp"
-                android:layout_height="70dp"
+                android:layout_width="237dp"
+                android:layout_height="113dp"
                 android:layout_below="@+id/txtTime"
-                android:layout_marginTop="11dp"
+                android:layout_marginTop="-19dp"
                 android:src="@drawable/phc" />
 
             <TextView
-                android:id="@+id/txtValue"
+                android:id="@+id/txtTempValue"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_alignBottom="@id/imgIcon"
@@ -86,7 +86,7 @@
                 />
 
             <TextView
-                android:id="@+id/txtRain"
+                android:id="@+id/txtFeelLik"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_toRightOf="@+id/imgFeelLike"
@@ -100,7 +100,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_toRightOf="@id/imgFeelLike"
-                android:layout_below="@id/txtRain"
+                android:layout_below="@id/txtFeelLik"
                 android:layout_marginLeft="10dp"
                 android:text="7°"
                 android:textSize="20dp"
