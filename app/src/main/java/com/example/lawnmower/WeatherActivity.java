@@ -23,10 +23,13 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.TimeZone;
 import java.util.concurrent.ExecutionException;
 
 public class WeatherActivity extends BaseAppCompatAcitivty {
@@ -40,9 +43,10 @@ public class WeatherActivity extends BaseAppCompatAcitivty {
     private List<Address> addresses;
     String CityName;
     String lawnmower = "Lawnmower Position";
-    TextView txtCityLocation, txtTime, txtValue, txtrain, txtValueHumidity, txtValueClouds;
+    TextView txtCityLocation, txtTime, txtValueTemp, txtValueFeelLike, txtValueHumidity, txtValueClouds;
 
     String nameIcon = "10d";
+
     String description="";
 
 
@@ -70,9 +74,9 @@ public class WeatherActivity extends BaseAppCompatAcitivty {
         txtCityLocation.setText(lawnmower+ CityName);
         txtTime = findViewById(R.id.txtTime);
 
-        txtValue = findViewById(R.id.txtValue);
+        txtValueTemp = findViewById(R.id.txtTempValue);
 
-        txtrain = findViewById(R.id.txtRain);
+        txtValueFeelLike = findViewById(R.id.txtValueFeelLike);
 
         txtValueHumidity = findViewById(R.id.txtValueHumidity);
 
@@ -174,7 +178,7 @@ public class WeatherActivity extends BaseAppCompatAcitivty {
 
 
 
-        String url = "https://api.openweathermap.org/data/2.5/weather?q=" + CityName + "&units=metric&appid=" + Key;
+        String url = "https://api.openweathermap.org/data/2.5/weather?q=" + CityName + "&units=metric&appid=" + Key+"&lang=de";
 
         DownloadTask downloadTask = new DownloadTask();
 
@@ -190,10 +194,9 @@ public class WeatherActivity extends BaseAppCompatAcitivty {
             JSONObject jsonObject = new JSONObject(result);
 
             JSONObject main = jsonObject.getJSONObject("main");
-            String temp = main.getString("temp");
+            String feels_like = main.getString("feels_like");
             String humidity = main.getString("humidity");
-
-
+            String temp = main.getString("temp");
 
 
             String visibility = jsonObject.getString("visibility");
@@ -204,13 +207,24 @@ public class WeatherActivity extends BaseAppCompatAcitivty {
 
             Long time = jsonObject.getLong("dt");
 
-            String sTime = new SimpleDateFormat("dd.MM.yyyy hh:mm:ss", Locale.GERMAN)
-                    .format(new Date(time * 1000));
+           TimeZone timeZone = TimeZone.getTimeZone("CET");
+            //String sTime = new SimpleDateFormat("dd.MM.yyyy hh:mm:ss", Locale.GERMAN).format(new Date(time * 1000));
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTime(new Date());
+            SimpleDateFormat sdf = new SimpleDateFormat("dd.MM.yyyy hh:mm:ss");
+
+            // Initial timezone set in central european time
+            sdf.setTimeZone(TimeZone.getTimeZone("CET"));
 
 
+            //Set  timezone
+            sdf.setTimeZone(TimeZone.getDefault());
+            String current_time = sdf.format(new Date());
 
-            txtValue.setText(temp + "°");
-            txtTime.setText(sTime);
+
+            txtValueTemp.setText(temp+"°");
+            txtTime.setText(current_time);
+            txtValueFeelLike.setText(feels_like + "°");
             txtCityLocation.setText(visibility);
             txtCityLocation.setText(lawnmower+CityName);
             txtValueClouds.setText(description);
