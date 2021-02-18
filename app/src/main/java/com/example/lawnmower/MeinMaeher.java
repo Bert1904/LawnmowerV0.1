@@ -3,34 +3,27 @@ package com.example.lawnmower;
 
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.provider.ContactsContract;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.RequiresApi;
 
-import com.google.protobuf.ByteString;
-import com.google.protobuf.CodedInputStream;
 import com.google.protobuf.InvalidProtocolBufferException;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
-import java.net.SocketException;
-import java.nio.ByteBuffer;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -76,6 +69,8 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements View.OnClickLis
     private ImageButton buttonPauseMow;
     private ImageButton buttonStopMow;
     private ImageButton buttonGoHome;
+    private ImageView batteryStatusIcon;
+    private TextView batteryStatus;
     private Socket socket;
     private AsyncTask<Void, AppControlsProtos.LawnmowerStatus, Void> backgroundTask;
 
@@ -83,28 +78,28 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements View.OnClickLis
     private NotificationHandler nfhandler;
 
     // Keep the  ui updated if the Lawnmower status changed
-    private StatusViewHandler svhandler;  //
+    private StatusViewHandler svhandler;
+    private BatteryStatusHandler bshandler;
+    // ImageView to display Lawnmower Status
+    public ImageView MowingStatusView;
+
+    private boolean isConnected;
 
     // OutputStream  to send stream to tcp server
     private OutputStream toServer;
-    private InputStream fromServer;
     // DataInputStream to   receive incoming messages from  tcp server
     private DataInputStream data_Server;
 
     // False if activity is onStop, True if activity is runnung
     private static boolean active = false;
 
-    //Value if TCP Server is connected
-    private boolean isConnected = false;
-    // ImageView to display Lawnmower Status
-    public ImageView MowingStatusView;
     // Timer to set up for connection handler to repeat tcp connection attempt
     private Timer t = new Timer();
 
     public SharedPreferences lawnmowerpref;
     public double latitude;
     public double longitude;
-    public GeographicCoordinateService geoServiceHandler;
+    private LawnmowerStatusData lawnmowerStatusData;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -114,7 +109,14 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements View.OnClickLis
         this.MowingStatusView = (ImageView) findViewById(R.id.MowingStatusView);
         svhandler = new StatusViewHandler((ImageView) findViewById(R.id.MowingStatusView));
         socket = SocketService.getSocket();
-        geoServiceHandler =GeographicCoordinateService.getGeographicCoordinateService();
+        lawnmowerStatusData = LawnmowerStatusData.getInstance();
+
+        batteryStatus = findViewById(R.id.batteryStatus);
+        batteryStatusIcon = findViewById(R.id.batteryStatusIcon);
+        batteryStatus.setVisibility(View.INVISIBLE);
+        batteryStatusIcon.setVisibility(View.INVISIBLE);
+        bshandler = new BatteryStatusHandler(batteryStatusIcon);
+
         // Toast start mowing process
         buttonStartMow = (ImageButton) findViewById(R.id.buttonStartMow);
         buttonStartMow.setOnClickListener(this);
@@ -127,14 +129,15 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements View.OnClickLis
         // Toast  lawnmower back home
         buttonGoHome = (ImageButton) findViewById(R.id.buttonGoHome);
         buttonGoHome.setOnClickListener(this);
-        //connectionHandler();
-        setConnection();
+        connectionHandler();
+        //setConnection();
         // Restore ui elements when BackButton is clicked
         lawnmowerpref = PreferenceManager.getDefaultSharedPreferences(this);
-
        // Testing delete later
-        handleGeoCoordinatesLatitude(51.6559681);
-        handleGeoCoordinatesLongitude(6.9642606);
+        /*lawnmowerStatusData.setLatitude(51.6559681);
+        this.latitude = 51.6559681;
+        lawnmowerStatusData.setLongitude(6.9642606);
+        this.longitude = 6.9642606;*/
     }
 
     /*
@@ -167,7 +170,7 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements View.OnClickLis
             }, 0, 10000);
         } else {
             setConnection();
-            backgroundTask = new ListenerThread().execute();
+            //backgroundTask = new ListenerThread().execute();
         }
     }
 
@@ -209,11 +212,16 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements View.OnClickLis
                     } catch (InvalidProtocolBufferException e) {
                         Log.i("Exception", "msg: " + e.getMessage());
                     }
-
                     Log.i("Message", "reveived Message");
                     handleStatus(lawnmowerStatus.getStatus());
-                    handleGeoCoordinatesLatitude(lawnmowerStatus.getLatitude());
-                    handleGeoCoordinatesLongitude(lawnmowerStatus.getLongitude());
+                    setBatteryState(lawnmowerStatus.getBatteryState());
+
+                    //sets data to the singleton
+                    lawnmowerStatusData.setStatus(lawnmowerStatus.getStatus());
+                    lawnmowerStatusData.setError(lawnmowerStatus.getError());
+                    lawnmowerStatusData.setBatteryState(lawnmowerStatus.getBatteryState());
+                    lawnmowerStatusData.setLatitude(lawnmowerStatus.getLatitude());
+                    lawnmowerStatusData.setLongitude(lawnmowerStatus.getLongitude());
                     //handleMowingErrors(lawnmowerStatus.getError());
                     //Thread.sleep(10);
                 } catch (IOException e) {
@@ -225,6 +233,7 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements View.OnClickLis
             //return null;
         }
 
+        //least significant bit first
         private int convertByteArrayToInt(byte[] data) {
             if (data == null || data.length != 4) return 0x0;
             // ----------
@@ -265,7 +274,27 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements View.OnClickLis
         }
     }
 
-    private void handleGeoCoordinatesLatitude(double latitude) {
+    private void setBatteryState(double batteryState) {
+        if(batteryState > 90.0) {
+            bshandler.setView(getResources().getIdentifier("@drawable/batteryfull", null, getPackageName()));
+        } else if (batteryState > 70.0) {
+            bshandler.setView(getResources().getIdentifier("@drawable/battery80", null, getPackageName()));
+        } else if (batteryState > 50.0) {
+            bshandler.setView(getResources().getIdentifier("@drawable/battery60", null, getPackageName()));
+        } else if (batteryState > 30.0) {
+            bshandler.setView(getResources().getIdentifier("@drawable/battery40", null, getPackageName()));
+        } else if (batteryState > 10.0){
+            bshandler.setView(getResources().getIdentifier("@drawable/battery20", null, getPackageName()));
+        } else {
+            bshandler.setView(getResources().getIdentifier("@drawable/battery0", null, getPackageName()));
+        }
+        if(batteryStatus.getVisibility() == View.INVISIBLE) {
+            batteryStatus.setVisibility(View.VISIBLE);
+        }
+        batteryStatus.setText("" + (int)batteryState + "%");
+    }
+
+    /*private void handleGeoCoordinatesLatitude(double latitude) {
         this.latitude = latitude;
         System.out.println(latitude);
         geoServiceHandler.setLatitude(latitude);
@@ -275,7 +304,7 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements View.OnClickLis
         this.longitude = longitude;
         System.out.println(longitude);
         geoServiceHandler.setLongitude(longitude);
-    }
+    }*/
 
     /*
      Handle status updates coming from Lawnmower
@@ -387,7 +416,7 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements View.OnClickLis
             @Override
             public void run() {
                 runOnUiThread(new Runnable() {
-                    private ImageView MowingStatusView = (ImageView) findViewById(R.id.MowingStatusView);
+                    //private ImageView MowingStatusView = (ImageView) findViewById(R.id.MowingStatusView);
 
                     @Override
                     public void run() {
@@ -436,7 +465,6 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements View.OnClickLis
                                     Toast.makeText(getApplicationContext(), GoHome, Toast.LENGTH_LONG).show();
                                 } catch (IOException e) {
                                     e.printStackTrace();
-                                    break;
                                 }
                                 break;
                             }
@@ -455,6 +483,8 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements View.OnClickLis
         buttonPauseMow.setEnabled(false);
         buttonStopMow.setEnabled(false);
         buttonGoHome.setEnabled(false);
+        batteryStatusIcon.setVisibility(View.INVISIBLE);
+        batteryStatus.setVisibility(View.INVISIBLE);
         ((ImageButton) findViewById(R.id.buttonStartMow)).setAlpha(0.3f);
         ((ImageButton) findViewById(R.id.buttonPauseMow)).setAlpha(0.3f);
         ((ImageButton) findViewById(R.id.buttonStopMow)).setAlpha(0.3f);

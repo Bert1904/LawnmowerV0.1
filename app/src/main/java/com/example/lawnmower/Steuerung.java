@@ -3,6 +3,9 @@
 package com.example.lawnmower;
 
 import android.app.Activity;
+import android.content.Context;
+import android.hardware.Sensor;
+import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.SurfaceHolder;
@@ -31,6 +34,9 @@ public class Steuerung extends AppCompatActivity implements SurfaceHolder.Callba
     private JoystickView mJoystick;
     private JoystickMessageGenerator mJoystickMessageGenerator;
     private final double DEADZONE = 0.0;
+
+    private SensorManager sensorManager;
+    private Sensor orientation;
 
     private native void nativeSurfaceInit(Object surface);
     //private native void nativeSetHostAndPort(String Host, int port);
@@ -67,6 +73,9 @@ public class Steuerung extends AppCompatActivity implements SurfaceHolder.Callba
             finish();
             return;
         }
+
+        sensorManager = (SensorManager)getSystemService(Context.SENSOR_SERVICE);
+        orientation = sensorManager.getDefaultSensor(Sensor.TYPE_ORIENTATION);
 
         socket = SocketService.getSocket();
 

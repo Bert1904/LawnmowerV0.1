@@ -21,5 +21,4 @@ public class StatusViewHandler extends Thread {
         this.MowingStatusView.setImageResource(imgageResource);
         MowingStatusView.setVisibility(MowingStatusView.VISIBLE);
     }
-
 }

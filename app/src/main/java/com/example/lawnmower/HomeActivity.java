@@ -26,7 +26,6 @@ public class HomeActivity extends BaseAppCompatAcitivty {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
-        TextView statusView = findViewById(R.id.statusView);
         socket = SocketService.getSocket();
         buttonSettings=   findViewById(R.id.buttonSettings);
         buttonSettings.setOnClickListener(new View.OnClickListener() {
@@ -35,7 +34,6 @@ public class HomeActivity extends BaseAppCompatAcitivty {
                 openSetting();
             }
         });
-        statusView.setAlpha(0.0f);
         /*String status = "Not Connected";
         if(socket.isConnected()) {
             status = "Connected";

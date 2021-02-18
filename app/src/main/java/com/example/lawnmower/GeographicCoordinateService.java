@@ -4,8 +4,8 @@ import android.util.Log;
 
 public class GeographicCoordinateService {
 
-    public double latitude;
-    public double longitude;
+    private double latitude;
+    private double longitude;
 
     private static GeographicCoordinateService  geographicCoordinateService= new GeographicCoordinateService ();
 

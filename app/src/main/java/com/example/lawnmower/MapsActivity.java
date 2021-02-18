@@ -48,7 +48,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private static final String BLADE_STUCK = "Klinge hängt fest";
     private static final String PICKUP = "Roboter aufnehmen";
     private static final String LOST = "Roboter lost";
-    private  GeographicCoordinateService geoService;
+    private LawnmowerStatusData lawnmowerStatusData;
+    //private  GeographicCoordinateService geoService;
 
     @Override
     protected void onPause() {
@@ -74,7 +75,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         socket = SocketService.getSocket();
         nfhandler =  new NotificationHandler(this);
         createErrorNotificationChannel();
-        geoService=GeographicCoordinateService.getGeographicCoordinateService();
+
+        lawnmowerStatusData = LawnmowerStatusData.getInstance();
+        //geoService=GeographicCoordinateService.getGeographicCoordinateService();
     }
 
     /*
@@ -126,11 +129,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         Bitmap smallMarker = Bitmap.createScaledBitmap(b, width, height, false);
         BitmapDescriptor bitmapDescriptor = BitmapDescriptorFactory.fromBitmap(b);
-        System.out.println(geoService.getlatitude()+"<------------------");
-        System.out.println(geoService.getlongitude()+"<------------------");
+        System.out.println(lawnmowerStatusData.getLatitude()+"<------------------");
+        System.out.println(lawnmowerStatusData.getLongitude()+"<------------------");
         mMap.setMapType(GoogleMap.MAP_TYPE_SATELLITE);
         // Add a marker to current lawnmower position and move the camera
-        LatLng lawnmower_gps = new LatLng(geoService.getlatitude(), geoService.getlongitude());
+        LatLng lawnmower_gps = new LatLng(lawnmowerStatusData.getLatitude(), lawnmowerStatusData.getLongitude());
         //mMap.addGroundOverlay(new GroundOverlayOptions().image(bitmapDescriptor).position(lawnmower_gps,100));
         System.out.println("*******************"+"" +lawnmower_gps);
         // Create marker Options

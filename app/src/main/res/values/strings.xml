@@ -20,4 +20,5 @@
     <string name="msgRecieved">I received a message.</string>
     <string name="version"> Version 0.9</string>
     <string name="aktuallisiere_wetterdaten">Aktuallisiere Wetterdaten</string>
+    <string name="empty"></string>
 </resources>

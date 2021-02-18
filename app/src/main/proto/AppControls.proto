@@ -9,11 +9,15 @@ syntax = "proto3";
 //message can be seen as a key word class in Java environment
         message AppControls {
                     enum Command {
-                        NO_CMD = 0; // rename manual input / joystick input?
-                        START = 1;
-                        STOP = 2;
-                        PAUSE = 3;
-                        HOME = 4;
+                      NO_CMD = 0;
+                      START = 1;
+                      STOP = 2;
+                      PAUSE = 3;
+                      HOME = 4;
+                      BEGIN_TRACKING = 5;
+                      FINISH_TRACKING = 6;
+                      REBOOT = 7;
+                      SHUTDOWN = 8;
                     }
                     message JoyStick {
                          double x = 1; // -1 to 1
@@ -37,7 +41,7 @@ syntax = "proto3";
                 PICKUP = 3;
                 LOST = 4;
             }
-                double battery_state = 1; // in percent
+                int32 battery_state = 1; // in percent
                 double mowing_progress = 2; // in percent
                 Status status = 3;
 				double latitude = 4; // in degrees
