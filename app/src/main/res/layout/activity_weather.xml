@@ -178,6 +178,6 @@
         android:layout_alignEnd="@+id/rlWeather"
         android:layout_marginEnd="76dp"
         android:onClick="loading"
-        android:text="@string/aktuallisiere_wetterdaten" />
+        android:text="@string/aktualisiere_wetterdaten" />
 
 </RelativeLayout>

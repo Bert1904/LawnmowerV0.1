@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:custom="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical">
@@ -7,8 +8,7 @@
     <com.example.lawnmower.GStreamerSurfaceView
         android:id="@+id/gStreamer"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_vertical|center_horizontal" />
+        android:layout_height="wrap_content" />
 
     <!--<SurfaceView
         android:id="@+id/gStream"
@@ -20,28 +20,36 @@
         android:layout_width="match_parent"
         android:layout_height="70dp"
         android:text="TextView"
-        android:layout_gravity="center_horizontal"/>
+        android:layout_alignLeft="@id/JoystickView"/>
 
-    <LinearLayout
-        android:layout_width="match_parent"
+    <io.github.controlwear.virtual.joystick.android.JoystickView
+        android:id="@+id/JoystickView"
+        android:layout_width="150dp"
+        android:layout_height="150dp"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="5dp"
+        android:layout_marginRight="5dp"
+        android:layout_weight="1"
+        android:background="@drawable/joystickbackground"
+        custom:JV_buttonImage="@drawable/joystickstick" />
+
+    <ToggleButton
+        android:id="@+id/tracking"
+        android:layout_width="130dp"
         android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:layout_weight="0">
+        android:layout_alignLeft="@id/JoystickView"
+        android:layout_above="@id/JoystickView"
+        android:textOff="@string/startTracking"
+        android:textOn="@string/stopTracking"
+        android:layout_marginLeft="10dp"/>
 
-        <Space
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1" />
+    <Button
+        android:id="@+id/setHome"
+        android:layout_width="130dp"
+        android:layout_height="wrap_content"
+        android:text="@string/setHome"
+        android:layout_above="@id/tracking"
+        android:layout_alignLeft="@id/tracking"/>
 
-        <io.github.controlwear.virtual.joystick.android.JoystickView
-            xmlns:custom="http://schemas.android.com/apk/res-auto"
-            android:id="@+id/JoystickView"
-            android:layout_width="0pt"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            custom:JV_buttonImage="@drawable/joystickstick"
-            android:background="@drawable/joystickbackground"/>
-
-    </LinearLayout>
-
-</LinearLayout>
+</RelativeLayout>
