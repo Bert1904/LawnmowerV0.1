@@ -20,5 +20,14 @@
     <string name="msgRecieved">I received a message.</string>
     <string name="version"> Version 0.9</string>
     <string name="aktuallisiere_wetterdaten">Aktuallisiere Wetterdaten</string>
-    <string name="empty"></string>
+    <string name="Start">Starte Mähvorgang</string>
+    <string name="Pause">Pausiere Mähvorgang</string>
+    <string name="Stop">Stoppe Mähvorgang</string>
+    <string name="GoHome">Fahre zur Ladestadion</string>
+    <string name="NoConnection">Verbindung nicht möglich. \nBitte überprüfe deine Einstellung</string>
+    <string name="Ready">Lawnmower bereit</string>
+    <string name="Mowing">Mähvorgang</string>
+    <string name="MowingPause">Mähvorgang pausiert</string>
+    <string name="Manual">Starte manuelle Bedienung</string>
+    <string name="LowBattery">Geringer Batteriestatus</string>
 </resources>

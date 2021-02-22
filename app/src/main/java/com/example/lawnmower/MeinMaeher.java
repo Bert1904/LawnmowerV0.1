@@ -28,7 +28,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 
-public class MeinMaeher extends BaseAppCompatAcitivty implements View.OnClickListener {
+public class MeinMaeher extends BaseAppCompatAcitivty {
     // Output Messages
     private static final String start = "Starte Mähvorgang";
     private static final String pausiere = "Pausiere Mähvorgang";
@@ -72,6 +72,8 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements View.OnClickLis
     private ImageView batteryStatusIcon;
     private TextView batteryStatus;
     private Socket socket;
+
+    private ImageView connectionStatus;
     private AsyncTask<Void, AppControlsProtos.LawnmowerStatus, Void> backgroundTask;
 
     // Creates notification channel and publish notification
@@ -115,20 +117,72 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements View.OnClickLis
         batteryStatusIcon = findViewById(R.id.batteryStatusIcon);
         batteryStatus.setVisibility(View.INVISIBLE);
         batteryStatusIcon.setVisibility(View.INVISIBLE);
+        connectionStatus = findViewById(R.id.connectionSymbol);
         bshandler = new BatteryStatusHandler(batteryStatusIcon);
 
         // Toast start mowing process
         buttonStartMow = (ImageButton) findViewById(R.id.buttonStartMow);
-        buttonStartMow.setOnClickListener(this);
+        buttonStartMow.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                byte[] msg = btnMessageGenerator.buildMessage(START).toByteArray();
+                try {
+                    //svhandler.setView(getResources().getIdentifier("@drawable/mowing", null, getPackageName()));
+                    serialize(msg);
+                    Toast.makeText(getApplicationContext(), R.string.Start, Toast.LENGTH_LONG).show();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
         // Toast paused mowing process
         buttonPauseMow = (ImageButton) findViewById(R.id.buttonPauseMow);
-        buttonPauseMow.setOnClickListener(this);
+        buttonPauseMow.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                byte[] msg = btnMessageGenerator.buildMessage(PAUSE).toByteArray();
+                try {
+                    isPaused = true;
+                    //svhandler.setView(getResources().getIdentifier("@drawable/mowpause", null, getPackageName()));
+                    serialize(msg);
+                    Toast.makeText(getApplicationContext(), R.string.Pause, Toast.LENGTH_LONG).show();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
         // Toast stop mowing process
         buttonStopMow = (ImageButton) findViewById(R.id.buttonStopMow);
-        buttonStopMow.setOnClickListener(this);
+        buttonStopMow.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                byte[] msg = btnMessageGenerator.buildMessage(STOP).toByteArray();
+                try {
+                    isStopped = true;
+                    //svhandler.setView(getResources().getIdentifier("@drawable/mowstop", null, getPackageName()));
+                    serialize(msg);
+                    Toast.makeText(getApplicationContext(), R.string.Stop, Toast.LENGTH_LONG).show();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
         // Toast  lawnmower back home
         buttonGoHome = (ImageButton) findViewById(R.id.buttonGoHome);
-        buttonGoHome.setOnClickListener(this);
+        buttonGoHome.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                byte[] msg = btnMessageGenerator.buildMessage(HOME).toByteArray();
+                try {
+                    isGoingHome = true;
+                    //svhandler.setView(getResources().getIdentifier("@drawable/mowback", null, getPackageName()));
+                    serialize(msg);
+                    Toast.makeText(getApplicationContext(), R.string.GoHome, Toast.LENGTH_LONG).show();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
         connectionHandler();
         //setConnection();
         // Restore ui elements when BackButton is clicked
@@ -316,6 +370,7 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements View.OnClickLis
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
+                        svhandler.setView(getResources().getIdentifier("@drawable/ready", null, getPackageName()));
                         Toast.makeText(getApplicationContext(), ready, Toast.LENGTH_LONG).show();
                     }
                 });
@@ -405,12 +460,12 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements View.OnClickLis
         }
     }
 
-    /*
+    /**
      * Send Messages to TCP Server
      * Call svhandler to update the ui
      * Publish toast if a button is pressed
      */
-    @Override
+    /*@Override
     public void onClick(final View v) {
         new Thread(new Runnable() {
             @Override
@@ -473,7 +528,7 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements View.OnClickLis
                 });
             }
         }).start();
-    }
+    }*/
 
     /* Disable the functionality of the buttons (Start,Pause,Stop,GoHome)
      * Set visibility to grey if there is no connection
@@ -485,6 +540,9 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements View.OnClickLis
         buttonGoHome.setEnabled(false);
         batteryStatusIcon.setVisibility(View.INVISIBLE);
         batteryStatus.setVisibility(View.INVISIBLE);
+        connectionStatus.setVisibility(View.GONE);
+        connectionStatus.setImageResource(getResources().getIdentifier("@drawable/notconnected", null, getPackageName()));
+        connectionStatus.setVisibility(View.VISIBLE);
         ((ImageButton) findViewById(R.id.buttonStartMow)).setAlpha(0.3f);
         ((ImageButton) findViewById(R.id.buttonPauseMow)).setAlpha(0.3f);
         ((ImageButton) findViewById(R.id.buttonStopMow)).setAlpha(0.3f);

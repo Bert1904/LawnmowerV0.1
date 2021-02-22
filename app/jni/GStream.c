@@ -182,7 +182,10 @@ app_function (void *userdata)
     data->pipeline =
             gst_parse_launch ("videotestsrc ! warptv ! videoconvert ! autovideosink",
                               &error);
-     //data->pipeline = gst_parse_launch ("udpsrc adress=192.168.0.230 port=6750   ! rtph265depay !warptv ! videoconvert ! autovideosink",&error);
+    //data->pipeline = gst_parse_launch ("tcpclientsrc port=6755 ! matroskaparse ! matroskademux max-gap-time=1000 ! vp9dec ! videoconvert ! autovideosink",&error);
+    //data->pipeline = gst_parse_launch ("udpsrc port=5000 caps = \"application/x-rtp, media=(string)video, clock-rate=(int)90000, encoding-name=(string)H264, payload=(int)96\" ! rtph264depay ! decodebin ! videoconvert ! autovideosink",&error);
+    //data->pipeline = gst_parse_launch("udpsrc port=6755 ! application/x-rtp, media=video, clock-rate=90000, encoding-name=H264 ! decodebin ! autovideosink ",&error);
+    //data->pipeline = gst_parse_launch ("udpsrc adress=192.168.0.230 port=6750   ! rtph265depay !warptv ! videoconvert ! autovideosink",&error);
     if (error) {
         gchar *message =
                 g_strdup_printf ("Unable to build pipeline: %s", error->message);
