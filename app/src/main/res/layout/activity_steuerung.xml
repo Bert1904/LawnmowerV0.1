@@ -34,10 +34,13 @@
             android:layout_weight="1" />
 
         <io.github.controlwear.virtual.joystick.android.JoystickView
+            xmlns:custom="http://schemas.android.com/apk/res-auto"
             android:id="@+id/JoystickView"
             android:layout_width="0pt"
             android:layout_height="wrap_content"
-            android:layout_weight="1" />
+            android:layout_weight="1"
+            custom:JV_buttonImage="@drawable/joystickstick"
+            android:background="@drawable/joystickbackground"/>
 
     </LinearLayout>
 
