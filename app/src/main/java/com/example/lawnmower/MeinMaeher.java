@@ -55,12 +55,6 @@ public class MeinMaeher extends BaseAppCompatAcitivty {
     private static final String PICKUP = "Roboter aufnehmen";
     private static final String LOST = "Roboter lost";
 
-    //Values Lawnmower
-    private final int START = 1;
-    private final int STOP = 2;
-    private final int PAUSE = 3;
-    private final int HOME = 4;
-
     //ButtonMessageGenerator for protobuf file
     private ButtonMessageGenerator btnMessageGenerator = new ButtonMessageGenerator();
 
@@ -73,7 +67,9 @@ public class MeinMaeher extends BaseAppCompatAcitivty {
     private TextView batteryStatus;
     private Socket socket;
 
+    //use this as an error occurance indicator
     private ImageView connectionStatus;
+
     private AsyncTask<Void, AppControlsProtos.LawnmowerStatus, Void> backgroundTask;
 
     // Creates notification channel and publish notification
@@ -125,7 +121,7 @@ public class MeinMaeher extends BaseAppCompatAcitivty {
         buttonStartMow.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                byte[] msg = btnMessageGenerator.buildMessage(START).toByteArray();
+                byte[] msg = btnMessageGenerator.buildMessage(AppControlsProtos.AppControls.Command.START_VALUE).toByteArray();
                 try {
                     //svhandler.setView(getResources().getIdentifier("@drawable/mowing", null, getPackageName()));
                     serialize(msg);
@@ -140,7 +136,7 @@ public class MeinMaeher extends BaseAppCompatAcitivty {
         buttonPauseMow.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                byte[] msg = btnMessageGenerator.buildMessage(PAUSE).toByteArray();
+                byte[] msg = btnMessageGenerator.buildMessage(AppControlsProtos.AppControls.Command.PAUSE_VALUE).toByteArray();
                 try {
                     isPaused = true;
                     //svhandler.setView(getResources().getIdentifier("@drawable/mowpause", null, getPackageName()));
@@ -156,7 +152,7 @@ public class MeinMaeher extends BaseAppCompatAcitivty {
         buttonStopMow.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                byte[] msg = btnMessageGenerator.buildMessage(STOP).toByteArray();
+                byte[] msg = btnMessageGenerator.buildMessage(AppControlsProtos.AppControls.Command.STOP_VALUE).toByteArray();
                 try {
                     isStopped = true;
                     //svhandler.setView(getResources().getIdentifier("@drawable/mowstop", null, getPackageName()));
@@ -172,7 +168,7 @@ public class MeinMaeher extends BaseAppCompatAcitivty {
         buttonGoHome.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                byte[] msg = btnMessageGenerator.buildMessage(HOME).toByteArray();
+                byte[] msg = btnMessageGenerator.buildMessage(AppControlsProtos.AppControls.Command.HOME_VALUE).toByteArray();
                 try {
                     isGoingHome = true;
                     //svhandler.setView(getResources().getIdentifier("@drawable/mowback", null, getPackageName()));
@@ -187,7 +183,7 @@ public class MeinMaeher extends BaseAppCompatAcitivty {
         //setConnection();
         // Restore ui elements when BackButton is clicked
         lawnmowerpref = PreferenceManager.getDefaultSharedPreferences(this);
-       // Testing delete later
+        // Testing delete later
         /*lawnmowerStatusData.setLatitude(51.6559681);
         this.latitude = 51.6559681;
         lawnmowerStatusData.setLongitude(6.9642606);
@@ -366,7 +362,7 @@ public class MeinMaeher extends BaseAppCompatAcitivty {
     private void handleStatus(AppControlsProtos.LawnmowerStatus.Status status) {
 
         switch (status.getNumber()) {
-            case 0: {
+            case AppControlsProtos.LawnmowerStatus.Status.Ready_VALUE: {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
@@ -376,7 +372,7 @@ public class MeinMaeher extends BaseAppCompatAcitivty {
                 });
                 break;
             }
-            case 1: {
+            case AppControlsProtos.LawnmowerStatus.Status.Mowing_VALUE: {
                 isMowing = true;
                 runOnUiThread(new Runnable() {
                     @Override
@@ -387,7 +383,7 @@ public class MeinMaeher extends BaseAppCompatAcitivty {
                 });
                 break;
             }
-            case 2: {
+            case AppControlsProtos.LawnmowerStatus.Status.Paused_VALUE: {
                 isPaused = true;
                 runOnUiThread(new Runnable() {
                     @Override
@@ -399,7 +395,7 @@ public class MeinMaeher extends BaseAppCompatAcitivty {
                 });
                 break;
             }
-            case 3: {
+            case AppControlsProtos.LawnmowerStatus.Status.Manual_VALUE: {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
@@ -408,7 +404,7 @@ public class MeinMaeher extends BaseAppCompatAcitivty {
                 });
                 break;
             }
-            case 4: {
+            case AppControlsProtos.LawnmowerStatus.Status.Low_Light_VALUE: {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
@@ -428,26 +424,26 @@ public class MeinMaeher extends BaseAppCompatAcitivty {
 
 
         switch (error.getNumber()) {
-            case 0: {
+            case AppControlsProtos.LawnmowerStatus.Error.NO_ERROR_VALUE: {
                 Toast.makeText(getApplicationContext(), NO_ERROR, Toast.LENGTH_LONG).show();
                 return;
             }
-            case 1: {
+            case AppControlsProtos.LawnmowerStatus.Error.ROBOT_STUCK_VALUE: {
                 nfhandler.sendErrorNotification(ROBOT_STUCK);
                 Toast.makeText(getApplicationContext(), ROBOT_STUCK, Toast.LENGTH_LONG).show();
                 break;
             }
-            case 2: {
+            case AppControlsProtos.LawnmowerStatus.Error.BLADE_STUCK_VALUE: {
                 nfhandler.sendErrorNotification(BLADE_STUCK);
                 Toast.makeText(getApplicationContext(), BLADE_STUCK, Toast.LENGTH_LONG).show();
                 break;
             }
-            case 3: {
+            case AppControlsProtos.LawnmowerStatus.Error.PICKUP_VALUE: {
                 nfhandler.sendErrorNotification(PICKUP);
                 Toast.makeText(getApplicationContext(), PICKUP, Toast.LENGTH_LONG).show();
                 break;
             }
-            case 4: {
+            case AppControlsProtos.LawnmowerStatus.Error.LOST_VALUE: {
                 nfhandler.sendErrorNotification(LOST);
                 Toast.makeText(getApplicationContext(), LOST, Toast.LENGTH_LONG).show();
                 break;
@@ -617,6 +613,12 @@ public class MeinMaeher extends BaseAppCompatAcitivty {
     public void onStart() {
         super.onStart();
         active = true;
+    }
+
+    @Override
+    public void finish() {
+        super.finish();
+        backgroundTask.cancel(true);
     }
 
     @Override

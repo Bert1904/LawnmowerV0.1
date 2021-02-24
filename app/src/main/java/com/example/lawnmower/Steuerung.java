@@ -13,9 +13,11 @@ import android.view.SurfaceView;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
+import android.widget.CompoundButton;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.ToggleButton;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -34,6 +36,8 @@ public class Steuerung extends AppCompatActivity implements SurfaceHolder.Callba
     private JoystickView mJoystick;
     private JoystickMessageGenerator mJoystickMessageGenerator;
     private final double DEADZONE = 0.0;
+    private ToggleButton tracking;
+    private Button setHome;
 
     private native void nativeSurfaceInit(Object surface);
     //private native void nativeSetHostAndPort(String Host, int port);
@@ -49,12 +53,14 @@ public class Steuerung extends AppCompatActivity implements SurfaceHolder.Callba
     //private boolean is_playing_desired;   // Whether the user asked to go to PLAYING
     private Socket socket;
     private String host = "192.168.0.8";
-    private int port = 6750;
+    private int port = 6755;
     private double xJoystick = 0.0;
     private double yJoystick = 0.0;
     private double lastSentX = 0.0;
     private double lastSentY = 0.0;
     private final double MINDIF = 0.00;
+    //Refreshrate of the Joystick
+    private final int REFRESHRATE = 20;
 
     // Called when the activity is first created.
     @Override
@@ -63,6 +69,9 @@ public class Steuerung extends AppCompatActivity implements SurfaceHolder.Callba
         super.onCreate(savedInstanceState);
 
         // Initialize GStreamer and warn if it fails
+
+        socket = SocketService.getSocket();
+
         try {
             GStreamer.init(this);
         } catch (Exception e) {
@@ -71,9 +80,8 @@ public class Steuerung extends AppCompatActivity implements SurfaceHolder.Callba
             return;
         }
 
-        socket = SocketService.getSocket();
-
         setContentView(R.layout.activity_steuerung);
+
 
         SurfaceView sv = this.findViewById(R.id.gStreamer);
         SurfaceHolder sh = sv.getHolder();
@@ -82,13 +90,43 @@ public class Steuerung extends AppCompatActivity implements SurfaceHolder.Callba
         //Check connection status before calling nativeInit.
         //if(socket.isConnected()) {
         nativeInit();
-        //}
         init();
     }
 
     private void init() {
         mJoystick = findViewById(R.id.JoystickView);
         mJoystickMessageGenerator = new JoystickMessageGenerator();
+        setHome = findViewById(R.id.setHome);
+        tracking = findViewById(R.id.tracking);
+        setHome.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Log.i("homebutton","home button pressed");
+                /*try {
+                    ButtonMessageGenerator.buildMessage()
+                }*/
+            }
+        });
+        tracking.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
+                if(isChecked) {
+                    Log.i("trackingButton", "startTracking");
+                    try {
+                        serialize(ButtonMessageGenerator.buildMessage(AppControlsProtos.AppControls.Command.BEGIN_TRACKING_VALUE).toByteArray());
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                } else {
+                    Log.i("trackingButton", "stopTracking");
+                    try {
+                        serialize(ButtonMessageGenerator.buildMessage(AppControlsProtos.AppControls.Command.FINISH_TRACKING_VALUE).toByteArray());
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        });
 
         //publish AppControls messages for the Joystick
         mJoystick.setOnMoveListener(new JoystickView.OnMoveListener() {
@@ -102,6 +140,7 @@ public class Steuerung extends AppCompatActivity implements SurfaceHolder.Callba
                 if(difference(xJoystick, yJoystick, lastSentX, lastSentY) > MINDIF) {
                     lastSentX = xJoystick;
                     lastSentY = yJoystick;
+                    Log.i("Steuerung","X: " + xJoystick + " ,Y: " + yJoystick);
                     AppControlsProtos.AppControls msg = mJoystickMessageGenerator.buildMessage(xJoystick, yJoystick);
                     try {
                         serialize(msg.toByteArray());
@@ -111,7 +150,7 @@ public class Steuerung extends AppCompatActivity implements SurfaceHolder.Callba
                 }
 
             }
-        });
+        },REFRESHRATE);
     }
 
     private double difference(double x, double y,double lastX, double lastY) {
@@ -148,11 +187,11 @@ public class Steuerung extends AppCompatActivity implements SurfaceHolder.Callba
     }
 
     private void setMessage(final String message) {
-        final TextView tv = this.findViewById(R.id.status);
+        //final TextView tv = this.findViewById(R.id.status);
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                tv.setText(message);
+                //tv.setText(message);
             }
         });
     }
@@ -190,7 +229,7 @@ public class Steuerung extends AppCompatActivity implements SurfaceHolder.Callba
         nativeClassInit();
     }
 
-    /*private void onMediaSizeChanged (int width, int height) {
+    private void onMediaSizeChanged (int width, int height) {
         Log.i ("GStreamer", "Media size changed to " + width + "x" + height);
         final GStreamerSurfaceView gsv = this.findViewById(R.id.gStreamer);
         gsv.media_width = width;
@@ -201,5 +240,5 @@ public class Steuerung extends AppCompatActivity implements SurfaceHolder.Callba
                 gsv.requestLayout();
             }
         });
-    }*/
+    }
 }

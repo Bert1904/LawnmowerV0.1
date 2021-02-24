@@ -71,10 +71,13 @@
             android:label="@string/title_activity_maps"></activity>
         <activity android:name=".Info" />
         <activity android:name=".WeatherActivity"/>
-        <activity android:name=".MeinMaeher" />
-        <activity android:name=".HomeActivity" />
+        <activity android:name=".MeinMaeher"
+            android:screenOrientation="portrait"/>
+        <activity android:name=".HomeActivity"
+            android:screenOrientation="portrait"/>
         <activity android:name=".Einstellungen" />
-        <activity android:name=".Steuerung" />
+        <activity android:name=".Steuerung"
+            android:screenOrientation="landscape"/>
         <activity
             android:name=".Ladebildschirm"
             android:configChanges="orientation|screenSize">
