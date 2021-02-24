@@ -1,5 +1,7 @@
 package com.example.lawnmower;
 
+import android.util.Log;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -25,6 +27,7 @@ public class LawnmowerStatusData {
     }
 
     public void setLawnmowerStatus(AppControlsProtos.LawnmowerStatus lawnmowerStatus1) {
+        Log.i("LawnmowerStatusData","LawnmowerStatusData changed");
         LSDListenerManager.notifyOnChange();
         this.lawnmowerStatus = lawnmowerStatus1;
     }

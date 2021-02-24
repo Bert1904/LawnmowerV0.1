@@ -179,8 +179,8 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements LawnmowerStatus
                 }
             }
         });
-        connectionHandler();
-        //setConnection();
+        //connectionHandler();
+        setConnection();
         // Restore ui elements when BackButton is clicked
         lawnmowerpref = PreferenceManager.getDefaultSharedPreferences(this);
         // Testing delete later
@@ -188,6 +188,7 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements LawnmowerStatus
         this.latitude = 51.6559681;
         lawnmowerStatusData.setLongitude(6.9642606);
         this.longitude = 6.9642606;*/
+        //new testThread().start();
     }
 
     /*
@@ -222,6 +223,21 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements LawnmowerStatus
         } else {
             setConnection();
             //backgroundTask = new ListenerThread().execute();
+        }
+    }
+
+    private class testThread extends Thread {
+        @Override
+        public void run() {
+            for(int i = 0; i < 5; i++) {
+                AppControlsProtos.LawnmowerStatus lawnmowerStatus = AppControlsProtos.LawnmowerStatus.newBuilder().setBatteryState(100-(i*20)).setMowingProgress(i*20).setStatus(AppControlsProtos.LawnmowerStatus.Status.Ready).setFinishedMowing(false).setError(AppControlsProtos.LawnmowerStatus.Error.NO_ERROR).build();
+                LawnmowerStatusData.getInstance().setLawnmowerStatus(lawnmowerStatus);
+                try {
+                    Thread.sleep(2000);
+                } catch(InterruptedException e) {
+                    Log.i("testThread","sleeping not successful");
+                }
+            }
         }
     }
 
@@ -328,6 +344,7 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements LawnmowerStatus
     }*/
 
     private void setBatteryState(float batteryState) {
+
         if(batteryState > 90.0f) {
             bshandler.setView(getResources().getIdentifier("@drawable/batteryfull", null, getPackageName()));
         } else if (batteryState > 70.0f) {
@@ -349,8 +366,14 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements LawnmowerStatus
 
     @Override
     public void onLSDChange() {
-        setBatteryState(LawnmowerStatusData.getInstance().getLawnmowerStatus().getBatteryState());
-        handleStatus(LawnmowerStatusData.getInstance().getLawnmowerStatus().getStatus());
+        Log.i("MeinMäher","onLSDChange Method invoked");
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                setBatteryState(LawnmowerStatusData.getInstance().getLawnmowerStatus().getBatteryState());
+                handleStatus(LawnmowerStatusData.getInstance().getLawnmowerStatus().getStatus());
+            }
+        });
         //handleMowingErrors(LawnmowerStatusData.getInstance().getLawnmowerStatus().getError());
     }
 

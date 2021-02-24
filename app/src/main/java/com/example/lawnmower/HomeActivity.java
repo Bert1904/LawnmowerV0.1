@@ -26,7 +26,6 @@ public class HomeActivity extends BaseAppCompatAcitivty {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
-        socket = SocketService.getSocket();
         buttonSettings=   findViewById(R.id.buttonSettings);
         buttonSettings.setOnClickListener(new View.OnClickListener() {
             @Override
