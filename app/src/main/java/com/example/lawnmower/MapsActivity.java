@@ -72,7 +72,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
-        socket = SocketService.getSocket();
+        //socket = SocketService.getSocket();
         nfhandler =  new NotificationHandler(this);
         createErrorNotificationChannel();
 
@@ -129,11 +129,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         Bitmap smallMarker = Bitmap.createScaledBitmap(b, width, height, false);
         BitmapDescriptor bitmapDescriptor = BitmapDescriptorFactory.fromBitmap(b);
-        System.out.println(lawnmowerStatusData.getLatitude()+"<------------------");
-        System.out.println(lawnmowerStatusData.getLongitude()+"<------------------");
+        System.out.println(lawnmowerStatusData.getLawnmowerStatus().getLatitude()+"<------------------");
+        System.out.println(lawnmowerStatusData.getLawnmowerStatus().getLongitude()+"<------------------");
         mMap.setMapType(GoogleMap.MAP_TYPE_SATELLITE);
         // Add a marker to current lawnmower position and move the camera
-        LatLng lawnmower_gps = new LatLng(lawnmowerStatusData.getLatitude(), lawnmowerStatusData.getLongitude());
+        LatLng lawnmower_gps = new LatLng(lawnmowerStatusData.getLawnmowerStatus().getLatitude(), lawnmowerStatusData.getLawnmowerStatus().getLongitude());
         //mMap.addGroundOverlay(new GroundOverlayOptions().image(bitmapDescriptor).position(lawnmower_gps,100));
         System.out.println("*******************"+"" +lawnmower_gps);
         // Create marker Options
@@ -141,7 +141,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         MarkerOptions options = new MarkerOptions().position(lawnmower_gps).title("Lawnmower");
         mMap.addMarker(options.position(lawnmower_gps).title("Lawnmower Position"));
 
-       googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(lawnmower_gps,16));
+        googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(lawnmower_gps,16));
 
         googleMap.addMarker(options);
     }

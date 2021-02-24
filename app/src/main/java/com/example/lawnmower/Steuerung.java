@@ -51,7 +51,6 @@ public class Steuerung extends AppCompatActivity implements SurfaceHolder.Callba
     private long native_custom_data;      // Native code will use this to keep private data
 
     //private boolean is_playing_desired;   // Whether the user asked to go to PLAYING
-    private Socket socket;
     private String host = "192.168.0.8";
     private int port = 6755;
     private double xJoystick = 0.0;
@@ -70,7 +69,7 @@ public class Steuerung extends AppCompatActivity implements SurfaceHolder.Callba
 
         // Initialize GStreamer and warn if it fails
 
-        socket = SocketService.getSocket();
+        //socket = SocketService.getSocket();
 
         try {
             GStreamer.init(this);
@@ -113,14 +112,14 @@ public class Steuerung extends AppCompatActivity implements SurfaceHolder.Callba
                 if(isChecked) {
                     Log.i("trackingButton", "startTracking");
                     try {
-                        serialize(ButtonMessageGenerator.buildMessage(AppControlsProtos.AppControls.Command.BEGIN_TRACKING_VALUE).toByteArray());
+                        SocketService.getInstance().send(ButtonMessageGenerator.buildMessage(AppControlsProtos.AppControls.Command.BEGIN_TRACKING_VALUE).toByteArray());
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
                 } else {
                     Log.i("trackingButton", "stopTracking");
                     try {
-                        serialize(ButtonMessageGenerator.buildMessage(AppControlsProtos.AppControls.Command.FINISH_TRACKING_VALUE).toByteArray());
+                        SocketService.getInstance().send(ButtonMessageGenerator.buildMessage(AppControlsProtos.AppControls.Command.FINISH_TRACKING_VALUE).toByteArray());
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
@@ -143,7 +142,7 @@ public class Steuerung extends AppCompatActivity implements SurfaceHolder.Callba
                     Log.i("Steuerung","X: " + xJoystick + " ,Y: " + yJoystick);
                     AppControlsProtos.AppControls msg = mJoystickMessageGenerator.buildMessage(xJoystick, yJoystick);
                     try {
-                        serialize(msg.toByteArray());
+                        SocketService.getInstance().send(msg.toByteArray());
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -160,7 +159,7 @@ public class Steuerung extends AppCompatActivity implements SurfaceHolder.Callba
         return diff;
     }
 
-    private void serialize(final byte[] message) throws IOException {
+    /*private void serialize(final byte[] message) throws IOException {
         Log.i("serialize","SendDataToNetwork: opened method serialze");
         new Thread(new Runnable() {
             @Override
@@ -174,7 +173,7 @@ public class Steuerung extends AppCompatActivity implements SurfaceHolder.Callba
                 }
             }
         }).start();
-    }
+    }*/
 
 
     protected void onSaveInstanceState (Bundle outState) {

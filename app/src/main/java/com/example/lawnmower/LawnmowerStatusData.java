@@ -1,14 +1,19 @@
 package com.example.lawnmower;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class LawnmowerStatusData {
+    /*private int batteryState;
+    private double mowing_progress;
     private AppControlsProtos.LawnmowerStatus.Status status;
     private AppControlsProtos.LawnmowerStatus.Error error;
-    private int batteryState;
     // maybe add latitude and longitude here so there is only one singeton
     private double latitude;
     private double longitude;
     private String error_msg;
-    private boolean mowing_finished;
+    private boolean mowing_finished;*/
+    private AppControlsProtos.LawnmowerStatus lawnmowerStatus = null;
 
     private static final LawnmowerStatusData lawnmowerStatusData = new LawnmowerStatusData();
 
@@ -19,27 +24,42 @@ public class LawnmowerStatusData {
         return lawnmowerStatusData;
     }
 
-    public void setStatus(AppControlsProtos.LawnmowerStatus.Status status) {
+    public void setLawnmowerStatus(AppControlsProtos.LawnmowerStatus lawnmowerStatus1) {
+        LSDListenerManager.notifyOnChange();
+        this.lawnmowerStatus = lawnmowerStatus1;
+    }
+
+    public AppControlsProtos.LawnmowerStatus getLawnmowerStatus() {
+        return lawnmowerStatus;
+    }
+
+    /*public void setStatus(AppControlsProtos.LawnmowerStatus.Status status) {
+        notifyOnChangeListeners();
         this.status = status;
     }
 
     public void setError(AppControlsProtos.LawnmowerStatus.Error error) {
+        notifyOnChangeListeners();
         this.error = error;
     }
 
     public void setBatteryState(int batteryState) {
+        notifyOnChangeListeners();
         this.batteryState = batteryState;
     }
 
     public void setLatitude(double latitude) {
+        notifyOnChangeListeners();
         this.latitude = latitude;
     }
 
     public void setLongitude(double longitude) {
+        notifyOnChangeListeners();
         this.longitude = longitude;
     }
 
     public void setError_msg(String error_msg) {
+        notifyOnChangeListeners();
         this.error_msg = error_msg;
     }
 
@@ -73,5 +93,5 @@ public class LawnmowerStatusData {
 
     public boolean getMowing_finished() {
         return mowing_finished;
-    }
+    }*/
 }

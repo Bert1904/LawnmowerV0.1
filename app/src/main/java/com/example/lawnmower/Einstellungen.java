@@ -56,11 +56,10 @@ public class Einstellungen extends BaseAppCompatAcitivty {
     }
 
     public class SocketConnectThread implements Runnable {
-
         @Override
         public void run() {
             try {
-                SocketService.connect(SERVER_IP, SERVER_PORT);
+                SocketService.getInstance().connect(SERVER_IP, SERVER_PORT);
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
@@ -77,6 +76,5 @@ public class Einstellungen extends BaseAppCompatAcitivty {
                 e.printStackTrace();
             }
         }
-
     }
 }

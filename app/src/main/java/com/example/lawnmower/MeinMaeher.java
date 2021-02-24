@@ -28,7 +28,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 
-public class MeinMaeher extends BaseAppCompatAcitivty {
+public class MeinMaeher extends BaseAppCompatAcitivty implements LawnmowerStatusDataChangedListener{
     // Output Messages
     private static final String start = "Starte Mähvorgang";
     private static final String pausiere = "Pausiere Mähvorgang";
@@ -106,7 +106,7 @@ public class MeinMaeher extends BaseAppCompatAcitivty {
         nfhandler = new NotificationHandler(this);
         this.MowingStatusView = (ImageView) findViewById(R.id.MowingStatusView);
         svhandler = new StatusViewHandler((ImageView) findViewById(R.id.MowingStatusView));
-        socket = SocketService.getSocket();
+        //socket = SocketService.getSocket();
         lawnmowerStatusData = LawnmowerStatusData.getInstance();
 
         batteryStatus = findViewById(R.id.batteryStatus);
@@ -124,7 +124,7 @@ public class MeinMaeher extends BaseAppCompatAcitivty {
                 byte[] msg = btnMessageGenerator.buildMessage(AppControlsProtos.AppControls.Command.START_VALUE).toByteArray();
                 try {
                     //svhandler.setView(getResources().getIdentifier("@drawable/mowing", null, getPackageName()));
-                    serialize(msg);
+                    SocketService.getInstance().send(msg);
                     Toast.makeText(getApplicationContext(), R.string.Start, Toast.LENGTH_LONG).show();
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -140,7 +140,7 @@ public class MeinMaeher extends BaseAppCompatAcitivty {
                 try {
                     isPaused = true;
                     //svhandler.setView(getResources().getIdentifier("@drawable/mowpause", null, getPackageName()));
-                    serialize(msg);
+                    SocketService.getInstance().send(msg);
                     Toast.makeText(getApplicationContext(), R.string.Pause, Toast.LENGTH_LONG).show();
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -156,7 +156,7 @@ public class MeinMaeher extends BaseAppCompatAcitivty {
                 try {
                     isStopped = true;
                     //svhandler.setView(getResources().getIdentifier("@drawable/mowstop", null, getPackageName()));
-                    serialize(msg);
+                    SocketService.getInstance().send(msg);
                     Toast.makeText(getApplicationContext(), R.string.Stop, Toast.LENGTH_LONG).show();
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -172,7 +172,7 @@ public class MeinMaeher extends BaseAppCompatAcitivty {
                 try {
                     isGoingHome = true;
                     //svhandler.setView(getResources().getIdentifier("@drawable/mowback", null, getPackageName()));
-                    serialize(msg);
+                    SocketService.getInstance().send(msg);
                     Toast.makeText(getApplicationContext(), R.string.GoHome, Toast.LENGTH_LONG).show();
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -198,7 +198,7 @@ public class MeinMaeher extends BaseAppCompatAcitivty {
      */
     public void connectionHandler() {
         if (!socket.isConnected()) {
-            t.scheduleAtFixedRate(new TimerTask() {
+            /*t.scheduleAtFixedRate(new TimerTask() {
                 @Override
                 public void run() {
                     runOnUiThread(new Runnable() {
@@ -217,7 +217,8 @@ public class MeinMaeher extends BaseAppCompatAcitivty {
                     return;
                 }
 
-            }, 0, 10000);
+            }, 0, 10000);*/
+            setNoConnection();
         } else {
             setConnection();
             //backgroundTask = new ListenerThread().execute();
@@ -227,7 +228,7 @@ public class MeinMaeher extends BaseAppCompatAcitivty {
     /*
      * ListenerThread to read incoming messages from tcp server
      */
-    class ListenerThread extends AsyncTask<Void, AppControlsProtos.LawnmowerStatus, Void> {
+    /*class ListenerThread extends AsyncTask<Void, AppControlsProtos.LawnmowerStatus, Void> {
 
         Activity activity;
         IOException ioException;
@@ -267,14 +268,16 @@ public class MeinMaeher extends BaseAppCompatAcitivty {
                     setBatteryState(lawnmowerStatus.getBatteryState());
 
                     //sets data to the singleton
-                    lawnmowerStatusData.setStatus(lawnmowerStatus.getStatus());
+                    lawnmowerStatusData.setLawnmowerStatus(lawnmowerStatus);
+                    /*lawnmowerStatusData.setStatus(lawnmowerStatus.getStatus());
                     lawnmowerStatusData.setError(lawnmowerStatus.getError());
                     lawnmowerStatusData.setBatteryState(lawnmowerStatus.getBatteryState());
                     lawnmowerStatusData.setLatitude(lawnmowerStatus.getLatitude());
                     lawnmowerStatusData.setLongitude(lawnmowerStatus.getLongitude());
-                    //handleMowingErrors(lawnmowerStatus.getError());
-                    //Thread.sleep(10);
-                } catch (IOException e) {
+                    lawnmowerStatusData.setError_msg(lawnmowerStatus.getErrorMsg());
+                    lawnmowerStatusData.setMowing_finished(lawnmowerStatus.getFinishedMowing());*/
+    //Thread.sleep(10);
+                /*} catch (IOException e) {
                     e.printStackTrace();
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -322,18 +325,18 @@ public class MeinMaeher extends BaseAppCompatAcitivty {
                         .show();
             }
         }
-    }
+    }*/
 
-    private void setBatteryState(double batteryState) {
-        if(batteryState > 90.0) {
+    private void setBatteryState(float batteryState) {
+        if(batteryState > 90.0f) {
             bshandler.setView(getResources().getIdentifier("@drawable/batteryfull", null, getPackageName()));
-        } else if (batteryState > 70.0) {
+        } else if (batteryState > 70.0f) {
             bshandler.setView(getResources().getIdentifier("@drawable/battery80", null, getPackageName()));
-        } else if (batteryState > 50.0) {
+        } else if (batteryState > 50.0f) {
             bshandler.setView(getResources().getIdentifier("@drawable/battery60", null, getPackageName()));
-        } else if (batteryState > 30.0) {
+        } else if (batteryState > 30.0f) {
             bshandler.setView(getResources().getIdentifier("@drawable/battery40", null, getPackageName()));
-        } else if (batteryState > 10.0){
+        } else if (batteryState > 10.0f){
             bshandler.setView(getResources().getIdentifier("@drawable/battery20", null, getPackageName()));
         } else {
             bshandler.setView(getResources().getIdentifier("@drawable/battery0", null, getPackageName()));
@@ -342,6 +345,13 @@ public class MeinMaeher extends BaseAppCompatAcitivty {
             batteryStatus.setVisibility(View.VISIBLE);
         }
         batteryStatus.setText("" + (int)batteryState + "%");
+    }
+
+    @Override
+    public void onLSDChange() {
+        setBatteryState(LawnmowerStatusData.getInstance().getLawnmowerStatus().getBatteryState());
+        handleStatus(LawnmowerStatusData.getInstance().getLawnmowerStatus().getStatus());
+        //handleMowingErrors(LawnmowerStatusData.getInstance().getLawnmowerStatus().getError());
     }
 
     /*private void handleGeoCoordinatesLatitude(double latitude) {
@@ -557,7 +567,7 @@ public class MeinMaeher extends BaseAppCompatAcitivty {
 
 
     // Serialized and sends message to tcp server
-    public void serialize(final byte[] message) throws IOException {
+    /*public void serialize(final byte[] message) throws IOException {
         Log.i("serialize", "SendDataToNetwork: opened  method serialize");
         new Thread(new Runnable() {
             @Override
@@ -573,7 +583,7 @@ public class MeinMaeher extends BaseAppCompatAcitivty {
             }
         }).start();
         ;
-    }
+    }*/
 
     /* Method to restore ui status when moving bewteen screen or activites in Lawnmower app
      * Set status true if imagage is visible
@@ -601,6 +611,7 @@ public class MeinMaeher extends BaseAppCompatAcitivty {
         } else {
             lawnmowerpref.edit().putBoolean("StopTrue", false).apply();
         }
+        LSDListenerManager.removeListener(this);
     }
 
     @Override
@@ -618,7 +629,7 @@ public class MeinMaeher extends BaseAppCompatAcitivty {
     @Override
     public void finish() {
         super.finish();
-        backgroundTask.cancel(true);
+        //backgroundTask.cancel(true);
     }
 
     @Override
@@ -642,5 +653,6 @@ public class MeinMaeher extends BaseAppCompatAcitivty {
         } else if (lawnmowerpref.getBoolean("StopTrue", false)) {
             svhandler.setView(getResources().getIdentifier("@drawable/mahvorgangstop", null, getPackageName()));
         }
+        LSDListenerManager.addListener(this);
     }
 }
