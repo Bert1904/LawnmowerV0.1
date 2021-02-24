@@ -9,7 +9,7 @@ public class LawnmowerStatusData {
     private double longitude;
     private String error_msg;
     private boolean mowing_finished;
-
+    private double mowing_process;
     private static final LawnmowerStatusData lawnmowerStatusData = new LawnmowerStatusData();
 
     private LawnmowerStatusData() {
@@ -46,6 +46,7 @@ public class LawnmowerStatusData {
     public void setMowing_finished(boolean mowing_finished) {
         this.mowing_finished = mowing_finished;
     }
+    public void setMowing_process(double process){this.mowing_process = mowing_process;}
 
     public AppControlsProtos.LawnmowerStatus.Status getStatus() {
         return status;
@@ -74,4 +75,6 @@ public class LawnmowerStatusData {
     public boolean getMowing_finished() {
         return mowing_finished;
     }
+    public double getMowing_process(){return mowing_process;}
+
 }

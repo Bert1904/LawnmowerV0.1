@@ -7,11 +7,13 @@ import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -29,11 +31,7 @@ import java.util.TimerTask;
 
 
 public class MeinMaeher extends BaseAppCompatAcitivty {
-    // Output Messages
-    private static final String start = "Starte Mähvorgang";
-    private static final String pausiere = "Pausiere Mähvorgang";
-    private static final String stoppe = "Stoppe Mähvorgang";
-    private static final String GoHome = "Fahre zur Ladestadion";
+
     private static final String NO_CONNECTION = "Verbindung nicht möglich. \nBitte überprüfe deine Einstellung";
     // Status Messages
     private static final String ready = "Lawnmower bereit ";
@@ -99,6 +97,12 @@ public class MeinMaeher extends BaseAppCompatAcitivty {
     public double longitude;
     private LawnmowerStatusData lawnmowerStatusData;
 
+    // Display progress bar and textview
+    private ProgressBar progressBar;
+    private double progressStatus = 0;
+    private Handler handler= new Handler ();
+    private TextView progressTextView ;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -115,6 +119,31 @@ public class MeinMaeher extends BaseAppCompatAcitivty {
         batteryStatusIcon.setVisibility(View.INVISIBLE);
         connectionStatus = findViewById(R.id.connectionSymbol);
         bshandler = new BatteryStatusHandler(batteryStatusIcon);
+
+
+        // Display Progress Bar if Mower is connected
+        progressBar= (ProgressBar)findViewById(R.id.progressBar);
+        progressTextView = (TextView)findViewById(R.id.progressTextView);
+        if (socket.isConnected()) {
+           runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    while(progressStatus<100){
+                        handler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                progressBar.setProgress((int)lawnmowerStatusData.getMowing_process());
+                            }
+                        });
+                    }
+                }
+            });
+        }else{
+            progressBar.setVisibility(View.GONE);
+            progressTextView.setVisibility(View.GONE);
+        }
+
+
 
         // Toast start mowing process
         buttonStartMow = (ImageButton) findViewById(R.id.buttonStartMow);
@@ -214,6 +243,7 @@ public class MeinMaeher extends BaseAppCompatAcitivty {
 
                     });
                     setNoConnection();
+
                     return;
                 }
 
@@ -265,6 +295,7 @@ public class MeinMaeher extends BaseAppCompatAcitivty {
                     Log.i("Message", "reveived Message");
                     handleStatus(lawnmowerStatus.getStatus());
                     setBatteryState(lawnmowerStatus.getBatteryState());
+                    setMowingState(lawnmowerStatus.getMowingProgress());
 
                     //sets data to the singleton
                     lawnmowerStatusData.setStatus(lawnmowerStatus.getStatus());
@@ -272,6 +303,7 @@ public class MeinMaeher extends BaseAppCompatAcitivty {
                     lawnmowerStatusData.setBatteryState(lawnmowerStatus.getBatteryState());
                     lawnmowerStatusData.setLatitude(lawnmowerStatus.getLatitude());
                     lawnmowerStatusData.setLongitude(lawnmowerStatus.getLongitude());
+                    lawnmowerStatusData.setMowing_process(lawnmowerStatus.getMowingProgress());
                     //handleMowingErrors(lawnmowerStatus.getError());
                     //Thread.sleep(10);
                 } catch (IOException e) {
@@ -324,8 +356,13 @@ public class MeinMaeher extends BaseAppCompatAcitivty {
         }
     }
 
+    private void setMowingState(double mowingProcess) {
+
+    }
+
+
     private void setBatteryState(double batteryState) {
-        if(batteryState > 90.0) {
+        if (batteryState > 90.0) {
             bshandler.setView(getResources().getIdentifier("@drawable/batteryfull", null, getPackageName()));
         } else if (batteryState > 70.0) {
             bshandler.setView(getResources().getIdentifier("@drawable/battery80", null, getPackageName()));
@@ -333,15 +370,15 @@ public class MeinMaeher extends BaseAppCompatAcitivty {
             bshandler.setView(getResources().getIdentifier("@drawable/battery60", null, getPackageName()));
         } else if (batteryState > 30.0) {
             bshandler.setView(getResources().getIdentifier("@drawable/battery40", null, getPackageName()));
-        } else if (batteryState > 10.0){
+        } else if (batteryState > 10.0) {
             bshandler.setView(getResources().getIdentifier("@drawable/battery20", null, getPackageName()));
         } else {
             bshandler.setView(getResources().getIdentifier("@drawable/battery0", null, getPackageName()));
         }
-        if(batteryStatus.getVisibility() == View.INVISIBLE) {
+        if (batteryStatus.getVisibility() == View.INVISIBLE) {
             batteryStatus.setVisibility(View.VISIBLE);
         }
-        batteryStatus.setText("" + (int)batteryState + "%");
+        batteryStatus.setText("" + (int) batteryState + "%");
     }
 
     /*private void handleGeoCoordinatesLatitude(double latitude) {
@@ -456,93 +493,30 @@ public class MeinMaeher extends BaseAppCompatAcitivty {
         }
     }
 
-    /**
-     * Send Messages to TCP Server
-     * Call svhandler to update the ui
-     * Publish toast if a button is pressed
-     */
-    /*@Override
-    public void onClick(final View v) {
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                runOnUiThread(new Runnable() {
-                    //private ImageView MowingStatusView = (ImageView) findViewById(R.id.MowingStatusView);
-
-                    @Override
-                    public void run() {
-                        switch (v.getId()) {
-                            case R.id.buttonStartMow: {
-                                byte[] msg = btnMessageGenerator.buildMessage(START).toByteArray();
-                                try {
-                                    svhandler.setView(getResources().getIdentifier("@drawable/mowing", null, getPackageName()));
-                                    serialize(msg);
-                                    Toast.makeText(getApplicationContext(), start, Toast.LENGTH_LONG).show();
-                                } catch (IOException e) {
-                                    e.printStackTrace();
-                                }
-                                break;
-                            }
-                            case R.id.buttonPauseMow: {
-                                byte[] msg = btnMessageGenerator.buildMessage(PAUSE).toByteArray();
-                                try {
-                                    isPaused = true;
-                                    svhandler.setView(getResources().getIdentifier("@drawable/mowpause", null, getPackageName()));
-                                    serialize(msg);
-                                    Toast.makeText(getApplicationContext(), pausiere, Toast.LENGTH_LONG).show();
-                                } catch (IOException e) {
-                                    e.printStackTrace();
-                                }
-                                break;
-                            }
-                            case R.id.buttonStopMow: {
-                                byte[] msg = btnMessageGenerator.buildMessage(STOP).toByteArray();
-                                try {
-                                    isStopped = true;
-                                    svhandler.setView(getResources().getIdentifier("@drawable/mowstop", null, getPackageName()));
-                                    serialize(msg);
-                                    Toast.makeText(getApplicationContext(), stoppe, Toast.LENGTH_LONG).show();
-                                } catch (IOException e) {
-                                    e.printStackTrace();
-                                }
-                                break;
-                            }
-                            case R.id.buttonGoHome: {
-                                byte[] msg = btnMessageGenerator.buildMessage(HOME).toByteArray();
-                                try {
-                                    isGoingHome = true;
-                                    svhandler.setView(getResources().getIdentifier("@drawable/mowback", null, getPackageName()));
-                                    serialize(msg);
-                                    Toast.makeText(getApplicationContext(), GoHome, Toast.LENGTH_LONG).show();
-                                } catch (IOException e) {
-                                    e.printStackTrace();
-                                }
-                                break;
-                            }
-                        }
-                    }
-                });
-            }
-        }).start();
-    }*/
 
     /* Disable the functionality of the buttons (Start,Pause,Stop,GoHome)
      * Set visibility to grey if there is no connection
      */
     private void setNoConnection() {
-        buttonStartMow.setEnabled(false);
-        buttonPauseMow.setEnabled(false);
-        buttonStopMow.setEnabled(false);
-        buttonGoHome.setEnabled(false);
-        batteryStatusIcon.setVisibility(View.INVISIBLE);
-        batteryStatus.setVisibility(View.INVISIBLE);
-        connectionStatus.setVisibility(View.GONE);
-        connectionStatus.setImageResource(getResources().getIdentifier("@drawable/notconnected", null, getPackageName()));
-        connectionStatus.setVisibility(View.VISIBLE);
-        ((ImageButton) findViewById(R.id.buttonStartMow)).setAlpha(0.3f);
-        ((ImageButton) findViewById(R.id.buttonPauseMow)).setAlpha(0.3f);
-        ((ImageButton) findViewById(R.id.buttonStopMow)).setAlpha(0.3f);
-        ((ImageButton) findViewById(R.id.buttonGoHome)).setAlpha(0.3f);
+     runOnUiThread(new Runnable() {
+         @Override
+         public void run() {
+             buttonStartMow.setEnabled(false);
+             buttonPauseMow.setEnabled(false);
+             buttonStopMow.setEnabled(false);
+             buttonGoHome.setEnabled(false);
+             batteryStatusIcon.setVisibility(View.INVISIBLE);
+             batteryStatus.setVisibility(View.INVISIBLE);
+             connectionStatus.setVisibility(View.GONE);
+             connectionStatus.setImageResource(getResources().getIdentifier("@drawable/notconnected", null, getPackageName()));
+             connectionStatus.setVisibility(View.VISIBLE);
+             ((ImageButton) findViewById(R.id.buttonStartMow)).setAlpha(0.3f);
+             ((ImageButton) findViewById(R.id.buttonPauseMow)).setAlpha(0.3f);
+             ((ImageButton) findViewById(R.id.buttonStopMow)).setAlpha(0.3f);
+             ((ImageButton) findViewById(R.id.buttonGoHome)).setAlpha(0.3f);
+         }
+     });
+
     }
 
     /* Set visibility to normal value if connection is possible.
@@ -618,7 +592,6 @@ public class MeinMaeher extends BaseAppCompatAcitivty {
     @Override
     public void finish() {
         super.finish();
-        backgroundTask.cancel(true);
     }
 
     @Override

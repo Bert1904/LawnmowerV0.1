@@ -129,13 +129,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         Bitmap smallMarker = Bitmap.createScaledBitmap(b, width, height, false);
         BitmapDescriptor bitmapDescriptor = BitmapDescriptorFactory.fromBitmap(b);
-        System.out.println(lawnmowerStatusData.getLatitude()+"<------------------");
-        System.out.println(lawnmowerStatusData.getLongitude()+"<------------------");
         mMap.setMapType(GoogleMap.MAP_TYPE_SATELLITE);
         // Add a marker to current lawnmower position and move the camera
         LatLng lawnmower_gps = new LatLng(lawnmowerStatusData.getLatitude(), lawnmowerStatusData.getLongitude());
         //mMap.addGroundOverlay(new GroundOverlayOptions().image(bitmapDescriptor).position(lawnmower_gps,100));
-        System.out.println("*******************"+"" +lawnmower_gps);
         // Create marker Options
         // TODO : Change Icon to actual Logo MarkerOptions options = new MarkerOptions().position(lawnmower_gps).title("Lawnmower").icon(BitmapDescriptorFactory.fromBitmap(smallMarker));
         MarkerOptions options = new MarkerOptions().position(lawnmower_gps).title("Lawnmower");
