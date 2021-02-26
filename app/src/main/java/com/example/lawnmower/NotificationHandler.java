@@ -7,7 +7,7 @@ import android.content.Context;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 
- /**
+/**
  * Creates notification channel in createErrorNotificationChannel and createStatusNotificationChannel.
  * Send messages via notification to the ui if the status from lawnmower is changed
  */
@@ -32,10 +32,10 @@ public class NotificationHandler implements  Runnable {
 
 
     }
-     /**
-      * Creates notification channel for lawnmower error status
-      *
-      */
+    /**
+     * Creates notification channel for lawnmower error status
+     *
+     */
     private void createErrorNotificationChannel(){
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
             errorChannel = new NotificationChannel("1","Error", NotificationManager.IMPORTANCE_DEFAULT);
@@ -44,10 +44,10 @@ public class NotificationHandler implements  Runnable {
             notificationManager.createNotificationChannel(errorChannel);
         }
     }
-     /**
-      * Creates notification channel for lawnmowerstatus
-      *
-      */
+    /**
+     * Creates notification channel for lawnmowerstatus
+     *
+     */
     private void createStatusNotificationChannel(){
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
             statusChannel = new NotificationChannel("2","Status",NotificationManager.IMPORTANCE_DEFAULT);
@@ -57,26 +57,26 @@ public class NotificationHandler implements  Runnable {
             notificationManager.createNotificationChannel(statusChannel);
         }
     }
-     /**
-      * Opens sendNotification for error Notification
-      *
-      */
+    /**
+     * Opens sendNotification for error Notification
+     *
+     */
     public void sendErrorNotification(String msg){
         this.sendNotification(1, ATTENTION, msg, R.drawable.ic_stat_error_outline);
     }
 
-     /**
-      * Opens sendNotification for Status Notification
-      *
-      */
+    /**
+     * Opens sendNotification for Status Notification
+     *
+     */
     public void sendStatusNotification(String msg){
         this.sendNotification(2, "Lawnmower Status", msg, R.drawable.logomarkerr);
     }
 
-     /**
-      * Publish notification with  channelId,  title,  msg,  status
-      *
-      */
+    /**
+     * Publish notification with  channelId,  title,  msg,  status
+     *
+     */
     private void sendNotification(int channelId, String title, String msg, int status) {
         //if (!LawnmowerApp.isVisibile()) return;
 

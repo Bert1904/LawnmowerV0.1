@@ -7,7 +7,7 @@ public class LawnmowerApp extends Application {
     private static boolean visible = false;
 
     public static void onPauseActivity() {
-       visible = false;
+        visible = false;
         System.out.println("LawnmowerApp visible: " + visible);
     }
 

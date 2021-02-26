@@ -63,7 +63,7 @@ public class WeatherActivity extends BaseAppCompatAcitivty {
         setContentView(R.layout.activity_weather);
         geocoder= new Geocoder(this,Locale.getDefault());
         try {
-          addresses=geocoder.getFromLocation(latitute,longitude,1);
+            addresses=geocoder.getFromLocation(latitute,longitude,1);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -207,7 +207,7 @@ public class WeatherActivity extends BaseAppCompatAcitivty {
 
             Long time = jsonObject.getLong("dt");
 
-           TimeZone timeZone = TimeZone.getTimeZone("CET");
+            TimeZone timeZone = TimeZone.getTimeZone("CET");
             //String sTime = new SimpleDateFormat("dd.MM.yyyy hh:mm:ss", Locale.GERMAN).format(new Date(time * 1000));
             Calendar calendar = Calendar.getInstance();
             calendar.setTime(new Date());

@@ -16,7 +16,7 @@ public class ButtonMessageGenerator {
                 btn = AppControlsProtos.AppControls.newBuilder().setCmd(AppControlsProtos.AppControls.Command.PAUSE).build();
                 break;
             case(4):
-                btn = AppControlsProtos.AppControls.newBuilder().setCmd(AppControlsProtos.AppControls.Command.HOME).build();
+                btn = AppControlsProtos.AppControls.newBuilder().setCmd(AppControlsProtos.AppControls.Command.GO_HOME).build();
                 break;
             case(5):
                 btn = AppControlsProtos.AppControls.newBuilder().setCmd(AppControlsProtos.AppControls.Command.BEGIN_TRACKING).build();

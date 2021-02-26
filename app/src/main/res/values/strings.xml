@@ -9,9 +9,9 @@
     <string name="MowActivityTitle">Mein Rasenmäher</string>
 
     <string name="default_server_ip">192.168.0.8</string>
-    <string name="default_server_port">6755</string>
+    <string name="default_server_port">6750</string>
     <string name="defaultIPHint">Default IP-Address 192.168.0.8</string>
-    <string name="defaultPortHint">Default Port Setting : 6755</string>
+    <string name="defaultPortHint">Default Port Setting : 6750</string>
 
     <string name="button_play">Play</string>
     <string name="button_stop">Stop</string>

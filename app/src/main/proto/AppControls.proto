@@ -1,6 +1,13 @@
 //Using the version of protobuf
 syntax = "proto3";
 
+//Can save
+package com.example.lawnmower;
+//Generate the package name of the class after compilation
+option java_package = "com.example.lawnmower";
+//Generate the class name of the class after compilation
+option java_outer_classname = "AppControlsProtos";
+//message can be seen as a key word class in Java environment
         message AppControls {
 enum Command {
     NO_CMD = 0;

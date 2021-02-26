@@ -36,5 +36,14 @@
         android:layout_marginTop = "16dp"
         android:text = "Verbinden zum Server" />
 
+    <Button
+        android:id="@+id/Button_disconnect"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/Button_Connect"
+        android:layout_gravity="center"
+        android:layout_marginTop="16dp"
+        android:text="Verbindung trennen" />
+
 
 </RelativeLayout>

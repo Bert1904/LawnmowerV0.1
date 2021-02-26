@@ -15,6 +15,7 @@ import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
@@ -31,7 +32,7 @@ import io.github.controlwear.virtual.joystick.android.JoystickView;
 import java.io.IOException;
 import java.net.Socket;
 
-public class Steuerung extends AppCompatActivity implements SurfaceHolder.Callback {
+public class Steuerung extends AppCompatActivity implements SurfaceHolder.Callback, LawnmowerStatusDataChangedListener {
 
     private JoystickView mJoystick;
     private JoystickMessageGenerator mJoystickMessageGenerator;
@@ -51,8 +52,7 @@ public class Steuerung extends AppCompatActivity implements SurfaceHolder.Callba
     private long native_custom_data;      // Native code will use this to keep private data
 
     //private boolean is_playing_desired;   // Whether the user asked to go to PLAYING
-    private Socket socket;
-    private String host = "192.168.0.8";
+    private String ip = SocketService.getInstance().getIp();
     private int port = 6755;
     private double xJoystick = 0.0;
     private double yJoystick = 0.0;
@@ -61,6 +61,9 @@ public class Steuerung extends AppCompatActivity implements SurfaceHolder.Callba
     private final double MINDIF = 0.00;
     //Refreshrate of the Joystick
     private final int REFRESHRATE = 20;
+    private ImageView batteryStatusIcon;
+    private TextView batteryStatus;
+    private BatteryStatusHandler bshandler;
 
     // Called when the activity is first created.
     @Override
@@ -70,7 +73,7 @@ public class Steuerung extends AppCompatActivity implements SurfaceHolder.Callba
 
         // Initialize GStreamer and warn if it fails
 
-        socket = SocketService.getSocket();
+        //socket = SocketService.getSocket();
 
         try {
             GStreamer.init(this);
@@ -98,13 +101,19 @@ public class Steuerung extends AppCompatActivity implements SurfaceHolder.Callba
         mJoystickMessageGenerator = new JoystickMessageGenerator();
         setHome = findViewById(R.id.setHome);
         tracking = findViewById(R.id.tracking);
+        batteryStatusIcon = findViewById(R.id.batteryStatusIconCntrl);
+        batteryStatus = findViewById(R.id.batteryStatusCntrl);
+        bshandler = new BatteryStatusHandler(batteryStatusIcon);
         setHome.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View view) {
                 Log.i("homebutton","home button pressed");
-                /*try {
-                    ButtonMessageGenerator.buildMessage()
-                }*/
+                try {
+                    SocketService.getInstance().send(
+                            AppControlsProtos.AppControls.newBuilder().setCmd(AppControlsProtos.AppControls.Command.SET_HOME).build().toByteArray());
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
         });
         tracking.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
@@ -113,14 +122,16 @@ public class Steuerung extends AppCompatActivity implements SurfaceHolder.Callba
                 if(isChecked) {
                     Log.i("trackingButton", "startTracking");
                     try {
-                        serialize(ButtonMessageGenerator.buildMessage(AppControlsProtos.AppControls.Command.BEGIN_TRACKING_VALUE).toByteArray());
+                        SocketService.getInstance().send(
+                                AppControlsProtos.AppControls.newBuilder().setCmd(AppControlsProtos.AppControls.Command.BEGIN_TRACKING).build().toByteArray());
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
                 } else {
                     Log.i("trackingButton", "stopTracking");
                     try {
-                        serialize(ButtonMessageGenerator.buildMessage(AppControlsProtos.AppControls.Command.FINISH_TRACKING_VALUE).toByteArray());
+                        SocketService.getInstance().send(
+                                AppControlsProtos.AppControls.newBuilder().setCmd(AppControlsProtos.AppControls.Command.FINISH_TRACKING).build().toByteArray());
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
@@ -143,7 +154,7 @@ public class Steuerung extends AppCompatActivity implements SurfaceHolder.Callba
                     Log.i("Steuerung","X: " + xJoystick + " ,Y: " + yJoystick);
                     AppControlsProtos.AppControls msg = mJoystickMessageGenerator.buildMessage(xJoystick, yJoystick);
                     try {
-                        serialize(msg.toByteArray());
+                        SocketService.getInstance().send(msg.toByteArray());
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -151,6 +162,14 @@ public class Steuerung extends AppCompatActivity implements SurfaceHolder.Callba
 
             }
         },REFRESHRATE);
+
+        if(!SocketService.getInstance().isConnected()) {
+            batteryStatusIcon.setVisibility(View.INVISIBLE);
+            batteryStatus.setVisibility(View.INVISIBLE);
+        } else {
+            batteryStatusIcon.setVisibility(View.VISIBLE);
+            batteryStatus.setVisibility(View.VISIBLE);
+        }
     }
 
     private double difference(double x, double y,double lastX, double lastY) {
@@ -160,7 +179,7 @@ public class Steuerung extends AppCompatActivity implements SurfaceHolder.Callba
         return diff;
     }
 
-    private void serialize(final byte[] message) throws IOException {
+    /*private void serialize(final byte[] message) throws IOException {
         Log.i("serialize","SendDataToNetwork: opened method serialze");
         new Thread(new Runnable() {
             @Override
@@ -174,7 +193,7 @@ public class Steuerung extends AppCompatActivity implements SurfaceHolder.Callba
                 }
             }
         }).start();
-    }
+    }*/
 
 
     protected void onSaveInstanceState (Bundle outState) {
@@ -240,5 +259,48 @@ public class Steuerung extends AppCompatActivity implements SurfaceHolder.Callba
                 gsv.requestLayout();
             }
         });
+    }
+
+    @Override
+    public void onLSDChange() {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                setBatteryState(LawnmowerStatusData.getInstance().getLawnmowerStatus().getBatteryState());
+            }
+        });
+    }
+
+    private void setBatteryState(float batteryState) {
+
+        if(batteryState > 90.0f) {
+            bshandler.setView(getResources().getIdentifier("@drawable/batteryfull", null, getPackageName()));
+        } else if (batteryState > 70.0f) {
+            bshandler.setView(getResources().getIdentifier("@drawable/battery80", null, getPackageName()));
+        } else if (batteryState > 50.0f) {
+            bshandler.setView(getResources().getIdentifier("@drawable/battery60", null, getPackageName()));
+        } else if (batteryState > 30.0f) {
+            bshandler.setView(getResources().getIdentifier("@drawable/battery40", null, getPackageName()));
+        } else if (batteryState > 10.0f){
+            bshandler.setView(getResources().getIdentifier("@drawable/battery20", null, getPackageName()));
+        } else {
+            bshandler.setView(getResources().getIdentifier("@drawable/battery0", null, getPackageName()));
+        }
+        if(batteryStatus.getVisibility() == View.INVISIBLE) {
+            batteryStatus.setVisibility(View.VISIBLE);
+        }
+        batteryStatus.setText("" + (int)batteryState + "%");
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        LSDListenerManager.removeListener(this);
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        LSDListenerManager.addListener(this);
     }
 }

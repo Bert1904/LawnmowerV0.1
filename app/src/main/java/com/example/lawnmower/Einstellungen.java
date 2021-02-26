@@ -25,9 +25,10 @@ public class Einstellungen extends BaseAppCompatAcitivty {
     private static final String CONNECT_FAILED = "Verbindung fehlgeschlagen";
 
     // Variablen
-    EditText Button_Ip, Button_Port;
-    String SERVER_IP;
-    int SERVER_PORT;
+    private EditText Button_Ip, Button_Port;
+    private String SERVER_IP;
+    private int SERVER_PORT;
+    private Button disconnect, connect;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,8 +37,8 @@ public class Einstellungen extends BaseAppCompatAcitivty {
         setContentView(R.layout.activity_einstellungen);
         Button_Ip = findViewById(R.id.Button_Ip);
         Button_Port = findViewById(R.id.Button_Port);
-        Button Button_Connect = findViewById(R.id.Button_Connect);
-        Button_Connect.setOnClickListener(new View.OnClickListener() {
+        connect = findViewById(R.id.Button_Connect);
+        connect.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 // Keine Eingabe von Ip-Adresse und/oder Port
@@ -53,14 +54,20 @@ public class Einstellungen extends BaseAppCompatAcitivty {
                 Toast.makeText(getApplicationContext(), CONNECTION_SERVER, Toast.LENGTH_LONG).show();
             }
         });
+        disconnect = findViewById(R.id.Button_disconnect);
+        disconnect.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                SocketService.getInstance().disconnect();
+            }
+        });
     }
 
     public class SocketConnectThread implements Runnable {
-
         @Override
         public void run() {
             try {
-                SocketService.connect(SERVER_IP, SERVER_PORT);
+                SocketService.getInstance().connect(SERVER_IP, SERVER_PORT);
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
@@ -77,6 +84,5 @@ public class Einstellungen extends BaseAppCompatAcitivty {
                 e.printStackTrace();
             }
         }
-
     }
 }
