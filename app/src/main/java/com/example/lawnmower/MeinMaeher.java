@@ -396,55 +396,30 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements LawnmowerStatus
 
         switch (status.getNumber()) {
             case AppControlsProtos.LawnmowerStatus.Status.Ready_VALUE: {
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
                         svhandler.setView(getResources().getIdentifier("@drawable/ready", null, getPackageName()));
                         Toast.makeText(getApplicationContext(), ready, Toast.LENGTH_LONG).show();
-                    }
-                });
                 break;
             }
             case AppControlsProtos.LawnmowerStatus.Status.Mowing_VALUE: {
                 isMowing = true;
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
                         svhandler.setView(getResources().getIdentifier("@drawable/mahvorgang", null, getPackageName()));
                         Toast.makeText(getApplicationContext(), mowing, Toast.LENGTH_LONG).show();
-                    }
-                });
                 break;
             }
             case AppControlsProtos.LawnmowerStatus.Status.Paused_VALUE: {
                 isPaused = true;
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
                         svhandler.setView(getResources().getIdentifier("@drawable/mahvorgangpausiert", null, getPackageName()));
                         nfhandler.sendStatusNotification(paused);
                         Toast.makeText(getApplicationContext(), paused, Toast.LENGTH_LONG).show();
-                    }
-                });
                 break;
             }
             case AppControlsProtos.LawnmowerStatus.Status.Manual_VALUE: {
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
                         Toast.makeText(getApplicationContext(), manual, Toast.LENGTH_LONG).show();
-                    }
-                });
                 break;
             }
             case AppControlsProtos.LawnmowerStatus.Status.Low_Light_VALUE: {
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
                         nfhandler.sendStatusNotification(low_Light);
                         Toast.makeText(getApplicationContext(), low_Light, Toast.LENGTH_LONG).show();
-                    }
-                });
                 break;
             }
         }

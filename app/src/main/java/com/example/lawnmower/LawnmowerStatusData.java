@@ -28,8 +28,8 @@ public class LawnmowerStatusData {
 
     public void setLawnmowerStatus(AppControlsProtos.LawnmowerStatus lawnmowerStatus1) {
         Log.i("LawnmowerStatusData","LawnmowerStatusData changed");
-        LSDListenerManager.notifyOnChange();
         this.lawnmowerStatus = lawnmowerStatus1;
+        LSDListenerManager.notifyOnChange();
     }
 
     public AppControlsProtos.LawnmowerStatus getLawnmowerStatus() {
