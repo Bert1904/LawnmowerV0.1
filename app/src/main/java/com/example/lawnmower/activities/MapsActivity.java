@@ -1,4 +1,4 @@
-package com.example.lawnmower;
+package com.example.lawnmower.activities;
 
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
@@ -15,6 +15,10 @@ import android.os.Bundle;
 import android.view.Gravity;
 import android.widget.Toast;
 
+import com.example.lawnmower.LawnmowerApp;
+import com.example.lawnmower.data.LawnmowerStatusData;
+import com.example.lawnmower.viewhandler.NotificationHandler;
+import com.example.lawnmower.R;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -63,7 +67,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.fragment_maps);
+        setContentView(R.layout.activity_maps);
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
@@ -127,17 +131,17 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         try{
             LatLng lawnmower_gps = new LatLng(lawnmowerStatusData.getLawnmowerStatus().getLatitude(), lawnmowerStatusData.getLawnmowerStatus().getLongitude());
 
-        //mMap.addGroundOverlay(new GroundOverlayOptions().image(bitmapDescriptor).position(lawnmower_gps,100));
-        System.out.println("*******************"+"" +lawnmower_gps);
-        // Create marker Options
-        // TODO : Change Icon to actual Logo MarkerOptions options = new MarkerOptions().position(lawnmower_gps).title("Lawnmower").icon(BitmapDescriptorFactory.fromBitmap(smallMarker));
-        MarkerOptions options = new MarkerOptions().position(lawnmower_gps).title("Lawnmower");
-        mMap.addMarker(options.position(lawnmower_gps).title("Lawnmower Position"));
+            //mMap.addGroundOverlay(new GroundOverlayOptions().image(bitmapDescriptor).position(lawnmower_gps,100));
+            System.out.println("*******************"+"" +lawnmower_gps);
+            // Create marker Options
+            // TODO : Change Icon to actual Logo MarkerOptions options = new MarkerOptions().position(lawnmower_gps).title("Lawnmower").icon(BitmapDescriptorFactory.fromBitmap(smallMarker));
+            MarkerOptions options = new MarkerOptions().position(lawnmower_gps).title("Lawnmower");
+            mMap.addMarker(options.position(lawnmower_gps).title("Lawnmower Position"));
 
-        googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(lawnmower_gps,16));
+            googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(lawnmower_gps,16));
 
-        googleMap.addMarker(options);
-    } catch(Exception io){
+            googleMap.addMarker(options);
+        } catch(Exception io){
             Toast toast = Toast.makeText(this,NO_CONNECTION, Toast.LENGTH_LONG);
             toast.setGravity(Gravity.CENTER, 0, 0);
             toast.show();
@@ -148,7 +152,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             ft.hide(mapFragment);
             ft.commit();
 
-    }
+        }
 
-}
+    }
 }

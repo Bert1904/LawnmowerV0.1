@@ -67,19 +67,19 @@
             android:value="@string/API_KEY" />
 
         <activity
-            android:name=".MapsActivity"
+            android:name=".activities.MapsActivity"
             android:label="@string/title_activity_maps"></activity>
-        <activity android:name=".Info" />
-        <activity android:name=".WeatherActivity"/>
-        <activity android:name=".MeinMaeher"
+        <activity android:name=".activities.InfoActivity" />
+        <activity android:name=".activities.WeatherActivity"/>
+        <activity android:name=".activities.MyMowerActivity"
             android:screenOrientation="portrait"/>
-        <activity android:name=".HomeActivity"
+        <activity android:name=".activities.HomeActivity"
             android:screenOrientation="portrait"/>
-        <activity android:name=".Einstellungen" />
-        <activity android:name=".Steuerung"
+        <activity android:name=".activities.SettingsActivity" />
+        <activity android:name=".activities.ControlActivity"
             android:screenOrientation="landscape"/>
         <activity
-            android:name=".Ladebildschirm"
+            android:name=".activities.LoadingScreen"
             android:configChanges="orientation|screenSize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

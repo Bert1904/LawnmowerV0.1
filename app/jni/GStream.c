@@ -396,7 +396,7 @@ JNI_OnLoad (JavaVM * vm, void *reserved)
         return 0;
     }
     jclass klass = (*env)->FindClass (env,
-                                      "com/example/lawnmower/Steuerung");
+                                      "com/example/lawnmower/activities/ControlActivity");
     (*env)->RegisterNatives (env, klass, native_methods,
                              G_N_ELEMENTS (native_methods));
 

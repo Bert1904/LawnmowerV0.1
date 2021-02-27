@@ -8,7 +8,7 @@
 
 
     android:saveEnabled="false"
-    tools:context=".Ladebildschirm">
+    tools:context=".activities.LoadingScreen">
 
 
     <androidx.constraintlayout.widget.ConstraintLayout

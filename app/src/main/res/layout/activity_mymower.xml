@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context=".MeinMaeher">
+    tools:context=".activities.MyMowerActivity">
     <Space
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -26,7 +26,7 @@
 
         <TextView
             android:id="@+id/title3"
-            android:layout_width="354dp"
+            android:layout_width="250dp"
             android:layout_height="wrap_content"
             android:layout_centerInParent="true"
             android:fontFamily="sans-serif"
@@ -37,7 +37,7 @@
             android:textSize="30sp" />
 
         <ImageView
-            android:id="@+id/batteryStatusIcon"
+            android:id="@+id/batteryStatusIconMow"
             android:layout_width="45dp"
             android:layout_height="25dp"
             android:layout_alignTop="@id/title3"
@@ -47,11 +47,11 @@
             app:srcCompat="@drawable/batteryfull" />
 
         <TextView
-            android:id="@+id/batteryStatus"
+            android:id="@+id/batteryStatusMow"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_below="@id/batteryStatusIcon"
-            android:layout_alignStart="@id/batteryStatusIcon"
+            android:layout_below="@id/batteryStatusIconMow"
+            android:layout_alignStart="@id/batteryStatusIconMow"
             android:layout_alignParentEnd="true"
             android:layout_marginStart="10dp"
             android:layout_marginTop="0dp"

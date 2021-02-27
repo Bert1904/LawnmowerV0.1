@@ -1,12 +1,15 @@
-
-package com.example.lawnmower;
+package com.example.lawnmower.activities;
 
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageButton;
-public class Info extends BaseAppCompatAcitivty {
+
+import com.example.lawnmower.R;
+import com.example.lawnmower.activities.BaseAppCompatAcitivty;
+
+public class InfoActivity extends BaseAppCompatAcitivty {
 
 
 

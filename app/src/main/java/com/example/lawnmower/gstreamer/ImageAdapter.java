@@ -1,4 +1,4 @@
-package com.example.lawnmower;
+package com.example.lawnmower.gstreamer;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;

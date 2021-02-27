@@ -1,18 +1,25 @@
-package com.example.lawnmower;
+package com.example.lawnmower.activities;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
 
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.example.lawnmower.AppControlsProtos;
+import com.example.lawnmower.viewhandler.BatteryStatusHandler;
+import com.example.lawnmower.data.LSDListenerManager;
+import com.example.lawnmower.data.LawnmowerStatusData;
+import com.example.lawnmower.data.LawnmowerStatusDataChangedListener;
+import com.example.lawnmower.R;
+import com.example.lawnmower.data.SocketService;
+
 import java.net.Socket;
 
 
-public class HomeActivity extends BaseAppCompatAcitivty implements LawnmowerStatusDataChangedListener{
+public class HomeActivity extends BaseAppCompatAcitivty implements LawnmowerStatusDataChangedListener {
     private ImageButton buttonMow;
     private ImageButton buttonInfo;
     private ImageButton buttonControl;
@@ -21,28 +28,26 @@ public class HomeActivity extends BaseAppCompatAcitivty implements LawnmowerStat
     private ImageButton buttonWeather;
     private ImageView batteryStatusIcon;
     private TextView batteryStatus;
+    private ImageView connectionStatus;
+    private TextView lawnmowerStatus;
     private BatteryStatusHandler bshandler;
-    private Socket socket;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
         buttonSettings=   findViewById(R.id.buttonSettings);
-        batteryStatusIcon = findViewById(R.id.batteryStatusIconMow);
-        batteryStatus = findViewById(R.id.batteryStatusMow);
+        batteryStatusIcon = findViewById(R.id.batteryStatusIconHome);
+        batteryStatus = findViewById(R.id.batteryStatusHome);
         bshandler = new BatteryStatusHandler(batteryStatusIcon);
+        lawnmowerStatus = findViewById(R.id.lawnmowerStatus);
+        connectionStatus = findViewById(R.id.connectionStatus);
         buttonSettings.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 openSetting();
             }
         });
-        /*String status = "Not Connected";
-        if(socket.isConnected()) {
-            status = "Connected";
-        }
-        statusView.setText(status);*/
 
         buttonControl=   findViewById(R.id.buttonControl);
         buttonControl.setOnClickListener(new View.OnClickListener() {
@@ -86,28 +91,54 @@ public class HomeActivity extends BaseAppCompatAcitivty implements LawnmowerStat
         });
         init();
     }
-    /*public void openMap(){
-        Intent intent = new Intent(this, com.example.lawnmower.map.MapMain.class);
-        startActivity(intent);
-    }*/
+
+    private class testThread extends Thread {
+        @Override
+        public void run() {
+            try {
+                sleep(500);
+                AppControlsProtos.LawnmowerStatus status;
+                status = AppControlsProtos.LawnmowerStatus.newBuilder().setStatus(AppControlsProtos.LawnmowerStatus.Status.READY).setBatteryState(80f).setMowingProgress(20).build();
+                LawnmowerStatusData.getInstance().setLawnmowerStatus(status);
+                sleep(2000);
+                status = AppControlsProtos.LawnmowerStatus.newBuilder().setStatus(AppControlsProtos.LawnmowerStatus.Status.MOWING).setBatteryState(79f).setMowingProgress(20).build();
+                LawnmowerStatusData.getInstance().setLawnmowerStatus(status);
+                sleep(2000);
+                status = AppControlsProtos.LawnmowerStatus.newBuilder().setStatus(AppControlsProtos.LawnmowerStatus.Status.PAUSED).setBatteryState(78f).setMowingProgress(20).build();
+                LawnmowerStatusData.getInstance().setLawnmowerStatus(status);
+                sleep(2000);
+                status = AppControlsProtos.LawnmowerStatus.newBuilder().setStatus(AppControlsProtos.LawnmowerStatus.Status.MANUAL).setBatteryState(77f).setMowingProgress(20).build();
+                LawnmowerStatusData.getInstance().setLawnmowerStatus(status);
+                sleep(2000);
+                status = AppControlsProtos.LawnmowerStatus.newBuilder().setStatus(AppControlsProtos.LawnmowerStatus.Status.TRACKING).setBatteryState(76f).setMowingProgress(20).build();
+                LawnmowerStatusData.getInstance().setLawnmowerStatus(status);
+                sleep(2000);
+                status = AppControlsProtos.LawnmowerStatus.newBuilder().setStatus(AppControlsProtos.LawnmowerStatus.Status.LOW_LIGHT).setBatteryState(75f).setMowingProgress(20).build();
+                LawnmowerStatusData.getInstance().setLawnmowerStatus(status);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
     public void openWeather(){
         Intent intent = new Intent(this, WeatherActivity.class);
         startActivity(intent);
     }
     public void openSetting(){
-        Intent intent = new Intent(this, Einstellungen.class);
+        Intent intent = new Intent(this, SettingsActivity.class);
         startActivity(intent);
     }
     public void openInfo(){
-        Intent intent = new Intent(this, Info.class);
+        Intent intent = new Intent(this, InfoActivity.class);
         startActivity(intent);
     }
     public void openMeinmaeher(){
-        Intent intent = new Intent(this, MeinMaeher.class);
+        Intent intent = new Intent(this, MyMowerActivity.class);
         startActivity(intent);
     }
     public void openControl(){
-        Intent intent = new Intent(this, Steuerung.class);
+        Intent intent = new Intent(this, ControlActivity.class);
         startActivity(intent);
     }
     public void openMap(){
@@ -119,10 +150,16 @@ public class HomeActivity extends BaseAppCompatAcitivty implements LawnmowerStat
         if(!SocketService.getInstance().isConnected()) {
             batteryStatusIcon.setVisibility(View.INVISIBLE);
             batteryStatus.setVisibility(View.INVISIBLE);
+            connectionStatus.setVisibility(View.GONE);
+            connectionStatus.setImageResource(getResources().getIdentifier("@drawable/notconnected", null, getPackageName()));
+            lawnmowerStatus.setText("Nicht verbunden");
         } else {
             batteryStatusIcon.setVisibility(View.VISIBLE);
             batteryStatus.setVisibility(View.VISIBLE);
+            connectionStatus.setVisibility(View.GONE);
+            connectionStatus.setImageResource(getResources().getIdentifier("@drawable/connected", null, getPackageName()));
         }
+        connectionStatus.setVisibility(View.VISIBLE);
     }
 
     private void setBatteryState(float batteryState) {
@@ -146,12 +183,33 @@ public class HomeActivity extends BaseAppCompatAcitivty implements LawnmowerStat
         batteryStatus.setText("" + (int)batteryState + "%");
     }
 
+    private void updateLawnmowerStatus(AppControlsProtos.LawnmowerStatus.Status status) {
+        String s;
+        if(status == AppControlsProtos.LawnmowerStatus.Status.READY) {
+            s = "Status: Bereit";
+        } else if(status == AppControlsProtos.LawnmowerStatus.Status.MOWING) {
+            s = "Status: Mähen";
+        } else if(status == AppControlsProtos.LawnmowerStatus.Status.PAUSED) {
+            s = "Status: Pause";
+        } else if(status == AppControlsProtos.LawnmowerStatus.Status.MANUAL) {
+            s = "Status: Manuell";
+        } else if(status == AppControlsProtos.LawnmowerStatus.Status.TRACKING) {
+            s = "Status: Tracking";
+        } else {
+            s = "Wenig Licht";
+        }
+        lawnmowerStatus.setText(s);
+    }
+
     @Override
     public void onLSDChange() {
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 setBatteryState(LawnmowerStatusData.getInstance().getLawnmowerStatus().getBatteryState());
+                if(SocketService.getInstance().isConnected()) {
+                    updateLawnmowerStatus(LawnmowerStatusData.getInstance().getLawnmowerStatus().getStatus());
+                }
             }
         });
     }

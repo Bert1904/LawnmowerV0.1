@@ -1,9 +1,6 @@
-package com.example.lawnmower;
+package com.example.lawnmower.data;
 
-import android.util.Log;
-
-import java.util.ArrayList;
-import java.util.List;
+import com.example.lawnmower.AppControlsProtos;
 
 public class LawnmowerStatusData {
 

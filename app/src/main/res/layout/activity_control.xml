@@ -5,7 +5,7 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-    <com.example.lawnmower.GStreamerSurfaceView
+    <com.example.lawnmower.gstreamer.GStreamerSurfaceView
         android:id="@+id/gStreamer"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" />

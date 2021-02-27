@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     android:padding="16dp"
     android:id="@+id/rlMain_Ac"
-    tools:context=".WeatherActivity">
+    tools:context=".activities.WeatherActivity">
 
     <RelativeLayout
         android:id="@+id/rlWeather"

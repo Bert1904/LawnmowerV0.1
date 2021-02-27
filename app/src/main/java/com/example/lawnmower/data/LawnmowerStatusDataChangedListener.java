@@ -1,4 +1,4 @@
-package com.example.lawnmower;
+package com.example.lawnmower.data;
 
 public interface LawnmowerStatusDataChangedListener {
 

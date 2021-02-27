@@ -1,22 +1,18 @@
-package com.example.lawnmower;
+package com.example.lawnmower.activities;
 
 import android.os.Bundle;
-
-import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
 
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
-import java.net.Socket;
+import com.example.lawnmower.R;
+import com.example.lawnmower.data.SocketService;
 
-public class Einstellungen extends BaseAppCompatAcitivty {
+import java.io.IOException;
+
+public class SettingsActivity extends BaseAppCompatAcitivty {
 
     private static final String CONNECTION_SERVER = "Versuche Verbindung zum Roboter aufzubauen";
     private static final String CONNECTION_LOST = "Verbindung Fehlgeschlagen";
@@ -34,7 +30,7 @@ public class Einstellungen extends BaseAppCompatAcitivty {
     protected void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_einstellungen);
+        setContentView(R.layout.activity_settings);
         Button_Ip = findViewById(R.id.Button_Ip);
         Button_Port = findViewById(R.id.Button_Port);
         connect = findViewById(R.id.Button_Connect);
@@ -59,8 +55,10 @@ public class Einstellungen extends BaseAppCompatAcitivty {
             @Override
             public void onClick(View view) {
                 SocketService.getInstance().disconnect();
+                disconnect.setEnabled(false);
             }
         });
+        disconnect.setEnabled(false);
     }
 
     public class SocketConnectThread implements Runnable {
@@ -72,6 +70,7 @@ public class Einstellungen extends BaseAppCompatAcitivty {
                     @Override
                     public void run() {
                         Toast.makeText(getApplicationContext(), CONNECT_SUCCESS, Toast.LENGTH_LONG).show();
+                        disconnect.setEnabled(true);
                     }
                 });
             } catch (IOException e) {

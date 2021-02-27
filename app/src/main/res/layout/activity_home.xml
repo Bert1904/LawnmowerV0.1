@@ -7,27 +7,49 @@
     android:background="@drawable/rasen"
 
     android:orientation="vertical"
-    tools:context=".HomeActivity">
+    tools:context=".activities.HomeActivity">
 
     <ImageView
-        android:id="@+id/batteryStatusIconMow"
+        android:id="@+id/batteryStatusIconHome"
         android:layout_width="45dp"
         android:layout_height="25dp"
-        android:layout_above="@id/batteryStatusMow"
+        android:layout_above="@id/batteryStatusHome"
         android:layout_alignEnd="@id/gridLayout2"
-        android:layout_marginLeft="5dp"
+        android:layout_marginEnd="10dp"
         app:srcCompat="@drawable/battery0" />
 
+    <ImageView
+        android:id="@+id/connectionStatus"
+        android:layout_width="35dp"
+        android:layout_height="35dp"
+        android:layout_above="@id/gridLayout2"
+        android:layout_alignStart="@id/gridLayout2"
+        android:layout_marginStart="15dp"
+        android:layout_marginBottom="15dp"
+        app:srcCompat="@drawable/notconnected" />
+
     <TextView
-        android:id="@+id/batteryStatusMow"
+        android:id="@+id/lawnmowerStatus"
+        android:layout_width="200dp"
+        android:layout_height="wrap_content"
+        android:layout_above="@id/gridLayout2"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="17dp"
+        android:gravity="center"
+        android:text="not connected"
+        android:textColor="#000000"
+        android:textSize="24sp" />
+
+    <TextView
+        android:id="@+id/batteryStatusHome"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_above="@id/gridLayout2"
         android:layout_alignEnd="@id/gridLayout2"
-        android:layout_marginEnd="12dp"
+        android:layout_marginEnd="22dp"
         android:text="99%"
         android:textColor="#000000"
-        android:textColorHighlight="#000000" />
+        android:textColorHighlight="#000000"/>
 
     <androidx.gridlayout.widget.GridLayout
         android:id="@+id/gridLayout2"

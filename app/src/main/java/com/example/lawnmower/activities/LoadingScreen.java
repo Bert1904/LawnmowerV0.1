@@ -1,28 +1,25 @@
-package com.example.lawnmower;
+package com.example.lawnmower.activities;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 
 
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
-
 import android.os.Handler;
-import android.view.View;
 
-public class Ladebildschirm extends BaseAppCompatAcitivty {
+import com.example.lawnmower.R;
+
+public class LoadingScreen extends BaseAppCompatAcitivty {
     public final int LOAD_TIME = 3000;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_ladebildschirm);
+        setContentView(R.layout.loadingscreen);
 
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
-                Intent intent= new Intent(Ladebildschirm.this, HomeActivity.class);
+                Intent intent= new Intent(LoadingScreen.this, HomeActivity.class);
                 startActivity(intent);
                 finish();
             }

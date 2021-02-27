@@ -1,11 +1,5 @@
+package com.example.lawnmower.activities;
 
-
-package com.example.lawnmower;
-
-import android.app.Activity;
-import android.content.Context;
-import android.hardware.Sensor;
-import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.SurfaceHolder;
@@ -14,13 +8,22 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.CompoundButton;
-import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
 
 import androidx.appcompat.app.AppCompatActivity;
+
+import com.example.lawnmower.AppControlsProtos;
+import com.example.lawnmower.viewhandler.BatteryStatusHandler;
+import com.example.lawnmower.gstreamer.GStreamerSurfaceView;
+import com.example.lawnmower.JoystickMessageGenerator;
+import com.example.lawnmower.data.LSDListenerManager;
+import com.example.lawnmower.data.LawnmowerStatusData;
+import com.example.lawnmower.data.LawnmowerStatusDataChangedListener;
+import com.example.lawnmower.R;
+import com.example.lawnmower.data.SocketService;
 
 import org.freedesktop.gstreamer.GStreamer;
 
@@ -30,9 +33,8 @@ import io.github.controlwear.virtual.joystick.android.JoystickView;
 //import org.w3c.dom.Text;
 
 import java.io.IOException;
-import java.net.Socket;
 
-public class Steuerung extends AppCompatActivity implements SurfaceHolder.Callback, LawnmowerStatusDataChangedListener {
+public class ControlActivity extends AppCompatActivity implements SurfaceHolder.Callback, LawnmowerStatusDataChangedListener {
 
     private JoystickView mJoystick;
     private JoystickMessageGenerator mJoystickMessageGenerator;
@@ -83,7 +85,7 @@ public class Steuerung extends AppCompatActivity implements SurfaceHolder.Callba
             return;
         }
 
-        setContentView(R.layout.activity_steuerung);
+        setContentView(R.layout.activity_control);
 
 
         SurfaceView sv = this.findViewById(R.id.gStreamer);
@@ -178,22 +180,6 @@ public class Steuerung extends AppCompatActivity implements SurfaceHolder.Callba
         double diff = Math.sqrt(diffY * diffY + diffX * diffX);
         return diff;
     }
-
-    /*private void serialize(final byte[] message) throws IOException {
-        Log.i("serialize","SendDataToNetwork: opened method serialze");
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    socket.getOutputStream().write(message);
-                    socket.getOutputStream().flush();
-                    Log.i("serialize","SendDataToNetwork: Success");
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        }).start();
-    }*/
 
 
     protected void onSaveInstanceState (Bundle outState) {

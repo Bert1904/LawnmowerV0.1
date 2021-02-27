@@ -1,6 +1,8 @@
-package com.example.lawnmower;
+package com.example.lawnmower.activities;
 
 import androidx.appcompat.app.AppCompatActivity;
+
+import com.example.lawnmower.LawnmowerApp;
 
 public abstract class BaseAppCompatAcitivty extends AppCompatActivity {
 

@@ -1,4 +1,6 @@
-package com.example.lawnmower;
+package com.example.lawnmower.data;
+
+import com.example.lawnmower.data.LawnmowerStatusDataChangedListener;
 
 import java.util.ArrayList;
 import java.util.List;

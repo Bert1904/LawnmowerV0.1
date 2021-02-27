@@ -1,4 +1,4 @@
-package com.example.lawnmower;
+package com.example.lawnmower.activities;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -16,6 +16,10 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.example.lawnmower.R;
+import com.example.lawnmower.activities.BaseAppCompatAcitivty;
+import com.example.lawnmower.data.SocketService;
 
 import org.json.JSONException;
 import org.json.JSONObject;

@@ -1,14 +1,14 @@
-package com.example.lawnmower;
+package com.example.lawnmower.data;
 
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.ProgressDialog;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.util.Log;
 
 import androidx.annotation.RequiresApi;
 
+import com.example.lawnmower.AppControlsProtos;
 import com.google.protobuf.InvalidProtocolBufferException;
 
 import java.io.DataInputStream;
@@ -16,7 +16,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetSocketAddress;
 import java.net.Socket;
-import java.net.SocketTimeoutException;
 
 public final class SocketService {
     private static final int TIMEOUT = 5000;
@@ -148,8 +147,6 @@ public final class SocketService {
 
                     //sets data to the singleton
                     LawnmowerStatusData.getInstance().setLawnmowerStatus(lawnmowerStatus);
-                } catch (IOException e) {
-                    e.printStackTrace();
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
