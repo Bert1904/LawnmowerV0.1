@@ -8,11 +8,14 @@ import android.location.Geocoder;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.View;
+import android.view.animation.AlphaAnimation;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -43,6 +46,7 @@ public class WeatherActivity extends BaseAppCompatAcitivty {
     private List<Address> addresses;
     String CityName;
     String lawnmower = "Lawnmower Position";
+    private static final String NO_CONNECTION = "Verbindung nicht möglich. \nBitte überprüfe deine Einstellung";
     TextView txtCityLocation, txtTime, txtValueTemp, txtValueFeelLike, txtValueHumidity, txtValueClouds;
 
     String nameIcon = "10d";
@@ -62,12 +66,23 @@ public class WeatherActivity extends BaseAppCompatAcitivty {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_weather);
         geocoder= new Geocoder(this,Locale.getDefault());
-        try {
-            addresses=geocoder.getFromLocation(latitute,longitude,1);
-        } catch (IOException e) {
-            e.printStackTrace();
+        btnLoading = findViewById(R.id.btnLoading);
+        if (!SocketService.getInstance().isConnected()) {
+            noConnection();
         }
-        CityName =  addresses.get(0).getLocality();
+        else
+        {
+            try {
+                addresses=geocoder.getFromLocation(latitute,longitude,1);
+                CityName =  addresses.get(0).getLocality();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+        }
+
+
+
 
 
         txtCityLocation = findViewById(R.id.txtCityLocation);
@@ -84,13 +99,23 @@ public class WeatherActivity extends BaseAppCompatAcitivty {
 
         imgIcon = findViewById(R.id.imgIcon);
 
-        btnLoading = findViewById(R.id.btnLoading);
+
 
         relativeLayout = findViewById(R.id.rlWeather);
 
         relativeLayoutMain = findViewById(R.id.rlMain_Ac);
     }
 
+    public void noConnection() {
+        Toast toast = Toast.makeText(this,NO_CONNECTION, Toast.LENGTH_LONG);
+        toast.setGravity(Gravity.CENTER, 0, 0);
+        toast.show();
+        btnLoading.setEnabled(false);
+        float alpha =0.3F;
+        AlphaAnimation aplhaUp = new AlphaAnimation(alpha,alpha);
+        aplhaUp.setFillAfter(true);
+        btnLoading.startAnimation(aplhaUp);
+    }
     public class DownloadImage extends AsyncTask<String, Void, Bitmap> {
 
         @Override

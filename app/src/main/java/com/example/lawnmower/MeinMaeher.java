@@ -105,7 +105,7 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements LawnmowerStatus
         svhandler = new StatusViewHandler((ImageView) findViewById(R.id.MowingStatusView));
 
         /*
-        * looks useless, just add some code to the LawnmowerStatusDataChangedListener
+         * looks useless, just add some code to the LawnmowerStatusDataChangedListener
          */
         progressBar= (ProgressBar)findViewById(R.id.progressBar);
         progressTextView = (TextView)findViewById(R.id.progressTextView);
@@ -225,12 +225,10 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements LawnmowerStatus
                                 isConnected = false;
                             }
                         }
-
                     });
                     setNoConnection();
                     return;
                 }
-
             }, 0, 10000);*/
             setNoConnection();
         } else {
@@ -243,10 +241,8 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements LawnmowerStatus
      * ListenerThread to read incoming messages from tcp server
      */
     /*class ListenerThread extends AsyncTask<Void, AppControlsProtos.LawnmowerStatus, Void> {
-
         Activity activity;
         IOException ioException;
-
         @RequiresApi(api = Build.VERSION_CODES.N)
         @Override
         protected Void doInBackground(Void... params) {
@@ -280,7 +276,6 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements LawnmowerStatus
                     Log.i("Message", "reveived Message");
                     handleStatus(lawnmowerStatus.getStatus());
                     setBatteryState(lawnmowerStatus.getBatteryState());
-
                     //sets data to the singleton
                     lawnmowerStatusData.setLawnmowerStatus(lawnmowerStatus);
                     /*lawnmowerStatusData.setStatus(lawnmowerStatus.getStatus());
@@ -299,7 +294,6 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements LawnmowerStatus
             }
             //return null;
         }
-
         //least significant bit first
         private int convertByteArrayToInt(byte[] data) {
             if (data == null || data.length != 4) return 0x0;
@@ -310,7 +304,6 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements LawnmowerStatus
                             (0xff & data[2]) << 16 |
                             (0xff & data[3]) << 24);
         }
-
         private void readExact(InputStream stream, byte[] buffer, int offset, int count) throws Exception {
             int bytesRead;
             if (count < 0) {
@@ -323,12 +316,10 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements LawnmowerStatus
             }
             if (count != 0) throw new Exception("End of stream was reached.");
         }
-
         @Override
         protected void onProgressUpdate(AppControlsProtos.LawnmowerStatus... values) {
             super.onProgressUpdate(values);
         }
-
         protected void onPostExecute() {
             Log.i(" Background", "Background task ended");
             if (this.ioException != null) {
@@ -379,7 +370,6 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements LawnmowerStatus
         System.out.println(latitude);
         geoServiceHandler.setLatitude(latitude);
     }
-
     private void handleGeoCoordinatesLongitude(double longitude) {
         this.longitude = longitude;
         System.out.println(longitude);
@@ -471,7 +461,6 @@ public class MeinMaeher extends BaseAppCompatAcitivty implements LawnmowerStatus
             public void run() {
                 runOnUiThread(new Runnable() {
                     //private ImageView MowingStatusView = (ImageView) findViewById(R.id.MowingStatusView);
-
                     @Override
                     public void run() {
                         switch (v.getId()) {
