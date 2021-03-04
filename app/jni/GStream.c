@@ -370,6 +370,12 @@ gst_native_surface_finalize (JNIEnv * env, jobject thiz)
     data->initialized = FALSE;
 }
 
+static void
+gst_native_set_host_and_port(JNIEnv* env, jobject thiz, jstring ip, jint port) {
+    CustomData *data = GET_CUSTOM_DATA(env, thiz, custom_data_field_id);
+    if (!data || !data->pipeline) return;
+}
+
 /* List of implemented native methods */
 static JNINativeMethod native_methods[] = {
         {"nativeInit", "()V", (void *) gst_native_init},
@@ -379,7 +385,8 @@ static JNINativeMethod native_methods[] = {
         {"nativeSurfaceInit", "(Ljava/lang/Object;)V",
                 (void *) gst_native_surface_init},
         {"nativeSurfaceFinalize", "()V", (void *) gst_native_surface_finalize},
-        {"nativeClassInit", "()Z", (void *) gst_native_class_init}
+        {"nativeClassInit", "()Z", (void *) gst_native_class_init},
+        {"nativeSetHostAndPort", "(Ljava/lang/String;I)V",(void *) gst_native_set_host_and_port}
 };
 
 /* Library initializer */

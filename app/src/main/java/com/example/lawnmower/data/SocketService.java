@@ -22,6 +22,7 @@ public final class SocketService {
     private Socket SOCKET = new Socket();
     private String Ip;
     private Integer Port;
+    private final Integer ImagePort = 6755;
     private AsyncTask<Void, AppControlsProtos.LawnmowerStatus, Void> backgroundtask;
     private static SocketService socketService = new SocketService();
     //private static boolean isConnected = false;
@@ -67,9 +68,12 @@ public final class SocketService {
         return Ip;
     }
 
+    public int getImagePort() {
+        return ImagePort.intValue();
+    }
+
     public int getPort() {
-        int i = Port.intValue();
-        return i;
+        return Port.intValue();
     }
 
     public void disconnect() {

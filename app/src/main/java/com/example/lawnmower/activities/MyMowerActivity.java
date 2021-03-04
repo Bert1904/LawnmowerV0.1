@@ -66,6 +66,8 @@ public class MyMowerActivity extends BaseAppCompatAcitivty implements LawnmowerS
     private ImageButton buttonGoHome;
     private ImageView batteryStatusIcon;
     private TextView batteryStatus;
+    private TextView errorStatus;
+    private ImageView errorIcon;
 
     //use this as an error occurance indicator
     private ImageView connectionStatus;
@@ -113,7 +115,7 @@ public class MyMowerActivity extends BaseAppCompatAcitivty implements LawnmowerS
                     }
                 }
             });
-        }else{
+        } else {
             progressBar.setVisibility(View.GONE);
             progressTextView.setVisibility(View.GONE);
         }
@@ -123,6 +125,8 @@ public class MyMowerActivity extends BaseAppCompatAcitivty implements LawnmowerS
         batteryStatus.setVisibility(View.INVISIBLE);
         batteryStatusIcon.setVisibility(View.INVISIBLE);
         connectionStatus = findViewById(R.id.connectionSymbol);
+        errorStatus = findViewById(R.id.errorStatusMower);
+        errorIcon = findViewById(R.id.errorIconMower);
         bshandler = new BatteryStatusHandler(batteryStatusIcon);
 
         // Toast start mowing process
@@ -188,7 +192,9 @@ public class MyMowerActivity extends BaseAppCompatAcitivty implements LawnmowerS
                 }
             }
         });
-        connectionHandler();
+        errorIcon.setVisibility(View.INVISIBLE);
+        errorStatus.setVisibility(View.INVISIBLE);
+        //connectionHandler();
         // Restore ui elements when BackButton is clicked
         lawnmowerpref = PreferenceManager.getDefaultSharedPreferences(this);
     }
@@ -255,6 +261,7 @@ public class MyMowerActivity extends BaseAppCompatAcitivty implements LawnmowerS
             public void run() {
                 setBatteryState(LawnmowerStatusData.getInstance().getLawnmowerStatus().getBatteryState());
                 handleStatus(LawnmowerStatusData.getInstance().getLawnmowerStatus().getStatus());
+                handleError();
             }
         });
         //handleMowingErrors(LawnmowerStatusData.getInstance().getLawnmowerStatus().getError());
@@ -294,6 +301,45 @@ public class MyMowerActivity extends BaseAppCompatAcitivty implements LawnmowerS
                 break;
             }
         }
+    }
+
+    private void handleError() {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                if(LawnmowerStatusData.getInstance().getLawnmowerStatus().getError().getNumber() != AppControlsProtos.LawnmowerStatus.Error.NO_ERROR_VALUE) {
+                    if(errorIcon.getVisibility() != View.VISIBLE) {
+                        errorIcon.setVisibility(View.VISIBLE);
+                    }
+                    if(errorStatus.getVisibility() != View.VISIBLE) {
+                        errorStatus.setVisibility(View.VISIBLE);
+                    }
+                    if(LawnmowerStatusData.getInstance().getLawnmowerStatus().getError() == AppControlsProtos.LawnmowerStatus.Error.ROBOT_STUCK) {
+                        //robot stuck
+                        errorStatus.setText("Fehler: Roboter steckt fest!");
+                    } else if(LawnmowerStatusData.getInstance().getLawnmowerStatus().getError() == AppControlsProtos.LawnmowerStatus.Error.BLADE_STUCK) {
+                        //robotblade stuck
+                        errorStatus.setText("Fehler: Klinge steckt fest!");
+                    } else if(LawnmowerStatusData.getInstance().getLawnmowerStatus().getError() == AppControlsProtos.LawnmowerStatus.Error.PICKUP) {
+                        errorStatus.setText("Roboter wird angehoben");
+                        //robot pickup
+                    } else if(LawnmowerStatusData.getInstance().getLawnmowerStatus().getError() == AppControlsProtos.LawnmowerStatus.Error.LOST) {
+                        errorStatus.setText("Fehler: Orientierung verloren!");
+                        //robot lost
+                    } else {
+                        errorStatus.setText("Ein unerwarteter Fehler ist aufgetreten!");
+                        //unrecognized error
+                    }
+                } else {
+                    if(errorIcon.getVisibility() != View.INVISIBLE) {
+                        errorIcon.setVisibility(View.INVISIBLE);
+                    }
+                    if(errorStatus.getVisibility() != View.INVISIBLE) {
+                        errorStatus.setVisibility(View.INVISIBLE);
+                    }
+                }
+            }
+        });
     }
 
     /*

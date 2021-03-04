@@ -2,6 +2,7 @@ package com.example.lawnmower.activities;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
 
@@ -27,9 +28,11 @@ public class HomeActivity extends BaseAppCompatAcitivty implements LawnmowerStat
     private ImageButton buttonMap;
     private ImageButton buttonWeather;
     private ImageView batteryStatusIcon;
+    private ImageView errorIcon;
     private TextView batteryStatus;
     private ImageView connectionStatus;
     private TextView lawnmowerStatus;
+    private TextView errorMsg;
     private BatteryStatusHandler bshandler;
 
     @Override
@@ -42,6 +45,8 @@ public class HomeActivity extends BaseAppCompatAcitivty implements LawnmowerStat
         bshandler = new BatteryStatusHandler(batteryStatusIcon);
         lawnmowerStatus = findViewById(R.id.lawnmowerStatus);
         connectionStatus = findViewById(R.id.connectionStatus);
+        errorIcon = findViewById(R.id.errorIcon);
+        errorMsg = findViewById(R.id.errorMsg);
         buttonSettings.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -159,6 +164,8 @@ public class HomeActivity extends BaseAppCompatAcitivty implements LawnmowerStat
             connectionStatus.setVisibility(View.GONE);
             connectionStatus.setImageResource(getResources().getIdentifier("@drawable/connected", null, getPackageName()));
         }
+        errorMsg.setVisibility(View.INVISIBLE);
+        errorIcon.setVisibility(View.INVISIBLE);
         connectionStatus.setVisibility(View.VISIBLE);
     }
 
@@ -185,20 +192,63 @@ public class HomeActivity extends BaseAppCompatAcitivty implements LawnmowerStat
 
     private void updateLawnmowerStatus(AppControlsProtos.LawnmowerStatus.Status status) {
         String s;
-        if(status == AppControlsProtos.LawnmowerStatus.Status.READY) {
-            s = "Status: Bereit";
-        } else if(status == AppControlsProtos.LawnmowerStatus.Status.MOWING) {
-            s = "Status: Mähen";
-        } else if(status == AppControlsProtos.LawnmowerStatus.Status.PAUSED) {
-            s = "Status: Pause";
-        } else if(status == AppControlsProtos.LawnmowerStatus.Status.MANUAL) {
-            s = "Status: Manuell";
-        } else if(status == AppControlsProtos.LawnmowerStatus.Status.TRACKING) {
-            s = "Status: Tracking";
+        if(LawnmowerStatusData.getInstance().getLawnmowerStatus().getError() != AppControlsProtos.LawnmowerStatus.Error.NO_ERROR) {
+            if (status == AppControlsProtos.LawnmowerStatus.Status.READY) {
+                s = "Status: Bereit";
+            } else if (status == AppControlsProtos.LawnmowerStatus.Status.MOWING) {
+                s = "Status: Mähen";
+            } else if (status == AppControlsProtos.LawnmowerStatus.Status.PAUSED) {
+                s = "Status: Pause";
+            } else if (status == AppControlsProtos.LawnmowerStatus.Status.MANUAL) {
+                s = "Status: Manuell";
+            } else if (status == AppControlsProtos.LawnmowerStatus.Status.TRACKING) {
+                s = "Status: Tracking";
+            } else {
+                s = "Wenig Licht";
+            }
         } else {
-            s = "Wenig Licht";
+            s = "Status: Error";
         }
         lawnmowerStatus.setText(s);
+    }
+
+    private void handleError() {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                if(LawnmowerStatusData.getInstance().getLawnmowerStatus().getError().getNumber() != AppControlsProtos.LawnmowerStatus.Error.NO_ERROR_VALUE) {
+                    if(errorIcon.getVisibility() != View.VISIBLE) {
+                        errorIcon.setVisibility(View.VISIBLE);
+                    }
+                    if(errorMsg.getVisibility() != View.VISIBLE) {
+                        errorMsg.setVisibility(View.VISIBLE);
+                    }
+                    if(LawnmowerStatusData.getInstance().getLawnmowerStatus().getError() == AppControlsProtos.LawnmowerStatus.Error.ROBOT_STUCK) {
+                        //robot stuck
+                        errorMsg.setText("Fehler: Roboter steckt fest!");
+                    } else if(LawnmowerStatusData.getInstance().getLawnmowerStatus().getError() == AppControlsProtos.LawnmowerStatus.Error.BLADE_STUCK) {
+                        //robotblade stuck
+                        errorMsg.setText("Fehler: Klinge steckt fest!");
+                    } else if(LawnmowerStatusData.getInstance().getLawnmowerStatus().getError() == AppControlsProtos.LawnmowerStatus.Error.PICKUP) {
+                        errorMsg.setText("Roboter wird angehoben");
+                        //robot pickup
+                    } else if(LawnmowerStatusData.getInstance().getLawnmowerStatus().getError() == AppControlsProtos.LawnmowerStatus.Error.LOST) {
+                        errorMsg.setText("Fehler: Orientierung verloren!");
+                        //robot lost
+                    } else {
+                        errorMsg.setText("Ein unerwarteter Fehler ist aufgetreten!");
+                        //unrecognized error
+                    }
+                } else {
+                    if(errorIcon.getVisibility() != View.INVISIBLE) {
+                        errorIcon.setVisibility(View.INVISIBLE);
+                    }
+                    if(errorMsg.getVisibility() != View.INVISIBLE) {
+                        errorMsg.setVisibility(View.INVISIBLE);
+                    }
+                }
+            }
+        });
     }
 
     @Override
@@ -207,21 +257,22 @@ public class HomeActivity extends BaseAppCompatAcitivty implements LawnmowerStat
             @Override
             public void run() {
                 setBatteryState(LawnmowerStatusData.getInstance().getLawnmowerStatus().getBatteryState());
-                if(SocketService.getInstance().isConnected()) {
-                    updateLawnmowerStatus(LawnmowerStatusData.getInstance().getLawnmowerStatus().getStatus());
-                }
+                updateLawnmowerStatus(LawnmowerStatusData.getInstance().getLawnmowerStatus().getStatus());
+                handleError();
             }
         });
     }
 
     @Override
     public void onPause() {
+        Log.i("Home","onPause");
         super.onPause();
         LSDListenerManager.removeListener(this);
     }
 
     @Override
     public void onResume() {
+        Log.i("Home","onResume");
         super.onResume();
         LSDListenerManager.addListener(this);
     }

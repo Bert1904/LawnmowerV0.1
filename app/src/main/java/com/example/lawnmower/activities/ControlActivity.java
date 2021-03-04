@@ -48,6 +48,7 @@ public class ControlActivity extends AppCompatActivity implements SurfaceHolder.
     private native void nativeInit();     // Initialize native code, build pipeline, etc
     private native void nativeFinalize(); // Destroy pipeline and shutdown native code
     private native void nativePlay();     // Set pipeline to PLAYING
+    private native void nativeSetHostAndPort(String host, int port);
     //useless method cuz robot image is always playing
     //private native void nativePause();    // Set pipeline to PAUSED
     private static native boolean nativeClassInit(); // Initialize native class: cache Method IDs for callbacks
@@ -55,7 +56,7 @@ public class ControlActivity extends AppCompatActivity implements SurfaceHolder.
 
     //private boolean is_playing_desired;   // Whether the user asked to go to PLAYING
     private String ip = SocketService.getInstance().getIp();
-    private int port = 6755;
+    private int port = SocketService.getInstance().getImagePort();
     private double xJoystick = 0.0;
     private double yJoystick = 0.0;
     private double lastSentX = 0.0;
@@ -66,6 +67,9 @@ public class ControlActivity extends AppCompatActivity implements SurfaceHolder.
     private ImageView batteryStatusIcon;
     private TextView batteryStatus;
     private BatteryStatusHandler bshandler;
+    private ImageView connectionStatus;
+    private TextView lawnmowerStatus;
+    private ImageView errorIcon;
 
     // Called when the activity is first created.
     @Override
@@ -76,25 +80,26 @@ public class ControlActivity extends AppCompatActivity implements SurfaceHolder.
         // Initialize GStreamer and warn if it fails
 
         //socket = SocketService.getSocket();
-
-        try {
-            GStreamer.init(this);
-        } catch (Exception e) {
-            Toast.makeText(this, e.getMessage(), Toast.LENGTH_LONG).show();
-            finish();
-            return;
+        if(SocketService.getInstance().isConnected()) {
+            try {
+                GStreamer.init(this);
+            } catch (Exception e) {
+                Toast.makeText(this, e.getMessage(), Toast.LENGTH_LONG).show();
+                finish();
+                return;
+            }
         }
 
         setContentView(R.layout.activity_control);
 
-
-        SurfaceView sv = this.findViewById(R.id.gStreamer);
-        SurfaceHolder sh = sv.getHolder();
-        sh.addCallback(this);
-
         //Check connection status before calling nativeInit.
         //if(socket.isConnected()) {
-        nativeInit();
+        if(SocketService.getInstance().isConnected()) {
+            SurfaceView sv = this.findViewById(R.id.gStreamer);
+            SurfaceHolder sh = sv.getHolder();
+            sh.addCallback(this);
+            nativeInit();
+        }
         init();
     }
 
@@ -104,74 +109,92 @@ public class ControlActivity extends AppCompatActivity implements SurfaceHolder.
         setHome = findViewById(R.id.setHome);
         tracking = findViewById(R.id.tracking);
         batteryStatusIcon = findViewById(R.id.batteryStatusIconCntrl);
+        lawnmowerStatus = findViewById(R.id.lawnmowerStatusControl);
         batteryStatus = findViewById(R.id.batteryStatusCntrl);
         bshandler = new BatteryStatusHandler(batteryStatusIcon);
-        setHome.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Log.i("homebutton","home button pressed");
-                try {
-                    SocketService.getInstance().send(
-                            AppControlsProtos.AppControls.newBuilder().setCmd(AppControlsProtos.AppControls.Command.SET_HOME).build().toByteArray());
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-        });
-        tracking.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
-                if(isChecked) {
-                    Log.i("trackingButton", "startTracking");
+        connectionStatus = findViewById(R.id.connectionStatusControl);
+        errorIcon = findViewById(R.id.errorIconCntrl);
+        errorIcon.setVisibility(View.INVISIBLE);
+        if(SocketService.getInstance().isConnected()) {
+            setHome.setOnClickListener(new OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    Log.i("homebutton", "home button pressed");
                     try {
                         SocketService.getInstance().send(
-                                AppControlsProtos.AppControls.newBuilder().setCmd(AppControlsProtos.AppControls.Command.BEGIN_TRACKING).build().toByteArray());
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                } else {
-                    Log.i("trackingButton", "stopTracking");
-                    try {
-                        SocketService.getInstance().send(
-                                AppControlsProtos.AppControls.newBuilder().setCmd(AppControlsProtos.AppControls.Command.FINISH_TRACKING).build().toByteArray());
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-        });
-
-        //publish AppControls messages for the Joystick
-        mJoystick.setOnMoveListener(new JoystickView.OnMoveListener() {
-            @Override
-            public void onMove(int angle, int strength) {
-
-                // rearrange the values of x,y to -1 to 1
-                xJoystick = -((mJoystick.getNormalizedY()/50.0)-1.0);
-                yJoystick = -((mJoystick.getNormalizedX()/50.0)-1.0);
-
-                if(difference(xJoystick, yJoystick, lastSentX, lastSentY) > MINDIF) {
-                    lastSentX = xJoystick;
-                    lastSentY = yJoystick;
-                    Log.i("Steuerung","X: " + xJoystick + " ,Y: " + yJoystick);
-                    AppControlsProtos.AppControls msg = mJoystickMessageGenerator.buildMessage(xJoystick, yJoystick);
-                    try {
-                        SocketService.getInstance().send(msg.toByteArray());
+                                AppControlsProtos.AppControls.newBuilder().setCmd(AppControlsProtos.AppControls.Command.SET_HOME).build().toByteArray());
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
                 }
-
+            });
+            tracking.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                @Override
+                public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
+                    if (isChecked) {
+                        Log.i("trackingButton", "startTracking");
+                        try {
+                            SocketService.getInstance().send(
+                                    AppControlsProtos.AppControls.newBuilder().setCmd(AppControlsProtos.AppControls.Command.BEGIN_TRACKING).build().toByteArray());
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    } else {
+                        Log.i("trackingButton", "stopTracking");
+                        try {
+                            SocketService.getInstance().send(
+                                    AppControlsProtos.AppControls.newBuilder().setCmd(AppControlsProtos.AppControls.Command.FINISH_TRACKING).build().toByteArray());
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+            });
+            setHome.setEnabled(true);
+            tracking.setEnabled(true);
+            if(!mJoystick.isEnabled()) {
+                mJoystick.setEnabled(true);
             }
-        },REFRESHRATE);
+            connectionStatus.setVisibility(View.GONE);
+            connectionStatus.setImageResource(getResources().getIdentifier("@drawable/connected", null, getPackageName()));
 
-        if(!SocketService.getInstance().isConnected()) {
-            batteryStatusIcon.setVisibility(View.INVISIBLE);
-            batteryStatus.setVisibility(View.INVISIBLE);
-        } else {
+            //publish AppControls messages for the Joystick
+            mJoystick.setOnMoveListener(new JoystickView.OnMoveListener() {
+                @Override
+                public void onMove(int angle, int strength) {
+
+                    // rearrange the values of x,y to -1 to 1
+                    xJoystick = -((mJoystick.getNormalizedY() / 50.0) - 1.0);
+                    yJoystick = -((mJoystick.getNormalizedX() / 50.0) - 1.0);
+
+                    if (difference(xJoystick, yJoystick, lastSentX, lastSentY) > MINDIF) {
+                        lastSentX = xJoystick;
+                        lastSentY = yJoystick;
+                        Log.i("Steuerung", "X: " + xJoystick + " ,Y: " + yJoystick);
+                        AppControlsProtos.AppControls msg = mJoystickMessageGenerator.buildMessage(xJoystick, yJoystick);
+                        try {
+                            SocketService.getInstance().send(msg.toByteArray());
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+
+                }
+            }, REFRESHRATE);
             batteryStatusIcon.setVisibility(View.VISIBLE);
             batteryStatus.setVisibility(View.VISIBLE);
+        } else {
+            if(mJoystick.isEnabled()) {
+                mJoystick.setEnabled(false);
+            }
+            connectionStatus.setVisibility(View.GONE);
+            connectionStatus.setImageResource(getResources().getIdentifier("@drawable/notconnected", null, getPackageName()));
+            batteryStatusIcon.setVisibility(View.INVISIBLE);
+            batteryStatus.setVisibility(View.INVISIBLE);
+            setHome.setEnabled(false);
+            tracking.setEnabled(false);
         }
+        connectionStatus.setVisibility(View.VISIBLE);
     }
 
     private double difference(double x, double y,double lastX, double lastY) {
@@ -225,7 +248,7 @@ public class ControlActivity extends AppCompatActivity implements SurfaceHolder.
     }
 
     private void setHostAndPort() {
-        //nativeSetHostAndPort(host, port);
+        nativeSetHostAndPort(ip, port);
     }
 
     static {
@@ -253,12 +276,12 @@ public class ControlActivity extends AppCompatActivity implements SurfaceHolder.
             @Override
             public void run() {
                 setBatteryState(LawnmowerStatusData.getInstance().getLawnmowerStatus().getBatteryState());
+                updateLawnmowerStatus(LawnmowerStatusData.getInstance().getLawnmowerStatus().getStatus());
             }
         });
     }
 
     private void setBatteryState(float batteryState) {
-
         if(batteryState > 90.0f) {
             bshandler.setView(getResources().getIdentifier("@drawable/batteryfull", null, getPackageName()));
         } else if (batteryState > 70.0f) {
@@ -276,6 +299,35 @@ public class ControlActivity extends AppCompatActivity implements SurfaceHolder.
             batteryStatus.setVisibility(View.VISIBLE);
         }
         batteryStatus.setText("" + (int)batteryState + "%");
+    }
+
+    private void updateLawnmowerStatus(AppControlsProtos.LawnmowerStatus.Status status) {
+        String s;
+        if(LawnmowerStatusData.getInstance().getLawnmowerStatus().getError() != AppControlsProtos.LawnmowerStatus.Error.NO_ERROR) {
+            if (status == AppControlsProtos.LawnmowerStatus.Status.READY) {
+                s = "Status: Bereit";
+            } else if (status == AppControlsProtos.LawnmowerStatus.Status.MOWING) {
+                s = "Status: Mähen";
+            } else if (status == AppControlsProtos.LawnmowerStatus.Status.PAUSED) {
+                s = "Status: Pause";
+            } else if (status == AppControlsProtos.LawnmowerStatus.Status.MANUAL) {
+                s = "Status: Manuell";
+            } else if (status == AppControlsProtos.LawnmowerStatus.Status.TRACKING) {
+                s = "Status: Tracking";
+            } else {
+                s = "Wenig Licht";
+            }
+            if(errorIcon.getVisibility() != View.INVISIBLE) {
+                errorIcon.setVisibility(View.INVISIBLE);
+            }
+        } else {
+            s = "Status: Error";
+            //maybe add a more specific message here
+            if(errorIcon.getVisibility() != View.VISIBLE) {
+                errorIcon.setVisibility(View.VISIBLE);
+            }
+        }
+        lawnmowerStatus.setText(s);
     }
 
     @Override

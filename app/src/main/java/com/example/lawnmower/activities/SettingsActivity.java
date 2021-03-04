@@ -5,8 +5,10 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.Toast;
 
+import com.example.lawnmower.AppControlsProtos;
 import com.example.lawnmower.R;
 import com.example.lawnmower.data.SocketService;
 
@@ -25,6 +27,7 @@ public class SettingsActivity extends BaseAppCompatAcitivty {
     private String SERVER_IP;
     private int SERVER_PORT;
     private Button disconnect, connect;
+    private ImageButton lawnmowerShutdown, lawnmowerReboot;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,6 +62,34 @@ public class SettingsActivity extends BaseAppCompatAcitivty {
             }
         });
         disconnect.setEnabled(false);
+        lawnmowerShutdown = findViewById(R.id.lawnmowerShutdown);
+        lawnmowerShutdown.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(SocketService.getInstance().isConnected()) {
+                    try {
+                        SocketService.getInstance().send(AppControlsProtos.AppControls.newBuilder().setCmd(AppControlsProtos.AppControls.Command.SHUTDOWN).build().toByteArray());
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    SocketService.getInstance().disconnect();
+                }
+            }
+        });
+        lawnmowerReboot = findViewById(R.id.lawnmowerReboot);
+        lawnmowerReboot.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(SocketService.getInstance().isConnected()) {
+                    try {
+                        SocketService.getInstance().send(AppControlsProtos.AppControls.newBuilder().setCmd(AppControlsProtos.AppControls.Command.REBOOT).build().toByteArray());
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    SocketService.getInstance().disconnect();
+                }
+            }
+        });
     }
 
     public class SocketConnectThread implements Runnable {

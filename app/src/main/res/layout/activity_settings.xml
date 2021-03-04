@@ -1,5 +1,6 @@
 <?xml version = "1.0" encoding = "utf-8"?>
 <RelativeLayout xmlns:android = "http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools = "http://schemas.android.com/tools"
     android:layout_width = "match_parent"
     android:layout_height = "match_parent"
@@ -27,21 +28,11 @@
         android:text="@string/default_server_port"
         android:autofillHints="port"/>
 
-    <EditText
-        android:id="@+id/button_Image_Port"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/Button_Port"
-        android:autofillHints="imageport"
-        android:hint="@string/defaultImagePortHint"
-        android:inputType="number"
-        android:text="@string/default_image_port" />
-
     <Button
         android:id="@+id/Button_Connect"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/button_Image_Port"
+        android:layout_below="@+id/Button_Port"
         android:layout_alignParentStart="true"
         android:layout_gravity="center"
         android:layout_marginTop="16dp"
@@ -51,13 +42,32 @@
         android:id="@+id/Button_disconnect"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/button_Image_Port"
+        android:layout_below="@+id/Button_Port"
         android:layout_toEndOf="@id/Button_Connect"
         android:layout_gravity="center"
         android:layout_alignParentEnd="true"
         android:layout_marginTop="16dp"
         android:layout_marginStart="10dp"
         android:text="Verbindung trennen" />
+
+    <ImageButton
+        android:id="@+id/lawnmowerShutdown"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/Button_Connect"
+        android:layout_marginTop="50dp"
+        android:background="#00FFFFFF"
+        app:srcCompat="@drawable/shutdownbutton" />
+
+    <ImageButton
+        android:id="@+id/lawnmowerReboot"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/Button_Connect"
+        android:layout_alignStart="@id/Button_disconnect"
+        android:layout_marginTop="50dp"
+        android:background="#00FFFFFF"
+        app:srcCompat="@drawable/restartbutton" />
 
 
 </RelativeLayout>
