@@ -303,7 +303,7 @@ public class ControlActivity extends AppCompatActivity implements SurfaceHolder.
 
     private void updateLawnmowerStatus(AppControlsProtos.LawnmowerStatus.Status status) {
         String s;
-        if(LawnmowerStatusData.getInstance().getLawnmowerStatus().getError() != AppControlsProtos.LawnmowerStatus.Error.NO_ERROR) {
+        if(LawnmowerStatusData.getInstance().getLawnmowerStatus().getError() == AppControlsProtos.LawnmowerStatus.Error.NO_ERROR) {
             if (status == AppControlsProtos.LawnmowerStatus.Status.READY) {
                 s = "Status: Bereit";
             } else if (status == AppControlsProtos.LawnmowerStatus.Status.MOWING) {
@@ -323,6 +323,22 @@ public class ControlActivity extends AppCompatActivity implements SurfaceHolder.
         } else {
             s = "Status: Error";
             //maybe add a more specific message here
+            if(LawnmowerStatusData.getInstance().getLawnmowerStatus().getError() == AppControlsProtos.LawnmowerStatus.Error.ROBOT_STUCK) {
+                //robot stuck
+                s = "Fehler: Roboter steckt fest!";
+            } else if(LawnmowerStatusData.getInstance().getLawnmowerStatus().getError() == AppControlsProtos.LawnmowerStatus.Error.BLADE_STUCK) {
+                //robotblade stuck
+                s = ("Fehler: Klinge steckt fest!");
+            } else if(LawnmowerStatusData.getInstance().getLawnmowerStatus().getError() == AppControlsProtos.LawnmowerStatus.Error.PICKUP) {
+                s = ("Roboter wird angehoben");
+                //robot pickup
+            } else if(LawnmowerStatusData.getInstance().getLawnmowerStatus().getError() == AppControlsProtos.LawnmowerStatus.Error.LOST) {
+                s = ("Fehler: Orientierung verloren!");
+                //robot lost
+            } else {
+                s = ("Ein unerwarteter Fehler ist aufgetreten!");
+                //unrecognized error
+            }
             if(errorIcon.getVisibility() != View.VISIBLE) {
                 errorIcon.setVisibility(View.VISIBLE);
             }

@@ -101,7 +101,7 @@ public class MyMowerActivity extends BaseAppCompatAcitivty implements LawnmowerS
          */
         progressBar = (ProgressBar)findViewById(R.id.progressBar);
         progressTextView = (TextView)findViewById(R.id.progressTextView);
-        if (SocketService.getInstance().isConnected()) {
+        /*if (SocketService.getInstance().isConnected()) {
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
@@ -115,10 +115,10 @@ public class MyMowerActivity extends BaseAppCompatAcitivty implements LawnmowerS
                     }
                 }
             });
-        } else {
+        } else {*/
             progressBar.setVisibility(View.GONE);
             progressTextView.setVisibility(View.GONE);
-        }
+        //}
 
         batteryStatus = findViewById(R.id.batteryStatusMow);
         batteryStatusIcon = findViewById(R.id.batteryStatusIconMow);
@@ -280,13 +280,13 @@ public class MyMowerActivity extends BaseAppCompatAcitivty implements LawnmowerS
             }
             case AppControlsProtos.LawnmowerStatus.Status.MOWING_VALUE: {
                 isMowing = true;
-                svhandler.setView(getResources().getIdentifier("@drawable/mahvorgang", null, getPackageName()));
+                svhandler.setView(getResources().getIdentifier("@drawable/mowing", null, getPackageName()));
                 //Toast.makeText(getApplicationContext(), mowing, Toast.LENGTH_LONG).show();
                 break;
             }
             case AppControlsProtos.LawnmowerStatus.Status.PAUSED_VALUE: {
                 isPaused = true;
-                svhandler.setView(getResources().getIdentifier("@drawable/mahvorgangpausiert", null, getPackageName()));
+                svhandler.setView(getResources().getIdentifier("@drawable/mowpause", null, getPackageName()));
                 nfhandler.sendStatusNotification(paused);
                 //Toast.makeText(getApplicationContext(), paused, Toast.LENGTH_LONG).show();
                 break;
@@ -471,13 +471,13 @@ public class MyMowerActivity extends BaseAppCompatAcitivty implements LawnmowerS
     protected void onResume() {
         super.onResume();
         if (lawnmowerpref.getBoolean("PausedTrue", false)) {
-            svhandler.setView(getResources().getIdentifier("@drawable/mahvorgangpausiert", null, getPackageName()));
+            svhandler.setView(getResources().getIdentifier("@drawable/mowpause", null, getPackageName()));
         } else if (lawnmowerpref.getBoolean("MowingTrue", false)) {
-            svhandler.setView(getResources().getIdentifier("@drawable/mahvorgang", null, getPackageName()));
+            svhandler.setView(getResources().getIdentifier("@drawable/mowing", null, getPackageName()));
         } else if (lawnmowerpref.getBoolean("GoHomeTrue", false)) {
-            svhandler.setView(getResources().getIdentifier("@drawable/backhome", null, getPackageName()));
+            svhandler.setView(getResources().getIdentifier("@drawable/mowback", null, getPackageName()));
         } else if (lawnmowerpref.getBoolean("StopTrue", false)) {
-            svhandler.setView(getResources().getIdentifier("@drawable/mahvorgangstop", null, getPackageName()));
+            svhandler.setView(getResources().getIdentifier("@drawable/mowstop", null, getPackageName()));
         }
         LSDListenerManager.addListener(this);
         Log.i("MyMower","add Listener");

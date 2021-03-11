@@ -192,7 +192,7 @@ public class HomeActivity extends BaseAppCompatAcitivty implements LawnmowerStat
 
     private void updateLawnmowerStatus(AppControlsProtos.LawnmowerStatus.Status status) {
         String s;
-        if(LawnmowerStatusData.getInstance().getLawnmowerStatus().getError() != AppControlsProtos.LawnmowerStatus.Error.NO_ERROR) {
+        if(LawnmowerStatusData.getInstance().getLawnmowerStatus().getError() == AppControlsProtos.LawnmowerStatus.Error.NO_ERROR) {
             if (status == AppControlsProtos.LawnmowerStatus.Status.READY) {
                 s = "Status: Bereit";
             } else if (status == AppControlsProtos.LawnmowerStatus.Status.MOWING) {

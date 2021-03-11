@@ -21,7 +21,7 @@
     <string name="API_KEY">AIzaSyB4igh24I4mYtyLTCdn-QEWMfm-sBQODws</string>
     <string name="msgRecieved">I received a message.</string>
     <string name="version"> Version 0.9</string>
-    <string name="aktualisiere_wetterdaten">Aktuallisiere Wetterdaten</string>
+    <string name="aktualisiere_wetterdaten">Aktualisiere Wetterdaten</string>
     <string name="Start">Starte Mähvorgang</string>
     <string name="Pause">Pausiere Mähvorgang</string>
     <string name="Stop">Stoppe Mähvorgang</string>
